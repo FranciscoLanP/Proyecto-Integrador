@@ -1,0 +1,172 @@
+paths:
+  /api/empleadoinformaciones:
+    get:
+      tags:
+        - EmpleadoInformacion
+      summary: Obtener todas las informaciones de empleado
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por id_cliente o id_tipo_empleado
+      responses:
+        '200':
+          description: Lista de informaciones de empleado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmpleadoInformacion'
+    post:
+      tags:
+        - EmpleadoInformacion
+      summary: Crear nueva información de empleado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmpleadoInformacionInput'
+      responses:
+        '201':
+          description: Información creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmpleadoInformacion'
+  /api/empleadoinformaciones/paginado:
+    get:
+      tags:
+        - EmpleadoInformacion
+      summary: Informaciones de empleado paginadas
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por id_cliente o id_tipo_empleado
+      responses:
+        '200':
+          description: Resultado paginado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EmpleadoInformacion'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/empleadoinformaciones/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - EmpleadoInformacion
+      summary: Obtener información de empleado por ID
+      responses:
+        '200':
+          description: Información encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmpleadoInformacion'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - EmpleadoInformacion
+      summary: Actualizar información de empleado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmpleadoInformacionInput'
+      responses:
+        '200':
+          description: Información actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmpleadoInformacion'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - EmpleadoInformacion
+      summary: Eliminar información de empleado
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    EmpleadoInformacion:
+      type: object
+      properties:
+        _id:
+          type: string
+        id_cliente:
+          type: string
+        id_tipo_empleado:
+          type: string
+      required:
+        - _id
+        - id_cliente
+        - id_tipo_empleado
+
+    EmpleadoInformacionInput:
+      type: object
+      properties:
+        id_cliente:
+          type: string
+        id_tipo_empleado:
+          type: string
+      required:
+        - id_cliente
+        - id_tipo_empleado
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

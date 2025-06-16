@@ -1,0 +1,166 @@
+paths:
+  /api/tiposempleados:
+    get:
+      tags:
+        - TipoEmpleado
+      summary: Obtener todos los tipos de empleado
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_tipo_empleado
+      responses:
+        '200':
+          description: Lista de tipos de empleado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TipoEmpleado'
+    post:
+      tags:
+        - TipoEmpleado
+      summary: Crear un nuevo tipo de empleado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TipoEmpleadoInput'
+      responses:
+        '201':
+          description: Tipo de empleado creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TipoEmpleado'
+  /api/tiposempleados/paginado:
+    get:
+      tags:
+        - TipoEmpleado
+      summary: Tipos de empleado paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_tipo_empleado
+      responses:
+        '200':
+          description: Resultado paginado de tipos de empleado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TipoEmpleado'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/tiposempleados/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - TipoEmpleado
+      summary: Obtener tipo de empleado por ID
+      responses:
+        '200':
+          description: Tipo de empleado encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TipoEmpleado'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - TipoEmpleado
+      summary: Actualizar tipo de empleado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TipoEmpleadoInput'
+      responses:
+        '200':
+          description: Tipo de empleado actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TipoEmpleado'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - TipoEmpleado
+      summary: Eliminar tipo de empleado
+      responses:
+        '204':
+          description: Eliminado exitosamente
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    TipoEmpleado:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre_tipo_empleado:
+          type: string
+      required:
+        - _id
+        - nombre_tipo_empleado
+
+    TipoEmpleadoInput:
+      type: object
+      properties:
+        nombre_tipo_empleado:
+          type: string
+      required:
+        - nombre_tipo_empleado
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

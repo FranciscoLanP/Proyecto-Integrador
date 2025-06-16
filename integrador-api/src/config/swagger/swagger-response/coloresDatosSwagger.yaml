@@ -1,0 +1,163 @@
+paths:
+  /api/coloresdatos:
+    get:
+      tags:
+        - ColoresDatos
+      summary: Obtener todos los colores de datos
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_color
+      responses:
+        '200':
+          description: Lista de colores de datos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ColoresDatos'
+    post:
+      tags:
+        - ColoresDatos
+      summary: Crear un nuevo color de datos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ColoresDatosInput'
+      responses:
+        '201':
+          description: Color de datos creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ColoresDatos'
+  /api/coloresdatos/paginado:
+    get:
+      tags:
+        - ColoresDatos
+      summary: Colores de datos paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_color
+      responses:
+        '200':
+          description: Resultado paginado de colores de datos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ColoresDatos'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/coloresdatos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - ColoresDatos
+      summary: Obtener color de datos por ID
+      responses:
+        '200':
+          description: Color de datos encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ColoresDatos'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - ColoresDatos
+      summary: Actualizar color de datos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ColoresDatosInput'
+      responses:
+        '200':
+          description: Color de datos actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ColoresDatos'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - ColoresDatos
+      summary: Eliminar color de datos
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    ColoresDatos:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre_color:
+          type: string
+      required:
+        - _id
+        - nombre_color
+    ColoresDatosInput:
+      type: object
+      properties:
+        nombre_color:
+          type: string
+      required:
+        - nombre_color
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

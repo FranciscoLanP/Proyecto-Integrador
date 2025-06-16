@@ -1,0 +1,172 @@
+paths:
+  /api/municipios:
+    get:
+      tags:
+        - Municipio
+      summary: Obtener todos los municipios
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_municipio
+      responses:
+        '200':
+          description: Lista de municipios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Municipio'
+    post:
+      tags:
+        - Municipio
+      summary: Crear un nuevo municipio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MunicipioInput'
+      responses:
+        '201':
+          description: Municipio creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Municipio'
+  /api/municipios/paginado:
+    get:
+      tags:
+        - Municipio
+      summary: Municipios paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_municipio
+      responses:
+        '200':
+          description: Resultado paginado de municipios
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Municipio'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/municipios/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Municipio
+      summary: Obtener municipio por ID
+      responses:
+        '200':
+          description: Municipio encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Municipio'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Municipio
+      summary: Actualizar municipio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MunicipioInput'
+      responses:
+        '200':
+          description: Municipio actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Municipio'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Municipio
+      summary: Eliminar municipio
+      responses:
+        '204':
+          description: Eliminado exitosamente
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Municipio:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre_municipio:
+          type: string
+        id_provincia:
+          type: string
+      required:
+        - _id
+        - nombre_municipio
+        - id_provincia
+
+    MunicipioInput:
+      type: object
+      properties:
+        nombre_municipio:
+          type: string
+        id_provincia:
+          type: string
+      required:
+        - nombre_municipio
+        - id_provincia
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

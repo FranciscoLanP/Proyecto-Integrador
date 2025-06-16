@@ -1,0 +1,184 @@
+paths:
+  /api/vehiculodatos:
+    get:
+      tags:
+        - VehiculoDatos
+      summary: Obtener todos los vehículos
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por chasis, cliente, modelo o color
+      responses:
+        '200':
+          description: Lista de vehículos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehiculoDatos'
+    post:
+      tags:
+        - VehiculoDatos
+      summary: Crear un nuevo vehículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehiculoDatosInput'
+      responses:
+        '201':
+          description: Vehículo creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehiculoDatos'
+  /api/vehiculodatos/paginado:
+    get:
+      tags:
+        - VehiculoDatos
+      summary: Vehículos paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por chasis, cliente, modelo o color
+      responses:
+        '200':
+          description: Resultado paginado de vehículos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VehiculoDatos'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/vehiculodatos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - VehiculoDatos
+      summary: Obtener vehículo por ID
+      responses:
+        '200':
+          description: Vehículo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehiculoDatos'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - VehiculoDatos
+      summary: Actualizar vehículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehiculoDatosInput'
+      responses:
+        '200':
+          description: Vehículo actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehiculoDatos'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - VehiculoDatos
+      summary: Eliminar vehículo
+      responses:
+        '204':
+          description: Eliminado exitosamente
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    VehiculoDatos:
+      type: object
+      properties:
+        _id:
+          type: string
+        chasis:
+          type: string
+        id_cliente:
+          type: string
+        id_modelo:
+          type: string
+        id_color:
+          type: string
+      required:
+        - _id
+        - chasis
+        - id_cliente
+        - id_modelo
+        - id_color
+
+    VehiculoDatosInput:
+      type: object
+      properties:
+        chasis:
+          type: string
+        id_cliente:
+          type: string
+        id_modelo:
+          type: string
+        id_color:
+          type: string
+      required:
+        - chasis
+        - id_cliente
+        - id_modelo
+        - id_color
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

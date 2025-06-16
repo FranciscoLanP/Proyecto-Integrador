@@ -1,0 +1,166 @@
+paths:
+  /api/tipospagos:
+    get:
+      tags:
+        - TiposPagos
+      summary: Obtener todos los tipos de pago
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_tipo
+      responses:
+        '200':
+          description: Lista de tipos de pago
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TiposPagos'
+    post:
+      tags:
+        - TiposPagos
+      summary: Crear un nuevo tipo de pago
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TiposPagosInput'
+      responses:
+        '201':
+          description: Tipo de pago creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TiposPagos'
+  /api/tipospagos/paginado:
+    get:
+      tags:
+        - TiposPagos
+      summary: Tipos de pago paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_tipo
+      responses:
+        '200':
+          description: Resultado paginado de tipos de pago
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TiposPagos'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/tipospagos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - TiposPagos
+      summary: Obtener tipo de pago por ID
+      responses:
+        '200':
+          description: Tipo de pago encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TiposPagos'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - TiposPagos
+      summary: Actualizar tipo de pago
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TiposPagosInput'
+      responses:
+        '200':
+          description: Tipo de pago actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TiposPagos'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - TiposPagos
+      summary: Eliminar tipo de pago
+      responses:
+        '204':
+          description: Eliminado exitosamente
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    TiposPagos:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre_tipo:
+          type: string
+      required:
+        - _id
+        - nombre_tipo
+
+    TiposPagosInput:
+      type: object
+      properties:
+        nombre_tipo:
+          type: string
+      required:
+        - nombre_tipo
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

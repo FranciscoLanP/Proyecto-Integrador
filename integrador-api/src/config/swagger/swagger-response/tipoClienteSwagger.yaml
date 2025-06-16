@@ -1,0 +1,178 @@
+paths:
+  /api/tiposclientes:
+    get:
+      tags:
+        - TipoCliente
+      summary: Obtener todos los tipos de cliente
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_tipo_cliente
+      responses:
+        '200':
+          description: Lista de tipos de cliente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TipoCliente'
+    post:
+      tags:
+        - TipoCliente
+      summary: Crear un nuevo tipo de cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TipoClienteInput'
+      responses:
+        '201':
+          description: Tipo de cliente creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TipoCliente'
+
+  /api/tiposclientes/paginado:
+    get:
+      tags:
+        - TipoCliente
+      summary: Tipos de cliente paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_tipo_cliente
+      responses:
+        '200':
+          description: Resultado paginado de tipos de cliente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TipoCliente'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+
+  /api/tiposclientes/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - TipoCliente
+      summary: Obtener tipo de cliente por ID
+      responses:
+        '200':
+          description: Tipo de cliente encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TipoCliente'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - TipoCliente
+      summary: Actualizar tipo de cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TipoClienteInput'
+      responses:
+        '200':
+          description: Tipo de cliente actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TipoCliente'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - TipoCliente
+      summary: Eliminar tipo de cliente
+      responses:
+        '204':
+          description: Eliminado exitosamente
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    TipoCliente:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre_tipo_cliente:
+          type: string
+          enum:
+            - Individual
+            - Empresarial
+            - Aseguradora
+            - Gobierno
+      required:
+        - _id
+        - nombre_tipo_cliente
+
+    TipoClienteInput:
+      type: object
+      properties:
+        nombre_tipo_cliente:
+          type: string
+          enum:
+            - Individual
+            - Empresarial
+            - Aseguradora
+            - Gobierno
+      required:
+        - nombre_tipo_cliente
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

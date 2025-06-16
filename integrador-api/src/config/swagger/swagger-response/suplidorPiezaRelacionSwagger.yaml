@@ -1,0 +1,172 @@
+paths:
+  /api/suplidorpiezasrelaciones:
+    get:
+      tags:
+        - SuplidorPiezaRelacion
+      summary: Obtener todas las relaciones suplidor-pieza
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por id_suplidor o id_pieza
+      responses:
+        '200':
+          description: Lista de relaciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SuplidorPiezaRelacion'
+    post:
+      tags:
+        - SuplidorPiezaRelacion
+      summary: Crear una nueva relación suplidor-pieza
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuplidorPiezaRelacionInput'
+      responses:
+        '201':
+          description: Relación creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuplidorPiezaRelacion'
+  /api/suplidorpiezasrelaciones/paginado:
+    get:
+      tags:
+        - SuplidorPiezaRelacion
+      summary: Relaciones suplidor-pieza paginadas
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por id_suplidor o id_pieza
+      responses:
+        '200':
+          description: Resultado paginado de relaciones
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SuplidorPiezaRelacion'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/suplidorpiezasrelaciones/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - SuplidorPiezaRelacion
+      summary: Obtener relación por ID
+      responses:
+        '200':
+          description: Relación encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuplidorPiezaRelacion'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - SuplidorPiezaRelacion
+      summary: Actualizar relación suplidor-pieza
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuplidorPiezaRelacionInput'
+      responses:
+        '200':
+          description: Relación actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuplidorPiezaRelacion'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - SuplidorPiezaRelacion
+      summary: Eliminar relación suplidor-pieza
+      responses:
+        '204':
+          description: Eliminado exitosamente
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    SuplidorPiezaRelacion:
+      type: object
+      properties:
+        _id:
+          type: string
+        id_suplidor:
+          type: string
+        id_pieza:
+          type: string
+      required:
+        - _id
+        - id_suplidor
+        - id_pieza
+
+    SuplidorPiezaRelacionInput:
+      type: object
+      properties:
+        id_suplidor:
+          type: string
+        id_pieza:
+          type: string
+      required:
+        - id_suplidor
+        - id_pieza
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

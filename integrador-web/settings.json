@@ -1,0 +1,6 @@
+{
+  "typescript.suggest.autoImports": true,
+  "javascript.suggest.autoImports": true,
+  "typescript.preferences.importModuleSpecifier": "auto",
+  "typescript.tsserver.useSeparateSyntaxServer": false
+}

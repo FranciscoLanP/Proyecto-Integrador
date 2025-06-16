@@ -1,0 +1,170 @@
+paths:
+  /api/recibosvehiculos:
+    get:
+      tags:
+        - ReciboVehiculo
+      summary: Obtener todos los recibos de vehículo
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por id_recepcion u observaciones
+      responses:
+        '200':
+          description: Lista de recibos de vehículo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReciboVehiculo'
+    post:
+      tags:
+        - ReciboVehiculo
+      summary: Crear un nuevo recibo de vehículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReciboVehiculoInput'
+      responses:
+        '201':
+          description: Recibo creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReciboVehiculo'
+  /api/recibosvehiculos/paginado:
+    get:
+      tags:
+        - ReciboVehiculo
+      summary: Recibos de vehículo paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por id_recepcion u observaciones
+      responses:
+        '200':
+          description: Resultado paginado de recibos de vehículo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReciboVehiculo'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/recibosvehiculos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - ReciboVehiculo
+      summary: Obtener recibo de vehículo por ID
+      responses:
+        '200':
+          description: Recibo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReciboVehiculo'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - ReciboVehiculo
+      summary: Actualizar recibo de vehículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReciboVehiculoInput'
+      responses:
+        '200':
+          description: Recibo actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReciboVehiculo'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - ReciboVehiculo
+      summary: Eliminar recibo de vehículo
+      responses:
+        '204':
+          description: Eliminado exitosamente
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    ReciboVehiculo:
+      type: object
+      properties:
+        _id:
+          type: string
+        id_recepcion:
+          type: string
+        observaciones:
+          type: string
+      required:
+        - _id
+        - id_recepcion
+
+    ReciboVehiculoInput:
+      type: object
+      properties:
+        id_recepcion:
+          type: string
+        observaciones:
+          type: string
+      required:
+        - id_recepcion
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

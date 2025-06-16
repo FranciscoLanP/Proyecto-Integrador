@@ -1,0 +1,199 @@
+paths:
+  /api/inspeccionvehiculos:
+    get:
+      tags:
+        - InspeccionVehiculo
+      summary: Obtener todas las inspecciones de vehículo
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por id_recibo, id_empleado, comentario o resultado
+      responses:
+        '200':
+          description: Lista de inspecciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InspeccionVehiculo'
+    post:
+      tags:
+        - InspeccionVehiculo
+      summary: Crear una nueva inspección de vehículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InspeccionVehiculoInput'
+      responses:
+        '201':
+          description: Inspección creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspeccionVehiculo'
+  /api/inspeccionvehiculos/paginado:
+    get:
+      tags:
+        - InspeccionVehiculo
+      summary: Inspecciones de vehículo paginadas
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por id_recibo, id_empleado, comentario o resultado
+      responses:
+        '200':
+          description: Resultado paginado de inspecciones
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InspeccionVehiculo'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/inspeccionvehiculos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - InspeccionVehiculo
+      summary: Obtener inspección por ID
+      responses:
+        '200':
+          description: Inspección encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspeccionVehiculo'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - InspeccionVehiculo
+      summary: Actualizar inspección
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InspeccionVehiculoInput'
+      responses:
+        '200':
+          description: Inspección actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InspeccionVehiculo'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - InspeccionVehiculo
+      summary: Eliminar inspección
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    InspeccionVehiculo:
+      type: object
+      properties:
+        _id:
+          type: string
+        id_recibo:
+          type: string
+        id_empleado:
+          type: string
+        fecha_inspeccion:
+          type: string
+          format: date-time
+        comentario:
+          type: string
+        tiempo_estimado:
+          type: number
+        costo_mano_obra:
+          type: number
+        costo_aproximado:
+          type: number
+        resultado:
+          type: string
+      required:
+        - _id
+        - id_recibo
+        - id_empleado
+        - fecha_inspeccion
+
+    InspeccionVehiculoInput:
+      type: object
+      properties:
+        id_recibo:
+          type: string
+        id_empleado:
+          type: string
+        fecha_inspeccion:
+          type: string
+          format: date-time
+        comentario:
+          type: string
+        tiempo_estimado:
+          type: number
+        costo_mano_obra:
+          type: number
+        costo_aproximado:
+          type: number
+        resultado:
+          type: string
+      required:
+        - id_recibo
+        - id_empleado
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

@@ -1,0 +1,167 @@
+paths:
+  /api/distritos:
+    get:
+      tags:
+        - Distrito
+      summary: Obtener todos los distritos
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de distritos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Distrito'
+    post:
+      tags:
+        - Distrito
+      summary: Crear un nuevo distrito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DistritoInput'
+      responses:
+        '201':
+          description: Distrito creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Distrito'
+  /api/distritos/paginado:
+    get:
+      tags:
+        - Distrito
+      summary: Obtener distritos paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resultado paginado de distritos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Distrito'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/distritos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Distrito
+      summary: Obtener distrito por ID
+      responses:
+        '200':
+          description: Distrito encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Distrito'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Distrito
+      summary: Actualizar distrito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DistritoInput'
+      responses:
+        '200':
+          description: Distrito actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Distrito'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Distrito
+      summary: Eliminar distrito
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Distrito:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre_distrito:
+          type: string
+        id_sector:
+          type: string
+      required:
+        - _id
+        - nombre_distrito
+        - id_sector
+    DistritoInput:
+      type: object
+      properties:
+        nombre_distrito:
+          type: string
+        id_sector:
+          type: string
+      required:
+        - nombre_distrito
+        - id_sector
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

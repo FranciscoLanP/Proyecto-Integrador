@@ -1,0 +1,161 @@
+paths:
+  /api/marcasvehiculos:
+    get:
+      tags:
+        - MarcaVehiculo
+      summary: Obtener todas las marcas de vehículo
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de marcas de vehículo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MarcaVehiculo'
+    post:
+      tags:
+        - MarcaVehiculo
+      summary: Crear nueva marca de vehículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarcaVehiculoInput'
+      responses:
+        '201':
+          description: Marca creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarcaVehiculo'
+  /api/marcasvehiculos/paginado:
+    get:
+      tags:
+        - MarcaVehiculo
+      summary: Marcas de vehículo paginadas
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resultado paginado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MarcaVehiculo'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/marcasvehiculos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - MarcaVehiculo
+      summary: Obtener marca de vehículo por ID
+      responses:
+        '200':
+          description: Marca encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarcaVehiculo'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - MarcaVehiculo
+      summary: Actualizar marca de vehículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarcaVehiculoInput'
+      responses:
+        '200':
+          description: Marca actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarcaVehiculo'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - MarcaVehiculo
+      summary: Eliminar marca de vehículo
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    MarcaVehiculo:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre_marca:
+          type: string
+      required:
+        - _id
+        - nombre_marca
+    MarcaVehiculoInput:
+      type: object
+      properties:
+        nombre_marca:
+          type: string
+      required:
+        - nombre_marca
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

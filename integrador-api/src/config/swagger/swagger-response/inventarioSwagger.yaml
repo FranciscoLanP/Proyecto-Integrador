@@ -1,0 +1,174 @@
+paths:
+  /api/inventarios:
+    get:
+      tags:
+        - Inventario
+      summary: Obtener todos los inventarios
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de inventarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Inventario'
+    post:
+      tags:
+        - Inventario
+      summary: Crear un inventario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventarioInput'
+      responses:
+        '201':
+          description: Inventario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventario'
+  /api/inventarios/paginado:
+    get:
+      tags:
+        - Inventario
+      summary: Inventarios paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resultado paginado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Inventario'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/inventarios/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Inventario
+      summary: Obtener inventario por ID
+      responses:
+        '200':
+          description: Inventario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventario'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Inventario
+      summary: Actualizar inventario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventarioInput'
+      responses:
+        '200':
+          description: Inventario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventario'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Inventario
+      summary: Eliminar inventario
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Inventario:
+      type: object
+      properties:
+        _id:
+          type: string
+        id_pieza:
+          type: string
+        cantidad_disponible:
+          type: number
+        costo_promedio:
+          type: number
+        fecha_actualizacion:
+          type: string
+          format: date-time
+      required:
+        - _id
+        - id_pieza
+        - cantidad_disponible
+    InventarioInput:
+      type: object
+      properties:
+        id_pieza:
+          type: string
+        cantidad_disponible:
+          type: number
+        costo_promedio:
+          type: number
+      required:
+        - id_pieza
+        - cantidad_disponible
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

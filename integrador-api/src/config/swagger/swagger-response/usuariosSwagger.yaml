@@ -1,0 +1,188 @@
+paths:
+  /api/usuarios:
+    get:
+      tags:
+        - Usuarios
+      summary: Obtener todos los usuarios
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_usuario, rol, estado o id_cliente
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usuarios'
+    post:
+      tags:
+        - Usuarios
+      summary: Crear un nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuariosInput'
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuarios'
+  /api/usuarios/paginado:
+    get:
+      tags:
+        - Usuarios
+      summary: Usuarios paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_usuario, rol, estado o id_cliente
+      responses:
+        '200':
+          description: Resultado paginado de usuarios
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Usuarios'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/usuarios/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Usuarios
+      summary: Obtener usuario por ID
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuarios'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Usuarios
+      summary: Actualizar usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuariosInput'
+      responses:
+        '200':
+          description: Usuario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuarios'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Usuarios
+      summary: Eliminar usuario
+      responses:
+        '204':
+          description: Usuario eliminado
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Usuarios:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre_usuario:
+          type: string
+        contrasena:
+          type: string
+        id_cliente:
+          type: string
+        rol:
+          type: string
+        estado:
+          type: string
+      required:
+        - _id
+        - nombre_usuario
+        - contrasena
+        - id_cliente
+        - rol
+        - estado
+    UsuariosInput:
+      type: object
+      properties:
+        nombre_usuario:
+          type: string
+        contrasena:
+          type: string
+        id_cliente:
+          type: string
+        rol:
+          type: string
+        estado:
+          type: string
+      required:
+        - nombre_usuario
+        - contrasena
+        - id_cliente
+        - rol
+        - estado
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

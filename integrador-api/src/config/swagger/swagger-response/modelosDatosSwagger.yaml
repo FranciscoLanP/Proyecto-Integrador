@@ -1,0 +1,172 @@
+paths:
+  /api/modelosdatos:
+    get:
+      tags:
+        - ModelosDatos
+      summary: Obtener todos los modelos de datos
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_modelo
+      responses:
+        '200':
+          description: Lista de modelos de datos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ModelosDatos'
+    post:
+      tags:
+        - ModelosDatos
+      summary: Crear un nuevo modelo de datos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelosDatosInput'
+      responses:
+        '201':
+          description: Modelo de datos creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelosDatos'
+  /api/modelosdatos/paginado:
+    get:
+      tags:
+        - ModelosDatos
+      summary: Modelos de datos paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre_modelo
+      responses:
+        '200':
+          description: Resultado paginado de modelos de datos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ModelosDatos'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/modelosdatos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - ModelosDatos
+      summary: Obtener modelo de datos por ID
+      responses:
+        '200':
+          description: Modelo de datos encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelosDatos'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - ModelosDatos
+      summary: Actualizar modelo de datos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelosDatosInput'
+      responses:
+        '200':
+          description: Modelo de datos actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelosDatos'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - ModelosDatos
+      summary: Eliminar modelo de datos
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    ModelosDatos:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre_modelo:
+          type: string
+        id_marca:
+          type: string
+      required:
+        - _id
+        - nombre_modelo
+        - id_marca
+
+    ModelosDatosInput:
+      type: object
+      properties:
+        nombre_modelo:
+          type: string
+        id_marca:
+          type: string
+      required:
+        - nombre_modelo
+        - id_marca
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

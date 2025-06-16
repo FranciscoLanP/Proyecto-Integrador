@@ -1,0 +1,188 @@
+paths:
+  /api/piezasinventarios:
+    get:
+      tags:
+        - PiezaInventario
+      summary: Obtener todas las piezas de inventario
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por serial o nombre_pieza
+      responses:
+        '200':
+          description: Lista de piezas de inventario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PiezaInventario'
+    post:
+      tags:
+        - PiezaInventario
+      summary: Crear una nueva pieza de inventario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PiezaInventarioInput'
+      responses:
+        '201':
+          description: Pieza de inventario creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PiezaInventario'
+  /api/piezasinventarios/paginado:
+    get:
+      tags:
+        - PiezaInventario
+      summary: Piezas de inventario paginadas
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por serial o nombre_pieza
+      responses:
+        '200':
+          description: Resultado paginado de piezas de inventario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PiezaInventario'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/piezasinventarios/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - PiezaInventario
+      summary: Obtener pieza de inventario por ID
+      responses:
+        '200':
+          description: Pieza encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PiezaInventario'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - PiezaInventario
+      summary: Actualizar pieza de inventario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PiezaInventarioInput'
+      responses:
+        '200':
+          description: Pieza actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PiezaInventario'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - PiezaInventario
+      summary: Eliminar pieza de inventario
+      responses:
+        '204':
+          description: Eliminado
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    PiezaInventario:
+      type: object
+      properties:
+        _id:
+          type: string
+        serial:
+          type: string
+        nombre_pieza:
+          type: string
+        id_tipo_pieza:
+          type: string
+        costo:
+          type: number
+        id_suplidor:
+          type: string
+      required:
+        - _id
+        - serial
+        - nombre_pieza
+        - id_tipo_pieza
+        - costo
+
+    PiezaInventarioInput:
+      type: object
+      properties:
+        serial:
+          type: string
+        nombre_pieza:
+          type: string
+        id_tipo_pieza:
+          type: string
+        costo:
+          type: number
+        id_suplidor:
+          type: string
+      required:
+        - serial
+        - nombre_pieza
+        - id_tipo_pieza
+        - costo
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

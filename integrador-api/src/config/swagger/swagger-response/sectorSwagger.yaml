@@ -1,0 +1,172 @@
+paths:
+  /api/sectores:
+    get:
+      tags:
+        - Sector
+      summary: Obtener todos los sectores
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre o municipio
+      responses:
+        '200':
+          description: Lista de sectores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sector'
+    post:
+      tags:
+        - Sector
+      summary: Crear un nuevo sector
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SectorInput'
+      responses:
+        '201':
+          description: Sector creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sector'
+  /api/sectores/paginado:
+    get:
+      tags:
+        - Sector
+      summary: Sectores paginados
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Filtrar por nombre o municipio
+      responses:
+        '200':
+          description: Resultado paginado de sectores
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Sector'
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  totalCount:
+                    type: integer
+  /api/sectores/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Sector
+      summary: Obtener sector por ID
+      responses:
+        '200':
+          description: Sector encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sector'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Sector
+      summary: Actualizar sector
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SectorInput'
+      responses:
+        '200':
+          description: Sector actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sector'
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Sector
+      summary: Eliminar sector
+      responses:
+        '204':
+          description: Eliminado exitosamente
+        '404':
+          description: No encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Sector:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre_sector:
+          type: string
+        id_municipio:
+          type: string
+      required:
+        - _id
+        - nombre_sector
+        - id_municipio
+
+    SectorInput:
+      type: object
+      properties:
+        nombre_sector:
+          type: string
+        id_municipio:
+          type: string
+      required:
+        - nombre_sector
+        - id_municipio
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
