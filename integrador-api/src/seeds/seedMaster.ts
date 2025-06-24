@@ -5,9 +5,6 @@ import { seedMunicipio } from './seedMunicipio'
 import { seedSector } from './seedSector'
 import { seedDistrito } from './seedDistrito'
 import { seedBarrio } from './seedBarrio'
-import { seedTipoCliente } from './seedTipoCliente'
-import { seedPersona } from './seedPersona'
-import { seedClienteInformacion } from './seedClienteInformacion'
 import { seedColoresDatos } from './seedColoresDatos'
 import { seedMarcaVehiculo } from './seedMarcaVehiculo'
 import { seedModelosDatos } from './seedModelosDatos'
@@ -28,9 +25,10 @@ import { seedInspeccionVehiculo } from './seedInspeccionVehiculo'
 import { seedReparacionVehiculo } from './seedReparacionVehiculo'
 import { seedGarantia } from './seedGarantia'
 import { seedFactura } from './seedFactura'
+import { seedCliente } from './seedCliente'
 
 const runSeeds = async (): Promise<void> => {
-  await mongoose.connect("mongodb://localhost:27017/test")
+  await mongoose.connect('mongodb://localhost:27017/test')
 
   const context: SeedContext = {}
 
@@ -40,9 +38,7 @@ const runSeeds = async (): Promise<void> => {
     await seedSector(context)
     await seedDistrito(context)
     await seedBarrio(context)
-    await seedTipoCliente(context)
-    await seedPersona(context)
-    await seedClienteInformacion(context)
+    await seedCliente(context)
     await seedColoresDatos(context)
     await seedMarcaVehiculo(context)
     await seedModelosDatos(context)
@@ -63,11 +59,12 @@ const runSeeds = async (): Promise<void> => {
     await seedReparacionVehiculo(context)
     await seedGarantia(context)
     await seedFactura(context)
+
     console.log('All seeds executed successfully.')
   } catch (error) {
     console.error('Error running seed scripts:', error)
   } finally {
-    mongoose.disconnect()
+    await mongoose.disconnect()
   }
 }
 

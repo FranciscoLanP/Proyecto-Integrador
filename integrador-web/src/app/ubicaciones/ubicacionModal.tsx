@@ -9,7 +9,6 @@ import TextField from '@mui/material/TextField'
 import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
-import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import CloseIcon from '@mui/icons-material/Close'
 import Box from '@mui/material/Box'
 import type {
@@ -26,7 +25,6 @@ interface Props {
   open: boolean
   onClose: () => void
   onSubmit: (data: any) => void
-  onDelete?: () => void
   type: Type
   defaultData?: any
   provinces?: IProvincia[]
@@ -40,7 +38,6 @@ export default function LocationModal({
   open,
   onClose,
   onSubmit,
-  onDelete,
   type,
   defaultData,
   provinces = [],
@@ -87,24 +84,24 @@ export default function LocationModal({
   const titleMap = {
     provincia: 'Provincia',
     municipio: 'Municipio',
-    sector:    'Sector',
-    distrito:  'Distrito',
-    barrio:    'Barrio'
+    sector: 'Sector',
+    distrito: 'Distrito',
+    barrio: 'Barrio'
   } as const
 
   const parentLabel = {
-    municipio:  'Provincia',
-    sector:     'Municipio',
-    distrito:   'Sector',
-    barrio:     'Distrito'
+    municipio: 'Provincia',
+    sector: 'Municipio',
+    distrito: 'Sector',
+    barrio: 'Distrito'
   } as const
 
-  const parentOptions = 
+  const parentOptions =
     type === 'municipio' ? provinces :
-    type === 'sector'    ? municipalities :
-    type === 'distrito'  ? sectors :
-    type === 'barrio'    ? districts :
-    []
+      type === 'sector' ? municipalities :
+        type === 'distrito' ? sectors :
+          type === 'barrio' ? districts :
+            []
 
   const tryClose = () => onClose()
 
@@ -120,19 +117,19 @@ export default function LocationModal({
         break
       case 'municipio':
         payload.nombre_municipio = name.trim()
-        payload.id_provincia     = parent
+        payload.id_provincia = parent
         break
       case 'sector':
-        payload.nombre_sector    = name.trim()
-        payload.id_municipio     = parent
+        payload.nombre_sector = name.trim()
+        payload.id_municipio = parent
         break
       case 'distrito':
-        payload.nombre_distrito  = name.trim()
-        payload.id_sector        = parent
+        payload.nombre_distrito = name.trim()
+        payload.id_sector = parent
         break
       case 'barrio':
-        payload.nombre_barrio    = name.trim()
-        payload.id_distrito      = parent
+        payload.nombre_barrio = name.trim()
+        payload.id_distrito = parent
         break
     }
     onSubmit(payload)
@@ -140,19 +137,19 @@ export default function LocationModal({
 
   return (
     <Dialog open={open} onClose={tryClose} fullWidth maxWidth="xs">
-      <DialogTitle sx={{ m:0, p:2, fontSize:'1rem', fontWeight:500 }}>
+      <DialogTitle sx={{ m: 0, p: 2, fontSize: '1rem', fontWeight: 500 }}>
         {defaultData ? `Editar ${titleMap[type]}` : `Crear ${titleMap[type]}`}
         <IconButton
           aria-label="close"
           onClick={tryClose}
-          sx={{ position:'absolute', right:8, top:8 }}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
           size="small"
         >
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent dividers sx={{ p:2 }}>
+      <DialogContent dividers sx={{ p: 2 }}>
         <Box display="flex" flexDirection="column" gap={2}>
           <TextField
             autoFocus
@@ -179,10 +176,10 @@ export default function LocationModal({
                   {type === 'municipio'
                     ? (opt as IProvincia).nombre_provincia
                     : type === 'sector'
-                    ? (opt as IMunicipio).nombre_municipio
-                    : type === 'distrito'
-                    ? (opt as ISector).nombre_sector
-                    : (opt as IDistrito).nombre_distrito}
+                      ? (opt as IMunicipio).nombre_municipio
+                      : type === 'distrito'
+                        ? (opt as ISector).nombre_sector
+                        : (opt as IDistrito).nombre_distrito}
                 </MenuItem>
               ))}
             </TextField>
@@ -190,13 +187,7 @@ export default function LocationModal({
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p:1 }}>
-        {defaultData && onDelete && (
-          <Button size="small" color="error" onClick={onDelete}>
-            <WarningAmberIcon fontSize="small" sx={{ mr:0.5 }} />
-            Eliminar
-          </Button>
-        )}
+      <DialogActions sx={{ p: 1 }}>
         <Button size="small" onClick={tryClose}>Cancelar</Button>
         <Button size="small" variant="contained" onClick={handleSave}>
           {defaultData ? 'Guardar' : 'Crear'}

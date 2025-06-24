@@ -6,7 +6,7 @@ export const seedVehiculoDatos = async (context: SeedContext): Promise<void> => 
     const vehiculosData: Partial<IVehiculoDatos>[] = [
       {
         chasis: 'XYZ1234567890',
-        id_cliente: context.clienteInformacion!._id,
+        id_cliente: context.cliente!._id,
         id_modelo: context.modelosDatos!._id,
         id_color: context.coloresDatos!._id
       }

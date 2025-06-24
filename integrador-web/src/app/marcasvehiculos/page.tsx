@@ -39,8 +39,6 @@ export default function MarcasVehiculoPage(): JSX.Element {
 
   if (isLoading) return <Typography>Loading…</Typography>
   if (error) return <Typography color="error">{error.message}</Typography>
-  if (marcas.length === 0)
-    return <Typography>No hay marcas aún.</Typography>
 
   const filtered = marcas.filter((m) =>
     m.nombre_marca.toLowerCase().includes(searchTerm.toLowerCase())

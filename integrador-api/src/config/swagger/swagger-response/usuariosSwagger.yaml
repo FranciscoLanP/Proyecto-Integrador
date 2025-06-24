@@ -1,5 +1,5 @@
 paths:
-  /api/usuarios:
+  /usuarios:
     get:
       tags:
         - Usuarios
@@ -9,7 +9,13 @@ paths:
           name: search
           schema:
             type: string
-          description: Filtrar por nombre_usuario, rol, estado o id_cliente
+          description: Filtrar por username o role
+        - in: query
+          name: activo
+          schema:
+            type: boolean
+            default: true
+          description: Filtrar por usuarios activos/inactivos
       responses:
         '200':
           description: Lista de usuarios
@@ -18,7 +24,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Usuarios'
+                  $ref: '#/components/schemas/Usuario'
     post:
       tags:
         - Usuarios
@@ -28,15 +34,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UsuariosInput'
+              $ref: '#/components/schemas/UsuarioInput'
       responses:
         '201':
           description: Usuario creado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Usuarios'
-  /api/usuarios/paginado:
+                $ref: '#/components/schemas/Usuario'
+
+  /usuarios/paginado:
     get:
       tags:
         - Usuarios
@@ -47,16 +54,24 @@ paths:
           schema:
             type: integer
             default: 1
+          description: Número de página
         - in: query
           name: limit
           schema:
             type: integer
             default: 10
+          description: Elementos por página
         - in: query
           name: search
           schema:
             type: string
-          description: Filtrar por nombre_usuario, rol, estado o id_cliente
+          description: Filtrar por username o role
+        - in: query
+          name: activo
+          schema:
+            type: boolean
+            default: true
+          description: Filtrar por usuarios activos/inactivos
       responses:
         '200':
           description: Resultado paginado de usuarios
@@ -68,20 +83,22 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Usuarios'
+                      $ref: '#/components/schemas/Usuario'
                   page:
                     type: integer
                   totalPages:
                     type: integer
                   totalCount:
                     type: integer
-  /api/usuarios/{id}:
+
+  /usuarios/{id}:
     parameters:
       - in: path
         name: id
         required: true
         schema:
           type: string
+        description: ID de usuario (_id)
     get:
       tags:
         - Usuarios
@@ -92,7 +109,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Usuarios'
+                $ref: '#/components/schemas/Usuario'
         '404':
           description: No encontrado
           content:
@@ -108,14 +125,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UsuariosInput'
+              $ref: '#/components/schemas/UsuarioInput'
       responses:
         '200':
           description: Usuario actualizado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Usuarios'
+                $ref: '#/components/schemas/Usuario'
         '404':
           description: No encontrado
           content:
@@ -125,10 +142,24 @@ paths:
     delete:
       tags:
         - Usuarios
-      summary: Eliminar usuario
+      summary: Eliminar usuario (sólo administrador)
+      parameters:
+        - in: header
+          name: X-User-Role
+          required: true
+          schema:
+            type: string
+            enum: ['administrador','empleado']
+          description: Rol del usuario que hace la solicitud
       responses:
         '204':
           description: Usuario eliminado
+        '403':
+          description: Forbidden — sólo administrador puede eliminar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: No encontrado
           content:
@@ -138,47 +169,57 @@ paths:
 
 components:
   schemas:
-    Usuarios:
+    Usuario:
       type: object
       properties:
         _id:
           type: string
-        nombre_usuario:
+        username:
           type: string
-        contrasena:
+        password:
           type: string
-        id_cliente:
+        role:
           type: string
-        rol:
+          enum:
+            - administrador
+            - empleado
+        activo:
+          type: boolean
+        createdAt:
           type: string
-        estado:
+          format: date-time
+        updatedAt:
           type: string
+          format: date-time
       required:
         - _id
-        - nombre_usuario
-        - contrasena
-        - id_cliente
-        - rol
-        - estado
-    UsuariosInput:
+        - username
+        - password
+        - role
+        - activo
+        - createdAt
+        - updatedAt
+
+    UsuarioInput:
       type: object
       properties:
-        nombre_usuario:
+        username:
           type: string
-        contrasena:
+        password:
           type: string
-        id_cliente:
+        role:
           type: string
-        rol:
-          type: string
-        estado:
-          type: string
+          enum:
+            - administrador
+            - empleado
+        activo:
+          type: boolean
       required:
-        - nombre_usuario
-        - contrasena
-        - id_cliente
-        - rol
-        - estado
+        - username
+        - password
+        - role
+        - activo
+
     Error:
       type: object
       properties:

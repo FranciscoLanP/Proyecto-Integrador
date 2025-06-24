@@ -28,12 +28,10 @@ export default function ColoresDatosPage(): JSX.Element {
     useCrud<IColoresDatos>('coloresdatos')
   const { data: colores = [], isLoading, error } = allQuery
 
-  // Search + pagination state
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [page, setPage] = useState<number>(0)
   const [rowsPerPage, setRowsPerPage] = useState<number>(5)
 
-  // Modal + delete state
   const [modalOpen, setModalOpen] = useState<boolean>(false)
   const [editData, setEditData] = useState<IColoresDatos | null>(null)
   const [confirmDel, setConfirmDel] = useState<boolean>(false)
@@ -41,8 +39,6 @@ export default function ColoresDatosPage(): JSX.Element {
 
   if (isLoading) return <Typography>Loading…</Typography>
   if (error) return <Typography color="error">{error.message}</Typography>
-  if (colores.length === 0)
-    return <Typography>No hay colores aún.</Typography>
 
   const filtered = colores.filter((c) =>
     c.nombre_color.toLowerCase().includes(searchTerm.toLowerCase())
@@ -52,7 +48,6 @@ export default function ColoresDatosPage(): JSX.Element {
     page * rowsPerPage + rowsPerPage
   )
 
-  // Handlers
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
     setPage(0)
@@ -99,7 +94,6 @@ export default function ColoresDatosPage(): JSX.Element {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header */}
       <Typography variant="h5" sx={{ fontWeight: 500, mb: 0.5 }}>
         Colores de Datos
       </Typography>
@@ -107,7 +101,6 @@ export default function ColoresDatosPage(): JSX.Element {
         Administra los colores de datos de tu sistema
       </Typography>
 
-      {/* Search & New */}
       <Box
         sx={{
           display: 'flex',
@@ -135,7 +128,6 @@ export default function ColoresDatosPage(): JSX.Element {
         </Button>
       </Box>
 
-      {/* Table Container */}
       <Paper
         elevation={1}
         sx={{
@@ -224,7 +216,6 @@ export default function ColoresDatosPage(): JSX.Element {
         />
       </Paper>
 
-      {/* Modal Crear / Editar */}
       <ColoresDatosModal
         open={modalOpen}
         defaultData={editData ?? undefined}
@@ -232,7 +223,6 @@ export default function ColoresDatosPage(): JSX.Element {
         onSubmit={handleSubmit}
       />
 
-      {/* Confirmar Eliminación */}
       <Dialog
         open={confirmDel}
         onClose={() => setConfirmDel(false)}

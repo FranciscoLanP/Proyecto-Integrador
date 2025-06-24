@@ -3,8 +3,6 @@ import type { IMunicipio } from '../models/municipio'
 import type { ISector } from '../models/sector'
 import type { IDistrito } from '../models/distrito'
 import type { IBarrio } from '../models/barrio'
-import type { ITipoCliente } from '../models/clienteTipo'
-import type { IClienteInformacion } from '../models/clienteInformacion'
 import type { IColoresDatos } from '../models/coloresDatos'
 import type { IMarcaVehiculo } from '../models/marcaVehiculo'
 import type { IModelosDatos } from '../models/modelosDatos'
@@ -34,8 +32,6 @@ export interface SeedContext {
   distrito?: IDistrito
   barrio?: IBarrio
   cliente?: ICliente
-  tipoCliente?: ITipoCliente
-  clienteInformacion?: IClienteInformacion
   coloresDatos?: IColoresDatos
   marcaVehiculo?: IMarcaVehiculo
   modelosDatos?: IModelosDatos

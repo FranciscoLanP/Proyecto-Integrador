@@ -1,17 +1,11 @@
+// src/components/Sidebar.tsx
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Toolbar,
-  Collapse
+  Drawer, List, ListItem, ListItemButton, ListItemIcon,
+  ListItemText, Toolbar, Collapse, IconButton
 } from '@mui/material'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import PeopleIcon from '@mui/icons-material/People'
@@ -23,35 +17,30 @@ import ExpandMore from '@mui/icons-material/ExpandMore'
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import PersonIcon from '@mui/icons-material/Person'
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'
+import { useState } from 'react'
 
 const navItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, href: '/' },
-  {
-    text: 'Clientes',
-    icon: <PeopleIcon />,
-    children: [{ text: 'Clientes', href: '/clientes' }]
-  },
+  { text: 'Clientes', icon: <PeopleIcon />, href: '/clientes' },
   { text: 'Vehículos', icon: <HomeIcon />, href: '/vehiculodatos' },
   { text: 'Pagos', icon: <PaymentIcon />, href: '/facturas' },
   {
     text: 'Mantenimiento',
     icon: <BuildIcon />,
     children: [
-      { text: 'Marcas de Vehículos', href: '/marcasvehiculos' },
-      { text: 'Colores de Vehiculos', href: '/coloresVehiculos' },
+      { text: 'Marcas', href: '/marcasvehiculos' },
+      { text: 'Colores', href: '/coloresVehiculos' },
       { text: 'Ubicaciones', href: '/ubicaciones' }
     ]
   },
-  { text: 'Usuarios', icon: <CalendarTodayIcon />, href: '/usuarios' },
+  { text: 'Usuarios', icon: <PersonIcon />, href: '/usuarios' },
   { text: 'Mi Perfil', icon: <PersonIcon />, href: '/perfil' }
 ]
 
 export default function Sidebar() {
   const pathname = usePathname()
-
-  // Ahora controlamos **dos** colapsables:
-  const [openClientes, setOpenClientes]       = useState(false)
-  const [openMaintenance, setOpenMaintenance] = useState(false)
+  const [openMaint, setOpenMaint] = useState(false)
+  const [openClientes, setOpenCli] = useState(false)
 
   return (
     <Drawer
@@ -61,28 +50,25 @@ export default function Sidebar() {
       <Toolbar />
       <List>
         {navItems.map(item => {
-          // si tiene hijos, elegimos qué estado usar
           if (item.children) {
-            const isClientes      = item.text === 'Clientes'
-            const openState       = isClientes ? openClientes : openMaintenance
-            const setOpenState    = isClientes ? setOpenClientes : setOpenMaintenance
-            const selected        =
+            // distinguir mantenimiento vs clientes
+            const isMaint = item.text === 'Mantenimiento'
+            const open = isMaint ? openMaint : openClientes
+            const setOpen = isMaint ? setOpenMaint : setOpenCli
+            const selected =
               item.children.some(c => c.href === pathname) ||
               pathname === item.href
 
             return (
               <div key={item.text}>
                 <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={() => setOpenState(o => !o)}
-                    selected={selected}
-                  >
+                  <ListItemButton onClick={() => setOpen(o => !o)} selected={selected}>
                     <ListItemIcon>{item.icon}</ListItemIcon>
                     <ListItemText primary={item.text} />
-                    {openState ? <ExpandLess /> : <ExpandMore />}
+                    {open ? <ExpandLess /> : <ExpandMore />}
                   </ListItemButton>
                 </ListItem>
-                <Collapse in={openState} timeout="auto" unmountOnExit>
+                <Collapse in={open} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding>
                     {item.children.map(child => (
                       <ListItem key={child.text} disablePadding sx={{ pl: 4 }}>
@@ -99,7 +85,6 @@ export default function Sidebar() {
             )
           }
 
-          // nodos sin hijos
           return (
             <ListItem key={item.text} disablePadding>
               <Link href={item.href!} passHref style={{ width: '100%' }}>
@@ -112,15 +97,10 @@ export default function Sidebar() {
           )
         })}
 
-        <ListItem sx={{ mt: 2 }} disablePadding>
-          <ListItemButton onClick={() => {/* logout logic */}}>
-            <ListItemIcon>
-              <ExitToAppIcon color="error" />
-            </ListItemIcon>
-            <ListItemText
-              primary="Cerrar Sesión"
-              primaryTypographyProps={{ color: 'error' }}
-            />
+        <ListItem disablePadding sx={{ mt: 2 }}>
+          <ListItemButton onClick={() => {/* logout */ }}>
+            <ListItemIcon><ExitToAppIcon color="error" /></ListItemIcon>
+            <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ color: 'error' }} />
           </ListItemButton>
         </ListItem>
       </List>

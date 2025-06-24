@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, JSX} from 'react'
+import React, { useState, JSX } from 'react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Tabs from '@mui/material/Tabs'
@@ -18,6 +18,9 @@ import TablePagination from '@mui/material/TablePagination'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogActions from '@mui/material/DialogActions'
 import { useCrud } from '../../hooks/useCrud'
 import type {
   IProvincia,
@@ -51,11 +54,20 @@ export default function UbicacionesPage(): JSX.Element {
   const [modalOpen, setModalOpen] = useState<boolean>(false)
   const [defaultData, setDefaultData] = useState<any>(null)
 
-  const openModal = (data?: any) => {
-    setDefaultData(data ?? null)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false)
+  const [deleteData, setDeleteData] = useState<any>(null)
+
+  const openEditModal = (item: any) => {
+    setDefaultData(item)
     setModalOpen(true)
   }
-  const closeModal = () => setModalOpen(false)
+  const closeEditModal = () => setModalOpen(false)
+
+  const openDeleteModal = (item: any) => {
+    setDeleteData(item)
+    setDeleteConfirmOpen(true)
+  }
+  const closeDeleteModal = () => setDeleteConfirmOpen(false)
 
   const getCrud = () =>
     ({
@@ -66,16 +78,20 @@ export default function UbicacionesPage(): JSX.Element {
       barrio: barrCrud
     } as Record<Type, ReturnType<typeof useCrud<any>>>)[type]
 
-  const handleSubmit = (payload: any) => {
+  const handleSave = (payload: any) => {
     const curd = getCrud()
-    if (defaultData) curd.updateM.mutate({ id: defaultData._id, data: payload })
-    else curd.createM.mutate(payload)
-    closeModal()
+    if (defaultData)
+      curd.updateM.mutate({ id: defaultData._id, data: payload })
+    else
+      curd.createM.mutate(payload)
+    closeEditModal()
   }
+
   const handleDelete = () => {
     const curd = getCrud()
-    if (defaultData) curd.deleteM.mutate(defaultData._id)
-    closeModal()
+    if (deleteData)
+      curd.deleteM.mutate(deleteData._id)
+    closeDeleteModal()
   }
 
   const dataMap = { provincia: provincias, municipio: municipios, sector: sectores, distrito: distritos, barrio: barrios }
@@ -138,7 +154,7 @@ export default function UbicacionesPage(): JSX.Element {
           onChange={e => { setSearchTerm(e.target.value); setPage(0) }}
           sx={{ flex: '1 1 200px' }}
         />
-        <Button variant="contained" onClick={() => openModal()} sx={{ ml: 'auto' }}>
+        <Button variant="contained" onClick={() => openEditModal(undefined)} sx={{ ml: 'auto' }}>
           + Nueva {titleMap[type].slice(0, -1)}
         </Button>
       </Box>
@@ -169,10 +185,10 @@ export default function UbicacionesPage(): JSX.Element {
                     <TableCell sx={{ fontSize: '0.8rem', px: 1 }}>{rawParent(item)}</TableCell>
                   )}
                   <TableCell align="right" sx={{ px: 1 }}>
-                    <IconButton size="small" onClick={() => openModal(item)}>
+                    <IconButton size="small" onClick={() => openEditModal(item)}>
                       <EditIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" color="error" onClick={() => openModal(item)}>
+                    <IconButton size="small" color="error" onClick={() => openDeleteModal(item)}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </TableCell>
@@ -203,15 +219,27 @@ export default function UbicacionesPage(): JSX.Element {
         open={modalOpen}
         type={type}
         defaultData={defaultData}
-        onClose={closeModal}
-        onSubmit={handleSubmit}
-        onDelete={defaultData ? handleDelete : undefined}
+        onClose={closeEditModal}
+        onSubmit={handleSave}
         provinces={provincias}
         municipalities={municipios}
         sectors={sectores}
         districts={distritos}
         barriosData={barrios}
       />
+
+      <Dialog open={deleteConfirmOpen} onClose={closeDeleteModal}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningAmberIcon color="warning" />
+          ¿Eliminar {titleMap[type].slice(0, -1)}?
+        </DialogTitle>
+        <DialogActions sx={{ p: 1 }}>
+          <Button size="small" onClick={closeDeleteModal}>Cancelar</Button>
+          <Button size="small" color="error" variant="contained" onClick={handleDelete}>
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

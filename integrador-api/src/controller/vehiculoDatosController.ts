@@ -6,13 +6,13 @@ export const getAllVehiculoDatos = async (req: Request, res: Response, next: Nex
     const { search } = req.query as { search?: string }
     const filter = search
       ? {
-          $or: [
-            { chasis: { $regex: search, $options: 'i' } },
-            { id_cliente: search },
-            { id_modelo: search },
-            { id_color: search }
-          ]
-        }
+        $or: [
+          { chasis: { $regex: search, $options: 'i' } },
+          { id_cliente: search },
+          { id_modelo: search },
+          { id_color: search }
+        ]
+      }
       : {}
     const items = await VehiculoDatos.find(filter)
     res.status(200).json(items)
@@ -28,13 +28,13 @@ export const getPaginatedVehiculoDatos = async (req: Request, res: Response, nex
     const { search } = req.query as { search?: string }
     const filter = search
       ? {
-          $or: [
-            { chasis: { $regex: search, $options: 'i' } },
-            { id_cliente: search },
-            { id_modelo: search },
-            { id_color: search }
-          ]
-        }
+        $or: [
+          { chasis: { $regex: search, $options: 'i' } },
+          { id_cliente: search },
+          { id_modelo: search },
+          { id_color: search }
+        ]
+      }
       : {}
     const totalCount = await VehiculoDatos.countDocuments(filter)
     const data = await VehiculoDatos.find(filter)
@@ -96,3 +96,28 @@ export const deleteVehiculoDatos = async (req: Request, res: Response, next: Nex
     next(error)
   }
 }
+
+export const getVehiculosByCliente = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const clienteId = req.params.id;
+    const items = await VehiculoDatos.find({ id_cliente: clienteId, activo: true });
+    res.status(200).json(items);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const toggleActivoVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const id = req.params.id;
+    const { activo } = req.body as { activo: boolean };
+    const updated = await VehiculoDatos.findByIdAndUpdate(id, { activo }, { new: true });
+    if (!updated) {
+      res.status(404).json({ message: 'No encontrado' });
+      return;
+    }
+    res.status(200).json(updated);
+  } catch (error) {
+    next(error);
+  }
+};

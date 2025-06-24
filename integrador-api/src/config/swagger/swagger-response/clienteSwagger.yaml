@@ -1,47 +1,54 @@
+# swagger.yaml (secciones actualizadas)
 paths:
-  /api/tiposclientes:
+  /api/clientes:
     get:
       tags:
-        - TipoCliente
-      summary: Obtener todos los tipos de cliente
+        - Cliente
+      summary: Obtener todas las clientes
       parameters:
         - in: query
           name: search
           schema:
             type: string
-          description: Filtrar por nombre_tipo_cliente
+          description: Filtrar por nombre, cédula, correo o teléfono
+        - in: query
+          name: tipo_cliente
+          schema:
+            type: string
+            enum: [Individual, Empresarial, Aseguradora, Gobierno]
+          description: Filtrar por tipo de cliente
       responses:
         '200':
-          description: Lista de tipos de cliente
+          description: Lista de clientes
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TipoCliente'
+                  $ref: '#/components/schemas/Cliente'
     post:
       tags:
-        - TipoCliente
-      summary: Crear un nuevo tipo de cliente
+        - Cliente
+      summary: Crear una nueva cliente
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TipoClienteInput'
+              $ref: '#/components/schemas/ClienteInput'
       responses:
         '201':
-          description: Tipo de cliente creado
+          description: Cliente creada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TipoCliente'
+                $ref: '#/components/schemas/Cliente'
 
-  /api/tiposclientes/paginado:
+  /api/clientes/paginado:
     get:
       tags:
-        - TipoCliente
-      summary: Tipos de cliente paginados
+        - Cliente
+      summary: Clientes paginadas
       parameters:
         - in: query
           name: page
@@ -57,10 +64,16 @@ paths:
           name: search
           schema:
             type: string
-          description: Filtrar por nombre_tipo_cliente
+          description: Filtrar por nombre, cédula, correo o teléfono
+        - in: query
+          name: tipo_cliente
+          schema:
+            type: string
+            enum: [Individual, Empresarial, Aseguradora, Gobierno]
+          description: Filtrar por tipo de cliente
       responses:
         '200':
-          description: Resultado paginado de tipos de cliente
+          description: Resultado paginado de clientes
           content:
             application/json:
               schema:
@@ -69,7 +82,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/TipoCliente'
+                      $ref: '#/components/schemas/Cliente'
                   page:
                     type: integer
                   totalPages:
@@ -77,7 +90,7 @@ paths:
                   totalCount:
                     type: integer
 
-  /api/tiposclientes/{id}:
+  /api/clientes/{id}:
     parameters:
       - in: path
         name: id
@@ -86,66 +99,66 @@ paths:
           type: string
     get:
       tags:
-        - TipoCliente
-      summary: Obtener tipo de cliente por ID
+        - Cliente
+      summary: Obtener cliente por ID
       responses:
         '200':
-          description: Tipo de cliente encontrado
+          description: Cliente encontrada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TipoCliente'
+                $ref: '#/components/schemas/Cliente'
         '404':
-          description: No encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/schemas/Error'
     put:
       tags:
-        - TipoCliente
-      summary: Actualizar tipo de cliente
+        - Cliente
+      summary: Actualizar cliente
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TipoClienteInput'
+              $ref: '#/components/schemas/ClienteInput'
       responses:
         '200':
-          description: Tipo de cliente actualizado
+          description: Cliente actualizada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TipoCliente'
+                $ref: '#/components/schemas/Cliente'
         '404':
-          description: No encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/schemas/Error'
     delete:
       tags:
-        - TipoCliente
-      summary: Eliminar tipo de cliente
+        - Cliente
+      summary: Eliminar cliente
       responses:
         '204':
           description: Eliminado exitosamente
         '404':
-          description: No encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/schemas/Error'
 
 components:
   schemas:
-    TipoCliente:
+    Cliente:
       type: object
       properties:
         _id:
           type: string
-        nombre_tipo_cliente:
+        cedula:
+          type: string
+        rnc:
+          type: string
+        nombre:
+          type: string
+        numero_telefono:
+          type: string
+        correo:
+          type: string
+        id_barrio:
+          type: string
+        tipo_cliente:
           type: string
           enum:
             - Individual
@@ -153,13 +166,27 @@ components:
             - Aseguradora
             - Gobierno
       required:
-        - _id
-        - nombre_tipo_cliente
+        - nombre
+        - numero_telefono
+        - correo
+        - tipo_cliente
 
-    TipoClienteInput:
+    ClienteInput:
       type: object
       properties:
-        nombre_tipo_cliente:
+        cedula:
+          type: string
+        rnc:
+          type: string
+        nombre:
+          type: string
+        numero_telefono:
+          type: string
+        correo:
+          type: string
+        id_barrio:
+          type: string
+        tipo_cliente:
           type: string
           enum:
             - Individual
@@ -167,7 +194,10 @@ components:
             - Aseguradora
             - Gobierno
       required:
-        - nombre_tipo_cliente
+        - nombre
+        - numero_telefono
+        - correo
+        - tipo_cliente
 
     Error:
       type: object

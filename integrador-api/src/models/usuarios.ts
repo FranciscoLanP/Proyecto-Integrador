@@ -1,20 +1,30 @@
-import { Schema, model, Document } from 'mongoose';
 
-export interface IUsuarios extends Document {
-    _id: Schema.Types.ObjectId;
-    nombre_usuario: string;
-    contrasena: string;
-    id_cliente: Schema.Types.ObjectId;
-    rol: string;
-    estado: string;
+import { Schema, model, Document, Types } from 'mongoose';
+
+
+export type Role = 'administrador' | 'empleado';
+
+export interface IUsuario extends Document {
+  _id: Types.ObjectId;
+  username: string;
+  password: string;
+  role: Role;
+  activo: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const UsuariosSchema = new Schema<IUsuarios>({
-    nombre_usuario: { type: String, required: true },
-    contrasena: { type: String, required: true },
-    id_cliente: { type: Schema.Types.ObjectId, ref: 'Cliente', required: true },
-    rol: { type: String, required: true },
-    estado: { type: String, required: true }
+const UsuarioSchema = new Schema<IUsuario>({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: {
+    type: String,
+    required: true,
+    enum: ['administrador', 'empleado'] 
+  },
+  activo: { type: Boolean, required: true, default: true }
+}, {
+  timestamps: true
 });
 
-export const Usuarios = model<IUsuarios>('Usuarios', UsuariosSchema);
+export const Usuario = model<IUsuario>('Usuario', UsuarioSchema);

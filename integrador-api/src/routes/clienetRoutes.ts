@@ -1,20 +1,13 @@
-import { Router } from 'express'
-import {
-  getAllPersona,
-  getPaginatedPersona,
-  getPersonaById,
-  createPersona,
-  updatePersona,
-  deletePersona
-} from '../controller/clienteController'
+import { Router } from 'express';
+import { createCliente, deleteCliente, getAllClientes, getClienteById, getPaginatedClientes, updateCliente } from '../controller/clienteController';
 
-const router = Router()
+const router = Router();
 
-router.get('/clientes/paginado', getPaginatedPersona)
-router.get('/clientes/:id', getPersonaById)
-router.get('/clientes', getAllPersona)
-router.post('/clientes', createPersona)
-router.put('/clientes/:id', updatePersona)
-router.delete('/clientes/:id', deletePersona)
+router.get('/clientes', getAllClientes);
+router.get('/clientes/paginado', getPaginatedClientes);
+router.get('/clientes/:id', getClienteById);
+router.post('/clientes', createCliente);
+router.put('/clientes/:id', updateCliente);
+router.delete('/clientes/:id', deleteCliente);
 
-export default router
+export default router;

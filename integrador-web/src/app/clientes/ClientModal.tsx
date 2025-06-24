@@ -1,273 +1,254 @@
 'use client'
 
-import React, { useState, useEffect, useRef, JSX } from 'react'
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import DialogActions from '@mui/material/DialogActions'
-import TextField from '@mui/material/TextField'
-import Button from '@mui/material/Button'
-import MenuItem from '@mui/material/MenuItem'
-import IconButton from '@mui/material/IconButton'
-import Box from '@mui/material/Box'
-import WarningAmberIcon from '@mui/icons-material/WarningAmber'
-import CloseIcon from '@mui/icons-material/Close'
-
-import type { IBarrio, ICliente } from '../types'
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  MenuItem,
+  IconButton,
+  Box
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import type { IBarrio, ICliente, ClienteTipo } from '../types';
 
 interface Props {
-  open: boolean
-  defaultData?: ICliente
-  barrios: IBarrio[]
-  onClose: () => void
-  onSubmit: (data: Partial<ICliente>) => void
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: Partial<ICliente>) => void;
+  defaultData?: ICliente;
+  barrios: IBarrio[];
 }
 
 export default function ClientModal({
   open,
-  defaultData,
-  barrios,
   onClose,
-  onSubmit
-}: Props): JSX.Element {
-  const [cedula, setCedula] = useState<string>('')
-  const [rnc, setRnc] = useState<string>('')
-  const [nombre, setNombre] = useState<string>('')
-  const [telefono, setTelefono] = useState<string>('')
-  const [correo, setCorreo] = useState<string>('')
-  const [barrioId, setBarrioId] = useState<string>('')
+  onSubmit,
+  defaultData,
+  barrios
+}: Props) {
+  const [cedula, setCedula] = useState('');
+  const [rnc, setRnc] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [correo, setCorreo] = useState('');
+  const [barrioId, setBarrioId] = useState('');
+  const [tipoCliente, setTipoCliente] = useState<ClienteTipo | ''>('');
 
-  const [touched, setTouched] = useState<Record<string, boolean>>({})
-  const [confirmDiscard, setConfirmDiscard] = useState<boolean>(false)
-  const initialRef = useRef<Partial<ICliente>>({})
+  const [cedulaError, setCedulaError] = useState('');
+  const [rncError, setRncError] = useState('');
+  const [correoError, setCorreoError] = useState('');
+  const [telefonoError, setTelefonoError] = useState('');
 
-  // Format helpers (igual que antes)…
-  const formatCedula = (v: string) => { /*…*/ return v }
-  const formatRnc = (v: string) => { /*…*/ return v }
-  const formatPhone = (v: string) => { /*…*/ return v }
+  const cedulaRegex = /^\d{3}-\d{7}-\d{1}$/;
+  const rncRegex = /^\d{3}-\d{6,7}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^\(\d{3}\)-\d{3}-\d{4}$/;
 
-  // Validaciones
-  const cedulaValida = /^\d{3}-\d{7}-\d$/.test(cedula)
-  const rncValido = rnc === '' || /^\d{3}-\d{6}$/.test(rnc)
-  const phoneValido = /^\(\d{3}\)-\d{3}-\d{4}$/.test(telefono)
-  const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)
-  const barrioValido = barrioId !== ''
-  const hayErrores =
-    !cedulaValida ||
-    !rncValido ||
-    !phoneValido ||
-    !emailValido ||
-    !nombre.trim() ||
-    !barrioValido
+  const formatCedulaInput = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 11);
+    if (d.length <= 3) return d;
+    if (d.length <= 10) return `${d.slice(0, 3)}-${d.slice(3)}`;
+    return `${d.slice(0, 3)}-${d.slice(3, 10)}-${d.slice(10)}`;
+  };
+
+  const formatRncInput = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 9);
+    if (d.length <= 3) return d;
+    return `${d.slice(0, 3)}-${d.slice(3)}`;
+  };
+
+  const formatPhoneInput = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 10);
+    if (d.length <= 3) return `(${d}`;
+    if (d.length <= 6) return `(${d.slice(0, 3)})-${d.slice(3)}`;
+    return `(${d.slice(0, 3)})-${d.slice(3, 6)}-${d.slice(6)}`;
+  };
+
+  const handleCedulaChange = (v: string) => {
+    const f = formatCedulaInput(v);
+    setCedula(f);
+    setCedulaError(cedulaRegex.test(f) ? '' : 'Debe ser XXX-XXXXXXX-X');
+  };
+
+  const handleRncChange = (v: string) => {
+    const f = formatRncInput(v);
+    setRnc(f);
+    setRncError(f === '' || rncRegex.test(f) ? '' : 'Debe ser XXX-XXXXXXX');
+  };
+
+  const handleCorreoChange = (v: string) => {
+    setCorreo(v);
+    setCorreoError(emailRegex.test(v) ? '' : 'Correo inválido');
+  };
+
+  const handleTelefonoChange = (v: string) => {
+    const f = formatPhoneInput(v);
+    setTelefono(f);
+    setTelefonoError(phoneRegex.test(f) ? '' : 'Debe ser (XXX)-XXX-XXXX');
+  };
 
   useEffect(() => {
     if (open) {
-      const d: Partial<ICliente> = defaultData ?? {}
-      setCedula(d.cedula ?? '')
-      setRnc(d.rnc ?? '')
-      setNombre(d.nombre ?? '')
-      setTelefono(d.numero_telefono ?? '')
-      setCorreo(d.correo ?? '')
-      setBarrioId(d.id_barrio ?? '')
-      initialRef.current = { ...d }
-      setTouched({})
+      setCedula(defaultData?.cedula ?? '');
+      setRnc(defaultData?.rnc ?? '');
+      setNombre(defaultData?.nombre ?? '');
+      setTelefono(defaultData?.numero_telefono ?? '');
+      setCorreo(defaultData?.correo ?? '');
+      setBarrioId(defaultData?.id_barrio ?? '');
+      setTipoCliente(defaultData?.tipo_cliente ?? '');
+
+      setCedulaError('');
+      setRncError('');
+      setCorreoError('');
+      setTelefonoError('');
+    } else {
+      setCedula('');
+      setRnc('');
+      setNombre('');
+      setTelefono('');
+      setCorreo('');
+      setBarrioId('');
+      setTipoCliente('');
     }
-  }, [open, defaultData])
+  }, [open, defaultData]);
 
-  const isDirty = (): boolean => {
-    const init = initialRef.current
-    return (
-      cedula !== init.cedula ||
-      rnc !== init.rnc ||
-      nombre !== init.nombre ||
-      telefono !== init.numero_telefono ||
-      correo !== init.correo ||
-      barrioId !== init.id_barrio
-    )
-  }
+  const handleSave = () => {
+    if (!cedulaError && !rncError && !correoError && !telefonoError && tipoCliente) {
+      onSubmit({
+        cedula,
+        rnc: rnc || undefined,
+        nombre,
+        numero_telefono: telefono,
+        correo,
+        id_barrio: barrioId,
+        tipo_cliente: tipoCliente
+      });
+    }
+  };
 
-  const tryClose = (): void => {
-    if (isDirty()) setConfirmDiscard(true)
-    else onClose()
-  }
-  const confirmAndClose = (): void => {
-    setConfirmDiscard(false)
-    onClose()
-  }
-
-  const handleSubmit = (): void => {
-    onSubmit({
-      cedula,
-      rnc: rnc || undefined,
-      nombre,
-      numero_telefono: telefono,
-      correo,
-      id_barrio: barrioId
-    })
-  }
-
-  const isEdit = Boolean(defaultData)
+  const disabledSave =
+    !cedula.trim() ||
+    !nombre.trim() ||
+    !telefono.trim() ||
+    !correo.trim() ||
+    !barrioId ||
+    !tipoCliente ||
+    !!cedulaError ||
+    !!rncError ||
+    !!correoError ||
+    !!telefonoError;
 
   return (
-    <>
-      <Dialog open={open} onClose={tryClose} fullWidth maxWidth="sm">
-        <DialogTitle
-          sx={{ m: 0, p: 2, fontSize: '1rem', fontWeight: 500 }}
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle sx={{ position: 'relative', pr: 6 }}>
+        {defaultData ? 'Editar Cliente' : 'Nuevo Cliente'}
+        <IconButton
+          onClick={onClose}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
+          size="small"
         >
-          {isEdit ? 'Editar Cliente' : 'Nuevo Cliente'}
-          <IconButton
-            aria-label="close"
-            onClick={tryClose}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-            size="small"
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent dividers>
+        <Box display="flex" flexDirection="column" gap={2}>
+          <TextField
+            label="Cédula"
+            value={cedula}
+            onChange={e => handleCedulaChange(e.target.value)}
+            error={!!cedulaError}
+            helperText={cedulaError}
+            required
+            fullWidth
+          />
+
+          <TextField
+            label="RNC (opcional)"
+            value={rnc}
+            onChange={e => handleRncChange(e.target.value)}
+            error={!!rncError}
+            helperText={rncError}
+            fullWidth
+          />
+
+          <TextField
+            label="Nombre completo"
+            value={nombre}
+            onChange={e => setNombre(e.target.value)}
+            required
+            fullWidth
+          />
+
+          <TextField
+            label="Teléfono"
+            value={telefono}
+            onChange={e => handleTelefonoChange(e.target.value)}
+            error={!!telefonoError}
+            helperText={telefonoError}
+            required
+            fullWidth
+          />
+
+          <TextField
+            label="Correo electrónico"
+            type="email"
+            value={correo}
+            onChange={e => handleCorreoChange(e.target.value)}
+            error={!!correoError}
+            helperText={correoError}
+            required
+            fullWidth
+          />
+
+          <TextField
+            select
+            label="Tipo de cliente"
+            value={tipoCliente}
+            onChange={e => setTipoCliente(e.target.value as ClienteTipo)}
+            error={!tipoCliente}
+            helperText={!tipoCliente ? 'Seleccione un tipo' : ''}
+            required
+            fullWidth
           >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </DialogTitle>
+            {['Individual', 'Empresarial', 'Aseguradora', 'Gobierno'].map(t => (
+              <MenuItem key={t} value={t}>
+                {t}
+              </MenuItem>
+            ))}
+          </TextField>
 
-        <DialogContent dividers sx={{ p: 2 }}>
-          <Box display="flex" flexDirection="column" gap={1}>
-            <TextField
-              size="small"
-              label="Cédula"
-              value={cedula}
-              onChange={(e) =>
-                setCedula(formatCedula(e.target.value))
-              }
-              onBlur={() =>
-                setTouched((t) => ({ ...t, cedula: true }))
-              }
-              required
-              error={touched.cedula === true && !cedulaValida}
-              helperText={
-                touched.cedula && !cedulaValida
-                  ? 'Formato 000-0000000-0'
-                  : ''
-              }
-            />
-            <TextField
-              size="small"
-              label="RNC (opcional)"
-              value={rnc}
-              onChange={(e) =>
-                setRnc(formatRnc(e.target.value))
-              }
-              onBlur={() =>
-                setTouched((t) => ({ ...t, rnc: true }))
-              }
-              error={touched.rnc === true && !rncValido}
-              helperText={
-                touched.rnc && !rncValido
-                  ? 'Formato 000-000000'
-                  : ''
-              }
-            />
-            <TextField
-              size="small"
-              label="Nombre completo"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              onBlur={() =>
-                setTouched((t) => ({ ...t, nombre: true }))
-              }
-              required
-            />
-            <TextField
-              size="small"
-              label="Teléfono"
-              value={telefono}
-              onChange={(e) =>
-                setTelefono(formatPhone(e.target.value))
-              }
-              onBlur={() =>
-                setTouched((t) => ({ ...t, telefono: true }))
-              }
-              required
-              error={touched.telefono && !phoneValido}
-              helperText={
-                touched.telefono && !phoneValido
-                  ? 'Formato (829)-123-4567'
-                  : ''
-              }
-            />
-            <TextField
-              size="small"
-              label="Correo electrónico"
-              value={correo}
-              onChange={(e) => setCorreo(e.target.value)}
-              onBlur={() =>
-                setTouched((t) => ({ ...t, correo: true }))
-              }
-              required
-              error={touched.correo && !emailValido}
-              helperText={
-                touched.correo && !emailValido
-                  ? 'Email inválido'
-                  : ''
-              }
-            />
-            <TextField
-              select
-              size="small"
-              label="Barrio"
-              value={barrioId}
-              onChange={(e) =>
-                setBarrioId(e.target.value)
-              }
-              onBlur={() =>
-                setTouched((t) => ({ ...t, barrioId: true }))
-              }
-              required
-              error={touched.barrioId && !barrioValido}
-            >
-              {barrios.map((b) => (
-                <MenuItem key={b._id} value={b._id}>
-                  {b.nombre_barrio}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Box>
-        </DialogContent>
-
-        <DialogActions sx={{ p: 1 }}>
-          <Button size="small" onClick={tryClose}>
-            Cancelar
-          </Button>
-          <Button
-            size="small"
-            variant="contained"
-            disabled={hayErrores}
-            onClick={handleSubmit}
+          <TextField
+            select
+            label="Barrio"
+            value={barrioId}
+            onChange={e => setBarrioId(e.target.value)}
+            required
+            fullWidth
           >
-            {isEdit ? 'Guardar' : 'Crear Cliente'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            {barrios.map(b => (
+              <MenuItem key={b._id} value={b._id}>
+                {b.nombre_barrio}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
+      </DialogContent>
 
-      <Dialog
-        open={confirmDiscard}
-        onClose={() => setConfirmDiscard(false)}
-      >
-        <DialogTitle
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            fontSize: '0.9rem'
-          }}
+      <DialogActions sx={{ px: 2, py: 1 }}>
+        <Button onClick={onClose}>Cancelar</Button>
+        <Button
+          variant="contained"
+          disabled={disabledSave}
+          onClick={handleSave}
         >
-          <WarningAmberIcon color="warning" fontSize="small" />
-          ¿Descartar cambios?
-        </DialogTitle>
-        <DialogActions sx={{ p: 1 }}>
-          <Button size="small" onClick={() => setConfirmDiscard(false)}>
-            Volver
-          </Button>
-          <Button size="small" color="error" onClick={confirmAndClose}>
-            Descartar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
-  )
+          {defaultData ? 'Guardar cambios' : 'Crear Cliente'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 }

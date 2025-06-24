@@ -1,7 +1,6 @@
-// LocationSelector.tsx
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { JSX, useEffect } from 'react'
 import {
     FormControl,
     InputLabel,
@@ -10,6 +9,7 @@ import {
     FormHelperText,
     Box
 } from '@mui/material'
+import { useFormContext, Controller } from 'react-hook-form'
 
 import { useCrud } from '../../hooks/useCrud'
 import type {
@@ -36,13 +36,11 @@ export function LocationSelector(): JSX.Element {
     const distritos = distCrud.allQuery.data || []
     const barrios = barrCrud.allQuery.data || []
 
-    // Observar cambios en cada nivel
     const provinciaId = watch('ubicacion.provincia')
     const municipioId = watch('ubicacion.municipio')
     const sectorId = watch('ubicacion.sector')
     const distritoId = watch('ubicacion.distrito')
 
-    // Al cambiar provincia, limpiar niveles inferiores
     useEffect(() => {
         setValue('ubicacion.municipio', '')
         setValue('ubicacion.sector', '')
@@ -65,7 +63,6 @@ export function LocationSelector(): JSX.Element {
         setValue('ubicacion.barrio', '')
     }, [distritoId])
 
-    // Filtrar opciones según selección
     const filtMunicipios = municipios.filter(m => m.id_provincia === provinciaId)
     const filtSectores = sectores.filter(s => s.id_municipio === municipioId)
     const filtDistritos = distritos.filter(d => d.id_sector === sectorId)
@@ -73,8 +70,14 @@ export function LocationSelector(): JSX.Element {
 
     return (
         <Box display="flex" flexDirection="column" gap={2} mt={2}>
-            {/* Provincia */}
-            <FormControl fullWidth error={!!errors.ubicacion?.provincia}>
+            <FormControl
+                fullWidth
+                error={
+                    typeof errors.ubicacion === 'object' &&
+                    errors.ubicacion !== null &&
+                    'provincia' in errors.ubicacion
+                }
+            >
                 <InputLabel>Provincia</InputLabel>
                 <Controller
                     name="ubicacion.provincia"
@@ -90,12 +93,22 @@ export function LocationSelector(): JSX.Element {
                     )}
                 />
                 <FormHelperText>
-                    {errors.ubicacion?.provincia?.message as string}
+                    {typeof errors.ubicacion === 'object' &&
+                        errors.ubicacion !== null &&
+                        'provincia' in errors.ubicacion
+                        ? (errors.ubicacion.provincia as { message?: string })?.message
+                        : ''}
                 </FormHelperText>
             </FormControl>
 
-            {/* Municipio */}
-            <FormControl fullWidth error={!!errors.ubicacion?.municipio}>
+            <FormControl
+                fullWidth
+                error={
+                    typeof errors.ubicacion === 'object' &&
+                    errors.ubicacion !== null &&
+                    'municipio' in errors.ubicacion
+                }
+            >
                 <InputLabel>Municipio</InputLabel>
                 <Controller
                     name="ubicacion.municipio"
@@ -111,12 +124,22 @@ export function LocationSelector(): JSX.Element {
                     )}
                 />
                 <FormHelperText>
-                    {errors.ubicacion?.municipio?.message as string}
+                    {typeof errors.ubicacion === 'object' &&
+                        errors.ubicacion !== null &&
+                        'municipio' in errors.ubicacion
+                        ? (errors.ubicacion.municipio as { message?: string })?.message
+                        : ''}
                 </FormHelperText>
             </FormControl>
 
-            {/* Sector */}
-            <FormControl fullWidth error={!!errors.ubicacion?.sector}>
+            <FormControl
+                fullWidth
+                error={
+                    typeof errors.ubicacion === 'object' &&
+                    errors.ubicacion !== null &&
+                    'sector' in errors.ubicacion
+                }
+            >
                 <InputLabel>Sector</InputLabel>
                 <Controller
                     name="ubicacion.sector"
@@ -132,12 +155,22 @@ export function LocationSelector(): JSX.Element {
                     )}
                 />
                 <FormHelperText>
-                    {errors.ubicacion?.sector?.message as string}
+                    {typeof errors.ubicacion === 'object' &&
+                        errors.ubicacion !== null &&
+                        'sector' in errors.ubicacion
+                        ? (errors.ubicacion.sector as { message?: string })?.message
+                        : ''}
                 </FormHelperText>
             </FormControl>
 
-            {/* Distrito */}
-            <FormControl fullWidth error={!!errors.ubicacion?.distrito}>
+            <FormControl
+                fullWidth
+                error={
+                    typeof errors.ubicacion === 'object' &&
+                    errors.ubicacion !== null &&
+                    'distrito' in errors.ubicacion
+                }
+            >
                 <InputLabel>Distrito</InputLabel>
                 <Controller
                     name="ubicacion.distrito"
@@ -153,12 +186,22 @@ export function LocationSelector(): JSX.Element {
                     )}
                 />
                 <FormHelperText>
-                    {errors.ubicacion?.distrito?.message as string}
+                    {typeof errors.ubicacion === 'object' &&
+                        errors.ubicacion !== null &&
+                        'distrito' in errors.ubicacion
+                        ? (errors.ubicacion.distrito as { message?: string })?.message
+                        : ''}
                 </FormHelperText>
             </FormControl>
 
-            {/* Barrio */}
-            <FormControl fullWidth error={!!errors.ubicacion?.barrio}>
+            <FormControl
+                fullWidth
+                error={
+                    typeof errors.ubicacion === 'object' &&
+                    errors.ubicacion !== null &&
+                    'barrio' in errors.ubicacion
+                }
+            >
                 <InputLabel>Barrio</InputLabel>
                 <Controller
                     name="ubicacion.barrio"
@@ -174,7 +217,11 @@ export function LocationSelector(): JSX.Element {
                     )}
                 />
                 <FormHelperText>
-                    {errors.ubicacion?.barrio?.message as string}
+                    {typeof errors.ubicacion === 'object' &&
+                        errors.ubicacion !== null &&
+                        'barrio' in errors.ubicacion
+                        ? (errors.ubicacion.barrio as { message?: string })?.message
+                        : ''}
                 </FormHelperText>
             </FormControl>
         </Box>

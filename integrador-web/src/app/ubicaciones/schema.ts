@@ -16,9 +16,9 @@ export const clienteSchema = z.object({
   ubicacion: z.object({
     provincia: z.string().nonempty('Requerido'),
     municipio: z.string().nonempty('Requerido'),
-    sector:    z.string().nonempty('Requerido'),
-    distrito:  z.string().nonempty('Requerido'),
-    barrio:    z.string().nonempty('Requerido')
+    sector: z.string().nonempty('Requerido'),
+    distrito: z.string().nonempty('Requerido'),
+    barrio: z.string().nonempty('Requerido')
   })
 })
 
