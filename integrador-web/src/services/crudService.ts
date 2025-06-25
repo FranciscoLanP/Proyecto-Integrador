@@ -1,4 +1,3 @@
-
 export interface CrudService<T> {
   fetchAll: () => Promise<T[]>
   fetchById?: (id: string) => Promise<T>
@@ -7,15 +6,23 @@ export interface CrudService<T> {
   remove: (id: string) => Promise<void>
 }
 
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
 async function request<T>(
   url: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = typeof window !== 'undefined'
-    ? localStorage.getItem('token')
-    : null
+  let token: string | null = null
+  const stored = typeof window !== 'undefined' && localStorage.getItem('auth')
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored)
+      token = parsed.token ?? null
+    } catch {
+      token = null
+    }
+  }
 
   const res = await fetch(url, {
     ...options,
@@ -27,24 +34,27 @@ async function request<T>(
   })
 
   if (!res.ok) {
-    const text = await res.text()
-    throw new Error(text || res.statusText)
+    const txt = await res.text()
+    throw new Error(txt || res.statusText)
   }
 
   if (res.status === 204) {
     return undefined as any
   }
-  return res.json()
+
+  return (await res.json()) as T
 }
 
 export function createCrudService<T>(resource: string): CrudService<T> {
   const base = `${API_BASE}/${resource}`
   return {
     fetchAll: () => request<T[]>(base),
-    fetchById: id => request<T>(`${base}/${id}`),
-    create: data => request<T>(base, { method: 'POST', body: JSON.stringify(data) }),
-    update: (id, data) =>
+    fetchById: (id: string) => request<T>(`${base}/${id}`),
+    create: (data: Partial<T>) =>
+      request<T>(base, { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<T>) =>
       request<T>(`${base}/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    remove: id => request<void>(`${base}/${id}`, { method: 'DELETE' })
+    remove: (id: string) =>
+      request<void>(`${base}/${id}`, { method: 'DELETE' })
   }
 }

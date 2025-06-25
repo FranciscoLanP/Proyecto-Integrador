@@ -25,6 +25,7 @@ import usuariosRoutes from "./usuariosRoutes";
 import vehiculoDatosRoutes from "./vehiculoDatosRoutes";
 import tipoPiezaRoutes from "./tipoPiezaRoutes";
 import tipoPagosRoutes from "./tipoPagosRoutes";
+import authRoutes from "./authRoutes";
 
 const router = Router();
 
@@ -54,6 +55,6 @@ router.use(tipoPagosRoutes);
 router.use(tipoPiezaRoutes);
 router.use(usuariosRoutes);
 router.use(vehiculoDatosRoutes);
-
+router.use('/auth', authRoutes);
 
 export default router;

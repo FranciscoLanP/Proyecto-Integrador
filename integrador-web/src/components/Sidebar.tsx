@@ -1,23 +1,37 @@
-// src/components/Sidebar.tsx
 'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Drawer, List, ListItem, ListItemButton, ListItemIcon,
-  ListItemText, Toolbar, Collapse, IconButton
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Toolbar,
+  Collapse,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  Tooltip
 } from '@mui/material'
-import DashboardIcon from '@mui/icons-material/Dashboard'
-import PeopleIcon from '@mui/icons-material/People'
-import HomeIcon from '@mui/icons-material/Home'
-import PaymentIcon from '@mui/icons-material/Payment'
-import BuildIcon from '@mui/icons-material/Build'
-import ExpandLess from '@mui/icons-material/ExpandLess'
-import ExpandMore from '@mui/icons-material/ExpandMore'
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
-import PersonIcon from '@mui/icons-material/Person'
-import ExitToAppIcon from '@mui/icons-material/ExitToApp'
-import { useState } from 'react'
+import {
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  Home as HomeIcon,
+  Payment as PaymentIcon,
+  Build as BuildIcon,
+  ExpandLess,
+  ExpandMore,
+  Person as PersonIcon,
+  ExitToApp as ExitToAppIcon
+} from '@mui/icons-material'
+import { JSX, useState } from 'react'
+import { useAuth } from '@/app/context/AuthContext'
 
 const navItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, href: '/' },
@@ -37,73 +51,165 @@ const navItems = [
   { text: 'Mi Perfil', icon: <PersonIcon />, href: '/perfil' }
 ]
 
-export default function Sidebar() {
+export default function Sidebar(): JSX.Element {
   const pathname = usePathname()
-  const [openMaint, setOpenMaint] = useState(false)
-  const [openClientes, setOpenCli] = useState(false)
+  const [openMaint, setOpenMaint] = useState<boolean>(false)
+  const [openLogoutDialog, setOpenLogoutDialog] = useState<boolean>(false)
+  const { logout } = useAuth()
+
+  const handleLogoutClick = (): void => setOpenLogoutDialog(true)
+  const handleLogoutConfirm = (): void => { setOpenLogoutDialog(false); logout() }
+  const handleLogoutCancel = (): void => setOpenLogoutDialog(false)
+
+  const buttonSx = {
+    transition: 'all 0.3s',
+    color: 'text.secondary',
+    borderRadius: 1,
+    textDecoration: 'none',
+    '& .MuiListItemText-root .MuiTypography-root': {
+      textDecoration: 'none'
+    },
+    '&:hover': {
+      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      color: 'text.primary'
+    },
+    '&.Mui-selected': {
+      color: 'text.primary',
+      backgroundColor: 'rgba(0, 0, 0, 0.04)'
+    },
+    '&.Mui-selected:hover': {
+      backgroundColor: 'rgba(0, 0, 0, 0.1)',
+      color: 'text.primary'
+    }
+  }
+
+  const textTypography = {
+    fontWeight: 300,
+    letterSpacing: '0.5px'
+  }
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{ width: 240, '& .MuiDrawer-paper': { width: 240 } }}
-    >
-      <Toolbar />
-      <List>
-        {navItems.map(item => {
-          if (item.children) {
-            // distinguir mantenimiento vs clientes
-            const isMaint = item.text === 'Mantenimiento'
-            const open = isMaint ? openMaint : openClientes
-            const setOpen = isMaint ? setOpenMaint : setOpenCli
-            const selected =
-              item.children.some(c => c.href === pathname) ||
-              pathname === item.href
-
-            return (
+    <>
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: 240,
+          '& .MuiDrawer-paper': {
+            width: 240,
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.9), rgba(240,240,240,0.9))',
+            borderRadius: 2
+          }
+        }}
+      >
+        <Toolbar />
+        <List>
+          {navItems.map(item =>
+            item.children ? (
               <div key={item.text}>
                 <ListItem disablePadding>
-                  <ListItemButton onClick={() => setOpen(o => !o)} selected={selected}>
-                    <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.text} />
-                    {open ? <ExpandLess /> : <ExpandMore />}
+                  <ListItemButton
+                    onClick={() => setOpenMaint(o => !o)}
+                    selected={
+                      pathname === item.href ||
+                      item.children.some(c => c.href === pathname)
+                    }
+                    sx={buttonSx}
+                  >
+                    <Tooltip title={item.text} placement="right">
+                      <ListItemIcon>{item.icon}</ListItemIcon>
+                    </Tooltip>
+                    <ListItemText
+                      primary={item.text}
+                      primaryTypographyProps={textTypography}
+                    />
+                    {openMaint ? <ExpandLess /> : <ExpandMore />}
                   </ListItemButton>
                 </ListItem>
-                <Collapse in={open} timeout="auto" unmountOnExit>
+                <Collapse in={openMaint} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding>
                     {item.children.map(child => (
                       <ListItem key={child.text} disablePadding sx={{ pl: 4 }}>
-                        <Link href={child.href} passHref style={{ width: '100%' }}>
-                          <ListItemButton selected={pathname === child.href}>
-                            <ListItemText primary={child.text} />
-                          </ListItemButton>
-                        </Link>
+                        <ListItemButton
+                          component={Link}
+                          href={child.href}
+                          selected={pathname === child.href}
+                          sx={buttonSx}
+                        >
+                          <ListItemText
+                            primary={child.text}
+                            primaryTypographyProps={textTypography}
+                          />
+                        </ListItemButton>
                       </ListItem>
                     ))}
                   </List>
                 </Collapse>
               </div>
-            )
-          }
-
-          return (
-            <ListItem key={item.text} disablePadding>
-              <Link href={item.href!} passHref style={{ width: '100%' }}>
-                <ListItemButton selected={pathname === item.href}>
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} />
+            ) : (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton
+                  component={Link}
+                  href={item.href}
+                  selected={pathname === item.href}
+                  sx={buttonSx}
+                >
+                  <Tooltip title={item.text} placement="right">
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                  </Tooltip>
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={textTypography}
+                  />
                 </ListItemButton>
-              </Link>
-            </ListItem>
-          )
-        })}
+              </ListItem>
+            )
+          )}
 
-        <ListItem disablePadding sx={{ mt: 2 }}>
-          <ListItemButton onClick={() => {/* logout */ }}>
-            <ListItemIcon><ExitToAppIcon color="error" /></ListItemIcon>
-            <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ color: 'error' }} />
-          </ListItemButton>
-        </ListItem>
-      </List>
-    </Drawer>
+          <ListItem disablePadding sx={{ mt: 2 }}>
+            <ListItemButton
+              onClick={handleLogoutClick}
+              sx={buttonSx}
+            >
+              <ListItemIcon>
+                <ExitToAppIcon color="error" />
+              </ListItemIcon>
+              <ListItemText
+                primary="Cerrar Sesión"
+                primaryTypographyProps={{ color: 'error', ...textTypography }}
+              />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      </Drawer>
+
+      <Dialog
+        open={openLogoutDialog}
+        onClose={handleLogoutCancel}
+        aria-labelledby="confirm-logout-title"
+        PaperProps={{ sx: { borderRadius: 2 } }}
+      >
+        <DialogTitle id="confirm-logout-title">
+          Confirmar cierre de sesión
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            ¿Estás seguro de que deseas cerrar sesión?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ pb: 2, px: 3 }}>
+          <Button sx={{ borderRadius: 1 }} onClick={handleLogoutCancel}>
+            Cancelar
+          </Button>
+          <Button
+            sx={{ borderRadius: 1 }}
+            onClick={handleLogoutConfirm}
+            color="error"
+            autoFocus
+          >
+            Cerrar Sesión
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 }

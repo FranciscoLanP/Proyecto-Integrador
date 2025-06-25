@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Usuario, IUsuario } from '../models/usuarios';
 import type { FilterQuery } from 'mongoose';
+import bcrypt from 'bcrypt';
 
 export const getAllUsuarios = async (
   req: Request,
@@ -94,7 +95,7 @@ export const createUsuario = async (
   try {
     const { username, password, role, activo } = req.body;
     const newUsuario = new Usuario({ username, password, role, activo });
-    const saved      = await newUsuario.save();
+    const saved = await newUsuario.save();
     res.status(201).json(saved);
   } catch (error) {
     next(error);
@@ -107,21 +108,20 @@ export const updateUsuario = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const updated = await Usuario.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    if (!updated) {
+    const { password, ...rest } = req.body;
+    const user = await Usuario.findById(req.params.id);
+    if (!user) {
       res.status(404).json({ message: 'Usuario no encontrado' });
       return;
     }
+    if (password) user.password = password;
+    Object.assign(user, rest);
+    const updated = await user.save(); 
     res.status(200).json(updated);
   } catch (error) {
     next(error);
   }
 };
-
 export const deleteUsuario = async (
   req: Request,
   res: Response,

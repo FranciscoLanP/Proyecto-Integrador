@@ -1,52 +1,66 @@
-'use client'
+'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect
+} from 'react';
+import { useRouter } from 'next/navigation';
+import { apiClient } from '../../services/apiClient';
 
 interface Auth {
-  username: string
-  role: 'administrador' | 'empleado'
+  username: string;
+  role: 'administrador' | 'empleado';
+  token: string;
 }
 
 interface AuthContextType {
-  auth: Auth | null
-  login: (username: string, role: Auth['role']) => void
-  logout: () => void
+  auth: Auth | null;
+  login: (username: string, role: Auth['role'], token: string) => void;
+  logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [auth, setAuth] = useState<Auth | null>(null)
-  const router = useRouter()
+  const [auth, setAuth] = useState<Auth | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const stored = localStorage.getItem('auth')
-    if (stored) setAuth(JSON.parse(stored))
-  }, [])
+    const stored = typeof window !== 'undefined' && localStorage.getItem('auth');
+    if (stored) {
+      const a: Auth = JSON.parse(stored);
+      setAuth(a);
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${a.token}`;
+    }
+  }, []);
 
-  const login = (username: string, role: Auth['role']) => {
-    const a = { username, role }
-    localStorage.setItem('auth', JSON.stringify(a))
-    setAuth(a)
-    router.push('/')      
-  }
+  const login = (username: string, role: Auth['role'], token: string) => {
+    const a: Auth = { username, role, token };
+    localStorage.setItem('auth', JSON.stringify(a));
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setAuth(a);
+    router.push('/');
+  };
 
   const logout = () => {
-    localStorage.removeItem('auth')
-    setAuth(null)
-    router.push('/login')
-  }
+    localStorage.removeItem('auth');
+    delete apiClient.defaults.headers.common['Authorization'];
+    setAuth(null);
+    router.push('/login');
+  };
 
   return (
     <AuthContext.Provider value={{ auth, login, logout }}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be inside AuthProvider')
-  return ctx
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be inside AuthProvider');
+  return ctx;
 }

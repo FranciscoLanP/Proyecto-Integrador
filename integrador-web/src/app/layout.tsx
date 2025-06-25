@@ -1,16 +1,36 @@
-// src/app/layout.tsx
-'use client'
+'use client';
+import type { ReactNode } from 'react';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import theme from '../styles/theme';
+import Layout from '../components/Layout';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-import type { ReactNode } from 'react'
-import { ThemeProvider, CssBaseline } from '@mui/material'
-import { QueryClient, QueryClientProvider } from 'react-query'
-import theme from '../styles/theme'
-import Layout from '../components/Layout'
-import '../app/globals.css'
-import { AuthProvider } from './context/AuthContext'
+const queryClient = new QueryClient();
 
+function ProtectedApp({ children }: { children: ReactNode }) {
+  const { auth } = useAuth();
+  const pathname = usePathname();
+  const router   = useRouter();
 
-const queryClient = new QueryClient()
+  useEffect(() => {
+    if (!auth && pathname !== '/login') {
+      router.replace('/login');
+    }
+    if (auth && pathname === '/login') {
+      router.replace('/');
+    }
+  }, [auth, pathname, router]);
+
+  // si estamos en /login, renderizamos la página de login
+  if (pathname === '/login') return <>{children}</>;
+  // mientras no tenga auth, no renderiza nada
+  if (!auth) return null;
+  // resto de la app
+  return <Layout>{children}</Layout>;
+}
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -20,15 +40,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <QueryClientProvider client={queryClient}>
-            {/* Inyectamos el contexto de autenticación */}
             <AuthProvider>
-              <Layout>
-                {children}
-              </Layout>
+              <ProtectedApp>{children}</ProtectedApp>
             </AuthProvider>
           </QueryClientProvider>
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }
