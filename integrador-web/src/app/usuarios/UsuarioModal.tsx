@@ -28,7 +28,7 @@ export default function UsuarioModal({
     if (!open) return
     if (defaultData) {
       setUsername(defaultData.username)
-      setPassword('')       // no recargamos contraseña
+      setPassword('')    
       setRole(defaultData.role)
       setActivo(defaultData.activo)
     } else {

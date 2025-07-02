@@ -17,8 +17,6 @@ import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogActions from '@mui/material/DialogActions'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
-import EditIcon from '@mui/icons-material/Edit'
-import DeleteIcon from '@mui/icons-material/Delete'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { useCrud } from '../../hooks/useCrud'
@@ -115,8 +113,7 @@ export default function UsuariosPage() {
             <TableRow>
               <TableCell>Usuario</TableCell>
               <TableCell>Rol</TableCell>
-              <TableCell>Activo</TableCell>
-              <TableCell align="right">Acciones</TableCell>
+              <TableCell align="right">Activo</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -128,7 +125,7 @@ export default function UsuariosPage() {
               >
                 <TableCell>{u.username}</TableCell>
                 <TableCell>{u.role}</TableCell>
-                <TableCell>
+                <TableCell align="right">
                   <IconButton
                     size="small"
                     color={u.activo ? 'success' : 'warning'}
@@ -137,14 +134,6 @@ export default function UsuariosPage() {
                     {u.activo
                       ? <VisibilityIcon fontSize="small" />
                       : <VisibilityOffIcon fontSize="small" />}
-                  </IconButton>
-                </TableCell>
-                <TableCell align="right">
-                  <IconButton size="small" onClick={() => openEdit(u)}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton size="small" color="error" onClick={() => askDelete(u)}>
-                    <DeleteIcon fontSize="small" />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -176,7 +165,7 @@ export default function UsuariosPage() {
         onSubmit={onSubmit}
       />
 
-      {/* Confirm delete */}
+      {/* Confirm delete (si necesitas volver a usarlo) */}
       <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <WarningAmberIcon color="warning" fontSize="small" />

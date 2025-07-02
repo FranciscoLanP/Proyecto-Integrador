@@ -3,16 +3,22 @@ import { ModelosDatos } from '../models/modelosDatos'
 
 export const getAllModelosDatos = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { search } = req.query as { search?: string }
-    const filter = search
-      ? { nombre_modelo: { $regex: search, $options: 'i' } }
-      : {}
-    const items = await ModelosDatos.find(filter)
-    res.status(200).json(items)
+    const { search, id_marca } = req.query as { search?: string; id_marca?: string };
+    const filter: any = {};
+
+    if (search) {
+      filter.nombre_modelo = { $regex: search, $options: 'i' };
+    }
+    if (id_marca) {
+      filter.id_marca = id_marca;
+    }
+
+    const items = await ModelosDatos.find(filter);
+    res.status(200).json(items);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 export const getPaginatedModelosDatos = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

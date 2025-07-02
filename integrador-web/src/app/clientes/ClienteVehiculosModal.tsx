@@ -1,5 +1,6 @@
-'use client'
-import React from 'react'
+'use client';
+
+import React from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -14,22 +15,24 @@ import {
   IconButton,
   Box,
   Typography
-} from '@mui/material'
-import CloseIcon from '@mui/icons-material/Close'
-import { useCrud } from '../../hooks/useCrud'
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { useCrud } from '../../hooks/useCrud';
 import type {
   IVehiculoDatos,
   IModelosDatos,
   IColoresDatos,
+  IMarcaVehiculo,
   ICliente
-} from '../types'
+} from '../types';
 
 interface Props {
-  open: boolean
-  onClose: () => void
-  client: ICliente
-  modelos: IModelosDatos[]
-  colores: IColoresDatos[]
+  open: boolean;
+  onClose: () => void;
+  client: ICliente;
+  modelos: IModelosDatos[];
+  colores: IColoresDatos[];
+  marcas: IMarcaVehiculo[];
 }
 
 export default function ClienteVehiculosModal({
@@ -37,14 +40,40 @@ export default function ClienteVehiculosModal({
   onClose,
   client,
   modelos,
-  colores
+  colores,
+  marcas
 }: Props) {
-  const { allQuery: vehQuery } = useCrud<IVehiculoDatos>('vehiculodatos')
-  const vehiculos = vehQuery.data || []
+  const vehQuery = useCrud<IVehiculoDatos>('vehiculodatos').allQuery;
+  const vehiculos = vehQuery.data || [];
 
-  const listado = vehiculos.filter(
-    v => v.id_cliente === client._id && v.activo !== false
-  )
+  if (vehQuery.isLoading) {
+    return (
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+        <DialogTitle>Vehículos de {client.nombre}</DialogTitle>
+        <DialogContent>
+          <Typography>Cargando vehículos…</Typography>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+  if (vehQuery.error) {
+    return (
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+        <DialogTitle>Vehículos de {client.nombre}</DialogTitle>
+        <DialogContent>
+          <Typography color="error">{vehQuery.error.message}</Typography>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Filtramos sólo los activos de este cliente
+  const listado = vehiculos.filter(v => {
+    const vid = typeof v.id_cliente === 'string'
+      ? v.id_cliente
+      : (v.id_cliente as ICliente)._id;
+    return vid === client._id && v.activo === true;
+  });
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
@@ -68,25 +97,40 @@ export default function ClienteVehiculosModal({
               <TableHead sx={{ backgroundColor: 'action.hover' }}>
                 <TableRow>
                   <TableCell>Chasis</TableCell>
+                  <TableCell>Marca</TableCell>
                   <TableCell>Modelo</TableCell>
                   <TableCell>Color</TableCell>
+                  <TableCell>Año</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {listado.map(v => {
-                  const mod =
-                    modelos.find(m => m._id === v.id_modelo)
-                      ?.nombre_modelo ?? '—'
-                  const col =
-                    colores.find(c => c._id === v.id_color)
-                      ?.nombre_color ?? '—'
+                  // Extraemos siempre el ID correcto
+                  const modeloId = typeof v.id_modelo === 'string'
+                    ? v.id_modelo
+                    : (v.id_modelo as IModelosDatos)._id;
+                  const colorId = typeof v.id_color === 'string'
+                    ? v.id_color
+                    : (v.id_color as IColoresDatos)._id;
+
+                  // Buscamos el objeto modelo / color en los arrays
+                  const modObj = modelos.find(m => m._id === modeloId);
+                  const modeloNombre = modObj?.nombre_modelo ?? '—';
+                  const marcaNombre = marcas.find(mk => mk._id === modObj?.id_marca)
+                    ?.nombre_marca ?? '—';
+                  const colorNombre = colores.find(c => c._id === colorId)
+                    ?.nombre_color ?? '—';
+
+              
                   return (
                     <TableRow key={v._id} hover>
                       <TableCell>{v.chasis}</TableCell>
-                      <TableCell>{mod}</TableCell>
-                      <TableCell>{col}</TableCell>
+                      <TableCell>{marcaNombre}</TableCell>
+                      <TableCell>{modeloNombre}</TableCell>
+                      <TableCell>{colorNombre}</TableCell>
+                      <TableCell>{v.anio}</TableCell>
                     </TableRow>
-                  )
+                  );
                 })}
               </TableBody>
             </Table>
@@ -94,9 +138,9 @@ export default function ClienteVehiculosModal({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ p: 1 }}>
+      <DialogActions>
         <Button onClick={onClose}>Cerrar</Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 }

@@ -42,9 +42,10 @@ const navItems = [
     text: 'Mantenimiento',
     icon: <BuildIcon />,
     children: [
-      { text: 'Marcas', href: '/marcasvehiculos' },
-      { text: 'Colores', href: '/coloresVehiculos' },
-      { text: 'Ubicaciones', href: '/ubicaciones' }
+      { text: 'Marcas',   href: '/marcasvehiculos' },
+      { text: 'Modelos',  href: '/modelosdatos'    },
+      { text: 'Colores',  href: '/coloresVehiculos' },
+      { text: 'Ubicaciones', href: '/ubicaciones'   }
     ]
   },
   { text: 'Usuarios', icon: <PersonIcon />, href: '/usuarios' },
