@@ -31,7 +31,6 @@ export default function ColoresDatosModal({
   const initialRef = useRef<string>('')
   const [confirmDiscard, setConfirmDiscard] = useState<boolean>(false)
 
-  // Inicializar al abrir/cerrar
   useEffect(() => {
     if (open) {
       const init = defaultData?.nombre_color ?? ''
@@ -127,7 +126,6 @@ export default function ColoresDatosModal({
         </DialogActions>
       </Dialog>
 
-      {/* Confirmar descartar */}
       <Dialog
         open={confirmDiscard}
         onClose={() => setConfirmDiscard(false)}

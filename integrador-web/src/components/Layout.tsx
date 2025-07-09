@@ -9,7 +9,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <Header />
       <Sidebar />
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar /> 
+        <Toolbar />
         {children}
       </Box>
     </Box>

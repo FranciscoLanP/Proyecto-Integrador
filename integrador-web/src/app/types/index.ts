@@ -1,4 +1,3 @@
-// src/app/types.ts
 
 export interface IMarcaVehiculo {
   _id: string;
@@ -63,8 +62,8 @@ export interface IVehiculoDatos {
   chasis: string;
 
   id_cliente: string | ICliente;
-  id_modelo:  string | IModelosDatos;
-  id_color:   string | IColoresDatos;
+  id_modelo: string | IModelosDatos;
+  id_color: string | IColoresDatos;
   anio: number;
   activo?: boolean;
 }
@@ -79,7 +78,7 @@ export interface IRecepcionVehiculo {
   id_empleadoInformacion: string | IEmpleadoInformacion;
   id_vehiculo: string | IVehiculoDatos;
   comentario?: string;
-  fecha: string; 
+  fecha: string;
   problema_reportado?: string;
 }
 export interface ITipoEmpleado {

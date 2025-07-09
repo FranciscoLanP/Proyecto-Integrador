@@ -21,7 +21,7 @@ interface Props {
 export default function ModelosDatosModal({
   open, defaultData, marcas, onClose, onSubmit
 }: Props) {
-  const [nombre, setNombre]   = useState('');
+  const [nombre, setNombre] = useState('');
   const [marcaId, setMarcaId] = useState('');
   const [showError, setShowError] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
@@ -30,7 +30,7 @@ export default function ModelosDatosModal({
   useEffect(() => {
     if (open) {
       const nm = defaultData?.nombre_modelo ?? '';
-      const md = defaultData?.id_marca     ?? '';
+      const md = defaultData?.id_marca ?? '';
       setNombre(nm);
       setMarcaId(md);
       initial.current = { nombre: nm, marcaId: md };
@@ -66,7 +66,7 @@ export default function ModelosDatosModal({
         <DialogTitle sx={{ position: 'relative', pr: 6 }}>
           {defaultData ? 'Editar Modelo' : 'Nuevo Modelo'}
           <IconButton onClick={tryClose} sx={{ position: 'absolute', right: 8, top: 8 }} size="small">
-            <CloseIcon fontSize="small"/>
+            <CloseIcon fontSize="small" />
           </IconButton>
         </DialogTitle>
 
@@ -108,7 +108,7 @@ export default function ModelosDatosModal({
 
       <Dialog open={confirmDiscard} onClose={() => setConfirmDiscard(false)}>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningAmberIcon color="warning" fontSize="small"/> ¿Descartar cambios?
+          <WarningAmberIcon color="warning" fontSize="small" /> ¿Descartar cambios?
         </DialogTitle>
         <DialogActions>
           <Button onClick={() => setConfirmDiscard(false)}>Volver</Button>

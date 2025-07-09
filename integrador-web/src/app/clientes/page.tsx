@@ -38,47 +38,47 @@ import ClientModal from './ClientModal';
 import ClienteVehiculosModal from './ClienteVehiculosModal';
 
 export default function ClientesPage(): JSX.Element {
-  const clienteCrud   = useCrud<ICliente>('clientes');
+  const clienteCrud = useCrud<ICliente>('clientes');
   const provinciaCrud = useCrud<IProvincia>('provincias');
   const municipioCrud = useCrud<IMunicipio>('municipios');
-  const sectorCrud    = useCrud<ISector>('sectores');
-  const distritoCrud  = useCrud<IDistrito>('distritos');
-  const barrioCrud    = useCrud<IBarrio>('barrios');
+  const sectorCrud = useCrud<ISector>('sectores');
+  const distritoCrud = useCrud<IDistrito>('distritos');
+  const barrioCrud = useCrud<IBarrio>('barrios');
 
-  const vehCrud     = useCrud<IVehiculoDatos>('vehiculodatos');
+  const vehCrud = useCrud<IVehiculoDatos>('vehiculodatos');
   const modelosCrud = useCrud<IModelosDatos>('modelosdatos');
   const coloresCrud = useCrud<IColoresDatos>('coloresdatos');
-  const marcasCrud  = useCrud<IMarcaVehiculo>('marcasvehiculos');
+  const marcasCrud = useCrud<IMarcaVehiculo>('marcasvehiculos');
 
-  const clientes   = clienteCrud.allQuery.data   || [];
+  const clientes = clienteCrud.allQuery.data || [];
   const provincias = provinciaCrud.allQuery.data || [];
   const municipios = municipioCrud.allQuery.data || [];
-  const sectores   = sectorCrud.allQuery.data    || [];
-  const distritos  = distritoCrud.allQuery.data  || [];
-  const barrios    = barrioCrud.allQuery.data    || [];
+  const sectores = sectorCrud.allQuery.data || [];
+  const distritos = distritoCrud.allQuery.data || [];
+  const barrios = barrioCrud.allQuery.data || [];
 
-  const vehiculos = vehCrud.allQuery.data    || [];
-  const modelos   = modelosCrud.allQuery.data || [];
-  const colores   = coloresCrud.allQuery.data || [];
-  const marcas    = marcasCrud.allQuery.data  || [];
+  const vehiculos = vehCrud.allQuery.data || [];
+  const modelos = modelosCrud.allQuery.data || [];
+  const colores = coloresCrud.allQuery.data || [];
+  const marcas = marcasCrud.allQuery.data || [];
 
-  const [searchTerm, setSearchTerm]   = useState('');
-  const [page, setPage]               = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [openForm, setOpenForm] = useState(false);
   const [editData, setEditData] = useState<ICliente | null>(null);
 
   const [selClient, setSelClient] = useState<ICliente | null>(null);
-  const [openVeh, setOpenVeh]     = useState(false);
+  const [openVeh, setOpenVeh] = useState(false);
 
   const [confirmDel, setConfirmDel] = useState(false);
-  const [toDelete, setToDelete]     = useState<ICliente | null>(null);
+  const [toDelete, setToDelete] = useState<ICliente | null>(null);
 
   if (clienteCrud.allQuery.isLoading) return <Typography>Loading…</Typography>;
-  if (clienteCrud.allQuery.error)     return <Typography color="error">{clienteCrud.allQuery.error.message}</Typography>;
+  if (clienteCrud.allQuery.error) return <Typography color="error">{clienteCrud.allQuery.error.message}</Typography>;
 
-  const filtered  = clientes.filter(c => c.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filtered = clientes.filter(c => c.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const buildAddress = (barrioId: string) => {
@@ -93,27 +93,27 @@ export default function ClientesPage(): JSX.Element {
       .join(' / ');
   };
 
-  const handleSearch     = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
-  const handlePageChange = (_: unknown, newPage: number)          => setPage(newPage);
-  const handleRowsChange = (e: ChangeEvent<HTMLInputElement>)     => { setRowsPerPage(+e.target.value); setPage(0); };
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
+  const handlePageChange = (_: unknown, newPage: number) => setPage(newPage);
+  const handleRowsChange = (e: ChangeEvent<HTMLInputElement>) => { setRowsPerPage(+e.target.value); setPage(0); };
 
-  const openCreate   = () => { setEditData(null); setOpenForm(true); };
-  const openEdit     = (c: ICliente) => { setEditData(c); setOpenForm(true); };
-  const closeForm    = () => setOpenForm(false);
+  const openCreate = () => { setEditData(null); setOpenForm(true); };
+  const openEdit = (c: ICliente) => { setEditData(c); setOpenForm(true); };
+  const closeForm = () => setOpenForm(false);
   const submitClient = (data: Partial<ICliente>) => {
     if (editData) clienteCrud.updateM.mutate({ id: editData._id, data });
-    else          clienteCrud.createM.mutate(data);
+    else clienteCrud.createM.mutate(data);
     closeForm();
   };
 
-  const askDelete    = (c: ICliente) => { setToDelete(c); setConfirmDel(true); };
-  const confirmDelete= () => {
+  const askDelete = (c: ICliente) => { setToDelete(c); setConfirmDel(true); };
+  const confirmDelete = () => {
     if (toDelete) clienteCrud.deleteM.mutate(toDelete._id);
     setConfirmDel(false);
     setToDelete(null);
   };
 
-  const openVehModal  = (c: ICliente) => {
+  const openVehModal = (c: ICliente) => {
     setSelClient(c);
     setOpenVeh(true);
   };

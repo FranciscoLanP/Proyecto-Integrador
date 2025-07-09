@@ -67,7 +67,6 @@ export default function ClienteVehiculosModal({
     );
   }
 
-  // Filtramos sólo los activos de este cliente
   const listado = vehiculos.filter(v => {
     const vid = typeof v.id_cliente === 'string'
       ? v.id_cliente
@@ -105,7 +104,6 @@ export default function ClienteVehiculosModal({
               </TableHead>
               <TableBody>
                 {listado.map(v => {
-                  // Extraemos siempre el ID correcto
                   const modeloId = typeof v.id_modelo === 'string'
                     ? v.id_modelo
                     : (v.id_modelo as IModelosDatos)._id;
@@ -113,7 +111,6 @@ export default function ClienteVehiculosModal({
                     ? v.id_color
                     : (v.id_color as IColoresDatos)._id;
 
-                  // Buscamos el objeto modelo / color en los arrays
                   const modObj = modelos.find(m => m._id === modeloId);
                   const modeloNombre = modObj?.nombre_modelo ?? '—';
                   const marcaNombre = marcas.find(mk => mk._id === modObj?.id_marca)
@@ -121,7 +118,7 @@ export default function ClienteVehiculosModal({
                   const colorNombre = colores.find(c => c._id === colorId)
                     ?.nombre_color ?? '—';
 
-              
+
                   return (
                     <TableRow key={v._id} hover>
                       <TableCell>{v.chasis}</TableCell>

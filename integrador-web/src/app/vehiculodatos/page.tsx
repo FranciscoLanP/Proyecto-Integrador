@@ -38,19 +38,19 @@ export default function VehiculoDatosPage() {
   const colCrud = useCrud<IColoresDatos>('coloresdatos');
   const marCrud = useCrud<IMarcaVehiculo>('marcasvehiculos');
 
-  const [searchTerm, setSearchTerm]   = useState('');
-  const [page, setPage]               = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [openForm, setOpenForm]       = useState(false);
-  const [editData, setEditData]       = useState<IVehiculoDatos | null>(null);
-  const [confirmDel, setConfirmDel]   = useState(false);
-  const [toDelete, setToDelete]       = useState<IVehiculoDatos | null>(null);
+  const [openForm, setOpenForm] = useState(false);
+  const [editData, setEditData] = useState<IVehiculoDatos | null>(null);
+  const [confirmDel, setConfirmDel] = useState(false);
+  const [toDelete, setToDelete] = useState<IVehiculoDatos | null>(null);
 
   const vehiculos = vehCrud.allQuery.data || [];
-  const clientes  = cliCrud.allQuery.data  || [];
-  const modelos   = modCrud.allQuery.data  || [];
-  const colores   = colCrud.allQuery.data  || [];
-  const marcas    = marCrud.allQuery.data  || [];
+  const clientes = cliCrud.allQuery.data || [];
+  const modelos = modCrud.allQuery.data || [];
+  const colores = colCrud.allQuery.data || [];
+  const marcas = marCrud.allQuery.data || [];
 
   const handleSearch: ChangeEventHandler<HTMLInputElement> = e => {
     setSearchTerm(e.target.value);
@@ -81,7 +81,7 @@ export default function VehiculoDatosPage() {
     return <Typography color="error">{loadError.message}</Typography>;
   }
 
-  const filtered  = vehiculos.filter(v =>
+  const filtered = vehiculos.filter(v =>
     v.chasis.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const paginated = filtered.slice(
@@ -94,7 +94,7 @@ export default function VehiculoDatosPage() {
   const closeForm = () => setOpenForm(false);
   const onSubmit = (data: Partial<IVehiculoDatos>) => {
     if (editData) vehCrud.updateM.mutate({ id: editData._id, data });
-    else          vehCrud.createM.mutate(data);
+    else vehCrud.createM.mutate(data);
     closeForm();
   };
 
@@ -147,9 +147,9 @@ export default function VehiculoDatosPage() {
                 ? modelos.find(m => m._id === v.id_modelo)
                 : (v.id_modelo as IModelosDatos);
               const modeloName = modeloObj?.nombre_modelo;
-              const brandId    = modeloObj?.id_marca;
-              const brandName  = marcas.find(mk => mk._id === brandId)?.nombre_marca;
-              const colorName  = typeof v.id_color === 'string'
+              const brandId = modeloObj?.id_marca;
+              const brandName = marcas.find(mk => mk._id === brandId)?.nombre_marca;
+              const colorName = typeof v.id_color === 'string'
                 ? colores.find(c => c._id === v.id_color)?.nombre_color
                 : (v.id_color as IColoresDatos)?.nombre_color;
 
@@ -160,10 +160,10 @@ export default function VehiculoDatosPage() {
                   sx={{ '&:hover': { backgroundColor: 'action.selected' } }}
                 >
                   <TableCell>{v.chasis}</TableCell>
-                  <TableCell>{clienteName  ?? '—'}</TableCell>
-                  <TableCell>{brandName    ?? '—'}</TableCell>
-                  <TableCell>{modeloName   ?? '—'}</TableCell>
-                  <TableCell>{colorName    ?? '—'}</TableCell>
+                  <TableCell>{clienteName ?? '—'}</TableCell>
+                  <TableCell>{brandName ?? '—'}</TableCell>
+                  <TableCell>{modeloName ?? '—'}</TableCell>
+                  <TableCell>{colorName ?? '—'}</TableCell>
                   <TableCell>{v.anio}</TableCell>
                   <TableCell>
                     <IconButton
@@ -214,7 +214,7 @@ export default function VehiculoDatosPage() {
       />
 
       <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
-        <DialogTitle sx={{ display:'flex', alignItems:'center', gap:1 }}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <WarningAmberIcon color="warning" /> ¿Eliminar este vehículo?
         </DialogTitle>
         <DialogActions>

@@ -27,19 +27,18 @@ export default function UsuariosPage() {
   const { allQuery, createM, updateM, deleteM } = useCrud<IUsuario>('usuarios')
   const usuarios = allQuery.data || []
 
-  const [searchTerm, setSearchTerm]     = useState('')
-  const [page, setPage]                 = useState(0)
-  const [rowsPerPage, setRowsPerPage]   = useState(5)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
 
-  const [openForm, setOpenForm]         = useState(false)
-  const [editData, setEditData]         = useState<IUsuario | null>(null)
-  const [confirmDel, setConfirmDel]     = useState(false)
-  const [toDelete, setToDelete]         = useState<IUsuario | null>(null)
+  const [openForm, setOpenForm] = useState(false)
+  const [editData, setEditData] = useState<IUsuario | null>(null)
+  const [confirmDel, setConfirmDel] = useState(false)
+  const [toDelete, setToDelete] = useState<IUsuario | null>(null)
 
   if (allQuery.isLoading) return <Typography>Loading…</Typography>
-  if (allQuery.error)     return <Typography color="error">{allQuery.error.message}</Typography>
+  if (allQuery.error) return <Typography color="error">{allQuery.error.message}</Typography>
 
-  // filtro y paginación
   const filtered = usuarios.filter(u =>
     (u.username ?? '').toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -48,7 +47,6 @@ export default function UsuariosPage() {
     page * rowsPerPage + rowsPerPage
   )
 
-  // handlers
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
     setPage(0)
@@ -61,8 +59,8 @@ export default function UsuariosPage() {
     setPage(0)
   }
 
-  const openNew   = () => { setEditData(null); setOpenForm(true) }
-  const openEdit  = (u: IUsuario) => { setEditData(u); setOpenForm(true) }
+  const openNew = () => { setEditData(null); setOpenForm(true) }
+  const openEdit = (u: IUsuario) => { setEditData(u); setOpenForm(true) }
   const closeForm = () => setOpenForm(false)
 
   const onSubmit = (data: Partial<IUsuario> & { password?: string }) => {
@@ -157,7 +155,6 @@ export default function UsuariosPage() {
         />
       </Paper>
 
-      {/* Modal Crear/Editar */}
       <UsuarioModal
         open={openForm}
         defaultData={editData ?? undefined}
@@ -165,7 +162,6 @@ export default function UsuariosPage() {
         onSubmit={onSubmit}
       />
 
-      {/* Confirm delete (si necesitas volver a usarlo) */}
       <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <WarningAmberIcon color="warning" fontSize="small" />

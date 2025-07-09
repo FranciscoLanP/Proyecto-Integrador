@@ -24,22 +24,22 @@ import type { IModelosDatos, IMarcaVehiculo } from '../types';
 import ModelosDatosModal from './ModelosDatosModal';
 
 export default function ModelosDatosPage(): JSX.Element {
-  const marcaCrud   = useCrud<IMarcaVehiculo>('marcasvehiculos');
+  const marcaCrud = useCrud<IMarcaVehiculo>('marcasvehiculos');
   const modelosCrud = useCrud<IModelosDatos>('modelosdatos');
   const { data: marcas = [], isLoading: loadingMarcas, error: errMarcas } = marcaCrud.allQuery;
   const { data: modelos = [], isLoading: loadingModelos, error: errModelos } = modelosCrud.allQuery;
 
-  const [searchTerm, setSearchTerm]     = useState('');
-  const [page, setPage]                 = useState(0);
-  const [rowsPerPage, setRowsPerPage]   = useState(5);
-  const [modalOpen, setModalOpen]       = useState(false);
-  const [editData, setEditData]         = useState<IModelosDatos | null>(null);
-  const [confirmDel, setConfirmDel]     = useState(false);
-  const [toDelete, setToDelete]         = useState<IModelosDatos | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editData, setEditData] = useState<IModelosDatos | null>(null);
+  const [confirmDel, setConfirmDel] = useState(false);
+  const [toDelete, setToDelete] = useState<IModelosDatos | null>(null);
 
   if (loadingMarcas || loadingModelos) return <Typography>Loading…</Typography>;
-  if (errMarcas)    return <Typography color="error">{errMarcas.message}</Typography>;
-  if (errModelos)   return <Typography color="error">{errModelos.message}</Typography>;
+  if (errMarcas) return <Typography color="error">{errMarcas.message}</Typography>;
+  if (errModelos) return <Typography color="error">{errModelos.message}</Typography>;
 
   const filtered = modelos.filter(m =>
     m.nombre_modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -47,23 +47,23 @@ export default function ModelosDatosPage(): JSX.Element {
   );
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  const handleSearch       = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
-  const handleChangePage   = (_: unknown, newPage: number)          => setPage(newPage);
-  const handleChangeRows   = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
+  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
+  const handleChangeRows = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     setRowsPerPage(parseInt(e.target.value, 10));
     setPage(0);
   };
 
-  const openNew  = () => { setEditData(null); setModalOpen(true); };
+  const openNew = () => { setEditData(null); setModalOpen(true); };
   const openEdit = (m: IModelosDatos) => { setEditData(m); setModalOpen(true); };
   const closeModal = () => setModalOpen(false);
   const handleSubmit = (payload: Partial<IModelosDatos>) => {
     if (editData) modelosCrud.updateM.mutate({ id: editData._id, data: payload });
-    else          modelosCrud.createM.mutate(payload);
+    else modelosCrud.createM.mutate(payload);
     setModalOpen(false);
   };
 
-  const askDelete   = (m: IModelosDatos) => { setToDelete(m); setConfirmDel(true); };
+  const askDelete = (m: IModelosDatos) => { setToDelete(m); setConfirmDel(true); };
   const confirmDelete = () => {
     if (toDelete) modelosCrud.deleteM.mutate(toDelete._id);
     setConfirmDel(false);
@@ -97,7 +97,7 @@ export default function ModelosDatosPage(): JSX.Element {
           </TableHead>
           <TableBody>
             {paginated.map((m, i) => {
-              const idx   = page * rowsPerPage + i + 1;
+              const idx = page * rowsPerPage + i + 1;
               const marca = marcas.find(mk => mk._id === m.id_marca)?.nombre_marca ?? '—';
               return (
                 <TableRow key={m._id} hover sx={{ '&:hover': { backgroundColor: 'action.selected' } }}>
@@ -105,8 +105,8 @@ export default function ModelosDatosPage(): JSX.Element {
                   <TableCell>{m.nombre_modelo}</TableCell>
                   <TableCell>{marca}</TableCell>
                   <TableCell align="right">
-                    <IconButton size="small" onClick={() => openEdit(m)}><EditIcon fontSize="small"/></IconButton>
-                    <IconButton size="small" color="error" onClick={() => askDelete(m)}><DeleteIcon fontSize="small"/></IconButton>
+                    <IconButton size="small" onClick={() => openEdit(m)}><EditIcon fontSize="small" /></IconButton>
+                    <IconButton size="small" color="error" onClick={() => askDelete(m)}><DeleteIcon fontSize="small" /></IconButton>
                   </TableCell>
                 </TableRow>
               );

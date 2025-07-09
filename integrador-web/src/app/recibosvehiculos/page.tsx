@@ -1,4 +1,3 @@
-// src/app/recibosvehiculos/page.tsx
 'use client';
 
 import React, { useState, ChangeEvent, JSX } from 'react';
@@ -24,26 +23,26 @@ import ReciboVehiculoModal from './ReciboVehiculoModal';
 
 export default function RecibosVehiculosPage(): JSX.Element {
   const reciboCrud = useCrud<IReciboVehiculo>('recibosvehiculos');
-  const recepCrud  = useCrud<IRecepcionVehiculo>('recepcionvehiculos');
-  const empCrud    = useCrud<IEmpleadoInformacion>('empleadoinformaciones');
-  const vehCrud    = useCrud<IVehiculoDatos>('vehiculodatos');
-  const cliCrud    = useCrud<ICliente>('clientes');
+  const recepCrud = useCrud<IRecepcionVehiculo>('recepcionvehiculos');
+  const empCrud = useCrud<IEmpleadoInformacion>('empleadoinformaciones');
+  const vehCrud = useCrud<IVehiculoDatos>('vehiculodatos');
+  const cliCrud = useCrud<ICliente>('clientes');
 
-  const { data: recibos    = [], isLoading: loadRec, error: errRec } = reciboCrud.allQuery;
+  const { data: recibos = [], isLoading: loadRec, error: errRec } = reciboCrud.allQuery;
   const { data: recepciones = [], isLoading: loadRep, error: errRep } = recepCrud.allQuery;
-  const { data: empleados   = [], isLoading: loadEmp, error: errEmp } = empCrud.allQuery;
-  const { data: vehiculos   = [], isLoading: loadVeh, error: errVeh } = vehCrud.allQuery;
-  const { data: clientes    = [], isLoading: loadCli, error: errCli } = cliCrud.allQuery;
+  const { data: empleados = [], isLoading: loadEmp, error: errEmp } = empCrud.allQuery;
+  const { data: vehiculos = [], isLoading: loadVeh, error: errVeh } = vehCrud.allQuery;
+  const { data: clientes = [], isLoading: loadCli, error: errCli } = cliCrud.allQuery;
 
-  const [searchTerm, setSearchTerm]   = useState('');
-  const [page,        setPage]        = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editData,  setEditData]  = useState<IReciboVehiculo | null>(null);
+  const [editData, setEditData] = useState<IReciboVehiculo | null>(null);
 
   const [confirmDel, setConfirmDel] = useState(false);
-  const [toDelete,   setToDelete]   = useState<IReciboVehiculo | null>(null);
+  const [toDelete, setToDelete] = useState<IReciboVehiculo | null>(null);
 
   if (loadRec || loadRep || loadEmp || loadVeh || loadCli) return <Typography>Loading…</Typography>;
   if (errRec) return <Typography color="error">{errRec.message}</Typography>;
@@ -70,35 +69,35 @@ export default function RecibosVehiculosPage(): JSX.Element {
     });
     const cli = veh
       ? clientes.find(c => {
-          const cid = typeof veh.id_cliente === 'string'
-            ? veh.id_cliente
-            : veh.id_cliente._id;
-          return cid === c._id;
-        })
+        const cid = typeof veh.id_cliente === 'string'
+          ? veh.id_cliente
+          : veh.id_cliente._id;
+        return cid === c._id;
+      })
       : null;
     return (
-      (cli?.nombre.toLowerCase()  ?? '').includes(term) ||
-      (veh?.chasis.toLowerCase()  ?? '').includes(term) ||
+      (cli?.nombre.toLowerCase() ?? '').includes(term) ||
+      (veh?.chasis.toLowerCase() ?? '').includes(term) ||
       (r.observaciones ?? '').toLowerCase().includes(term)
     );
   });
 
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  const handleSearch     = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
-  const handleChangePage = (_: unknown, newPage: number)          => setPage(newPage);
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
+  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
   const handleChangeRows = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     setRowsPerPage(parseInt(e.target.value, 10));
     setPage(0);
   };
 
-  const openNew    = () => { setEditData(null); setModalOpen(true); };
-  const openEdit   = (row: IReciboVehiculo) => { setEditData(row); setModalOpen(true); };
+  const openNew = () => { setEditData(null); setModalOpen(true); };
+  const openEdit = (row: IReciboVehiculo) => { setEditData(row); setModalOpen(true); };
   const closeModal = () => setModalOpen(false);
 
   const handleSubmit = async (payload: Partial<IReciboVehiculo>) => {
     if (editData) await reciboCrud.updateM.mutateAsync({ id: editData._id, data: payload });
-    else          await reciboCrud.createM.mutateAsync(payload);
+    else await reciboCrud.createM.mutateAsync(payload);
     await reciboCrud.allQuery.refetch();
     setModalOpen(false);
   };
@@ -128,11 +127,11 @@ export default function RecibosVehiculosPage(): JSX.Element {
     });
     const cli = veh
       ? clientes.find(c => {
-          const cid = typeof veh.id_cliente === 'string'
-            ? veh.id_cliente
-            : veh.id_cliente._id;
-          return cid === c._id;
-        })
+        const cid = typeof veh.id_cliente === 'string'
+          ? veh.id_cliente
+          : veh.id_cliente._id;
+        return cid === c._id;
+      })
       : null;
     const empleado = empleados.find(e => {
       const eid = typeof rec.id_empleadoInformacion === 'string'
@@ -141,7 +140,6 @@ export default function RecibosVehiculosPage(): JSX.Element {
       return eid === e._id;
     })?.nombre ?? '—';
 
-    // usamos la fecha/hora actual para el recibo
     const now = new Date().toLocaleString();
     const html = `
       <html>
@@ -222,19 +220,19 @@ export default function RecibosVehiculosPage(): JSX.Element {
               });
               const veh = rec
                 ? vehiculos.find(v => {
-                    const vid = typeof rec.id_vehiculo === 'string'
-                      ? rec.id_vehiculo
-                      : rec.id_vehiculo._id;
-                    return vid === v._id;
-                  })
+                  const vid = typeof rec.id_vehiculo === 'string'
+                    ? rec.id_vehiculo
+                    : rec.id_vehiculo._id;
+                  return vid === v._id;
+                })
                 : null;
               const cli = veh
                 ? clientes.find(c => {
-                    const cid = typeof veh.id_cliente === 'string'
-                      ? veh.id_cliente
-                      : veh.id_cliente._id;
-                    return cid === c._id;
-                  })
+                  const cid = typeof veh.id_cliente === 'string'
+                    ? veh.id_cliente
+                    : veh.id_cliente._id;
+                  return cid === c._id;
+                })
                 : null;
               return (
                 <TableRow key={r._id} hover>
@@ -244,13 +242,13 @@ export default function RecibosVehiculosPage(): JSX.Element {
                   <TableCell>{r.observaciones ?? '—'}</TableCell>
                   <TableCell align="right">
                     <IconButton size="small" onClick={() => handlePrint(r)}>
-                      <PrintIcon fontSize="small"/>
+                      <PrintIcon fontSize="small" />
                     </IconButton>
                     <IconButton size="small" onClick={() => openEdit(r)}>
-                      <EditIcon fontSize="small"/>
+                      <EditIcon fontSize="small" />
                     </IconButton>
                     <IconButton size="small" color="error" onClick={() => askDelete(r)}>
-                      <DeleteIcon fontSize="small"/>
+                      <DeleteIcon fontSize="small" />
                     </IconButton>
                   </TableCell>
                 </TableRow>

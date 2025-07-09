@@ -1,4 +1,3 @@
-// src/app/usuarios/UsuarioModal.tsx
 'use client'
 
 import React, { useEffect, useState } from 'react'
@@ -11,7 +10,7 @@ import { IUsuario, Role } from '../types'
 
 interface Props {
   open: boolean
-  defaultData?: IUsuario|null
+  defaultData?: IUsuario | null
   onClose: () => void
   onSubmit: (data: Partial<IUsuario>) => void
 }
@@ -21,20 +20,20 @@ export default function UsuarioModal({
 }: Props) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole]         = useState<Role>('empleado')
-  const [activo, setActivo]     = useState(true)
+  const [role, setRole] = useState<Role>('empleado')
+  const [activo, setActivo] = useState(true)
 
-  useEffect(()=>{
+  useEffect(() => {
     if (!open) return
     if (defaultData) {
       setUsername(defaultData.username)
-      setPassword('')    
+      setPassword('')
       setRole(defaultData.role)
       setActivo(defaultData.activo)
     } else {
       setUsername(''); setPassword(''); setRole('empleado'); setActivo(true)
     }
-  },[open,defaultData])
+  }, [open, defaultData])
 
   const handleSave = () => {
     onSubmit({
@@ -49,10 +48,10 @@ export default function UsuarioModal({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{position:'relative',pr:6}}>
+      <DialogTitle sx={{ position: 'relative', pr: 6 }}>
         {defaultData ? 'Editar Usuario' : 'Nuevo Usuario'}
-        <IconButton onClick={onClose} size="small" sx={{position:'absolute',right:8,top:8}}>
-          <CloseIcon fontSize="small"/>
+        <IconButton onClick={onClose} size="small" sx={{ position: 'absolute', right: 8, top: 8 }}>
+          <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
 
@@ -61,7 +60,7 @@ export default function UsuarioModal({
           <TextField
             label="Usuario"
             value={username}
-            onChange={e=>setUsername(e.target.value)}
+            onChange={e => setUsername(e.target.value)}
             required fullWidth size="small"
           />
 
@@ -69,7 +68,7 @@ export default function UsuarioModal({
             label={defaultData ? 'Nueva contraseña (opcional)' : 'Contraseña'}
             type="password"
             value={password}
-            onChange={e=>setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             required={!defaultData}
             fullWidth size="small"
           />
@@ -78,10 +77,10 @@ export default function UsuarioModal({
             select
             label="Rol"
             value={role}
-            onChange={e=>setRole(e.target.value as Role)}
+            onChange={e => setRole(e.target.value as Role)}
             fullWidth size="small"
           >
-            {['administrador','empleado'].map(r=>(
+            {['administrador', 'empleado'].map(r => (
               <MenuItem key={r} value={r}>{r}</MenuItem>
             ))}
           </TextField>
@@ -89,8 +88,8 @@ export default function UsuarioModal({
           <TextField
             select
             label="Activo"
-            value={activo? 'true':'false'}
-            onChange={e=>setActivo(e.target.value==='true')}
+            value={activo ? 'true' : 'false'}
+            onChange={e => setActivo(e.target.value === 'true')}
             fullWidth size="small"
           >
             <MenuItem value="true">Activo</MenuItem>
@@ -99,7 +98,7 @@ export default function UsuarioModal({
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{p:2}}>
+      <DialogActions sx={{ p: 2 }}>
         <Button onClick={onClose}>Cancelar</Button>
         <Button variant="contained" disabled={disabled} onClick={handleSave}>
           {defaultData ? 'Guardar cambios' : 'Crear Usuario'}

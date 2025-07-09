@@ -1,4 +1,3 @@
-// src/app/recibosvehiculos/ReciboVehiculoModal.tsx
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -34,9 +33,9 @@ export default function ReciboVehiculoModal({
   onClose,
   onSubmit
 }: Props) {
-  const [recepcionId, setRecepcionId]   = useState('');
+  const [recepcionId, setRecepcionId] = useState('');
   const [observaciones, setObservaciones] = useState('');
-  const [errors, setErrors]             = useState({ recepcion: false });
+  const [errors, setErrors] = useState({ recepcion: false });
 
   const initial = useRef({ recepcionId: '', observaciones: '' });
 
@@ -53,7 +52,7 @@ export default function ReciboVehiculoModal({
   }, [open, defaultData]);
 
   const isDirty = () =>
-    recepcionId   !== initial.current.recepcionId ||
+    recepcionId !== initial.current.recepcionId ||
     observaciones !== initial.current.observaciones;
 
   const tryClose = () => {
@@ -73,7 +72,7 @@ export default function ReciboVehiculoModal({
       <DialogTitle sx={{ position: 'relative', pr: 6 }}>
         {defaultData ? 'Editar Recibo' : 'Nuevo Recibo'}
         <IconButton onClick={tryClose} sx={{ position: 'absolute', right: 8, top: 8 }} size="small">
-          <CloseIcon fontSize="small"/>
+          <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
 
@@ -98,11 +97,11 @@ export default function ReciboVehiculoModal({
               });
               const cli = veh
                 ? clientes.find(c => {
-                    const cid = typeof veh.id_cliente === 'string'
-                      ? veh.id_cliente
-                      : veh.id_cliente._id;
-                    return cid === c._id;
-                  })
+                  const cid = typeof veh.id_cliente === 'string'
+                    ? veh.id_cliente
+                    : veh.id_cliente._id;
+                  return cid === c._id;
+                })
                 : null;
               const fecha = new Date(r.fecha).toLocaleString();
               const label = cli && veh

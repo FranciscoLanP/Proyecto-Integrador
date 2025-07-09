@@ -13,7 +13,7 @@ const queryClient = new QueryClient();
 function ProtectedApp({ children }: { children: ReactNode }) {
   const { auth } = useAuth();
   const pathname = usePathname();
-  const router   = useRouter();
+  const router = useRouter();
 
   useEffect(() => {
     if (!auth && pathname !== '/login') {

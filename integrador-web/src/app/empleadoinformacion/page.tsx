@@ -1,4 +1,3 @@
-// src/app/empleadoinformacion/page.tsx
 'use client';
 
 import React, { useState, ChangeEvent, JSX } from 'react';

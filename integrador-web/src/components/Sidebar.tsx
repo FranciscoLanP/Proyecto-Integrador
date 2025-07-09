@@ -37,36 +37,36 @@ import { JSX, useState } from 'react'
 import { useAuth } from '@/app/context/AuthContext'
 
 const navItems = [
-  { text: 'Dashboard',    icon: <DashboardIcon />, href: '/' },
-  { text: 'Clientes',     icon: <PeopleIcon />,    href: '/clientes' },
-  { text: 'Vehículos',    icon: <HomeIcon />,      href: '/vehiculodatos' },
-  { text: 'Pagos',        icon: <PaymentIcon />,   href: '/facturas' },
-  { text: 'Empleados',    icon: <WorkIcon />,      href: '/empleadoinformacion' },
-  { text: 'Recepciones',  icon: <CarRepairIcon />, href: '/recepcionvehiculos' },
-  { text: 'Recibos',      icon: <ReceiptIcon />,   href: '/recibosvehiculos' },
+  { text: 'Dashboard', icon: <DashboardIcon />, href: '/' },
+  { text: 'Clientes', icon: <PeopleIcon />, href: '/clientes' },
+  { text: 'Vehículos', icon: <HomeIcon />, href: '/vehiculodatos' },
+  { text: 'Pagos', icon: <PaymentIcon />, href: '/facturas' },
+  { text: 'Empleados', icon: <WorkIcon />, href: '/empleadoinformacion' },
+  { text: 'Recepciones', icon: <CarRepairIcon />, href: '/recepcionvehiculos' },
+  { text: 'Recibos', icon: <ReceiptIcon />, href: '/recibosvehiculos' },
   {
     text: 'Mantenimiento',
     icon: <BuildIcon />,
     children: [
-      { text: 'Marcas',     href: '/marcasvehiculos' },
-      { text: 'Modelos',    href: '/modelosdatos'    },
-      { text: 'Colores',    href: '/coloresVehiculos' },
-      { text: 'Ubicaciones', href: '/ubicaciones'     }
+      { text: 'Marcas', href: '/marcasvehiculos' },
+      { text: 'Modelos', href: '/modelosdatos' },
+      { text: 'Colores', href: '/coloresVehiculos' },
+      { text: 'Ubicaciones', href: '/ubicaciones' }
     ]
   },
-  { text: 'Usuarios',     icon: <PersonIcon />,    href: '/usuarios' },
-  { text: 'Mi Perfil',    icon: <PersonIcon />,    href: '/perfil' }
+  { text: 'Usuarios', icon: <PersonIcon />, href: '/usuarios' },
+  { text: 'Mi Perfil', icon: <PersonIcon />, href: '/perfil' }
 ]
 
 export default function Sidebar(): JSX.Element {
   const pathname = usePathname()
-  const [openMaint, setOpenMaint]         = useState(false)
+  const [openMaint, setOpenMaint] = useState(false)
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false)
   const { logout } = useAuth()
 
-  const handleLogoutClick   = () => setOpenLogoutDialog(true)
+  const handleLogoutClick = () => setOpenLogoutDialog(true)
   const handleLogoutConfirm = () => { setOpenLogoutDialog(false); logout() }
-  const handleLogoutCancel  = () => setOpenLogoutDialog(false)
+  const handleLogoutCancel = () => setOpenLogoutDialog(false)
 
   const buttonSx = {
     transition: 'all 0.3s',

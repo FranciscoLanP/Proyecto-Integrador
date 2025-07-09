@@ -1,4 +1,3 @@
-// src/app/empleadoinformacion/EmpleadoInformacionModal.tsx
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -42,16 +41,13 @@ export default function EmpleadoInformacionModal({
 
   const initial = useRef({ tipoId: '', nombre: '', telefono: '', correo: '' });
 
-  // Formatea teléfono a "(123)- 456-7890"
   const formatPhone = (v: string) => {
     const d = v.replace(/\D/g, '').slice(0, 10);
     if (d.length <= 3) return `(${d}`;
     if (d.length <= 6) return `(${d.slice(0, 3)})- ${d.slice(3)}`;
     return `(${d.slice(0, 3)})- ${d.slice(3, 6)}-${d.slice(6)}`;
   };
-  // Valida solo números y formato completo
   const validPhone = (v: string) => /^\(\d{3}\)- \d{3}-\d{4}$/.test(v);
-  // Solo Gmail válido
   const validGmail = (v: string) => /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(v);
 
   useEffect(() => {

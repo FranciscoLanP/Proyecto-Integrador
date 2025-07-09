@@ -64,7 +64,6 @@ const VehiculoModal: React.FC<Props> = ({
       setChasis(defaultData.chasis ?? '');
       setAnio(defaultData.anio ?? '');
 
-      // --- Extraer ID de cliente (string o populated object)
       const rawCli = defaultData.id_cliente;
       const cliVal =
         rawCli != null
@@ -74,7 +73,6 @@ const VehiculoModal: React.FC<Props> = ({
           : '';
       setClienteId(cliVal);
 
-      // --- Extraer ID de modelo
       const rawMod = defaultData.id_modelo;
       const modVal =
         rawMod != null
@@ -84,11 +82,9 @@ const VehiculoModal: React.FC<Props> = ({
           : '';
       setModeloId(modVal);
 
-      // --- Con ese modelo, saco la marca
       const modeloEdit = modelos.find(m => m._id === modVal);
       setMarcaId(modeloEdit?.id_marca ?? '');
 
-      // --- Extraer ID de color
       const rawCol = defaultData.id_color;
       const colVal =
         rawCol != null

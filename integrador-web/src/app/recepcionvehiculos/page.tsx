@@ -20,25 +20,25 @@ import type { IVehiculoDatos } from '../types';
 import RecepcionVehiculoModal from './RecepcionVehiculoModal';
 
 export default function RecepcionVehiculosPage(): JSX.Element {
-  const recepCrud  = useCrud<IRecepcionVehiculo>('recepcionvehiculos');
-  const cliCrud    = useCrud<ICliente>('clientes');
-  const empCrud    = useCrud<IEmpleadoInformacion>('empleadoinformaciones');
-  const vehCrud    = useCrud<IVehiculoDatos>('vehiculodatos');
+  const recepCrud = useCrud<IRecepcionVehiculo>('recepcionvehiculos');
+  const cliCrud = useCrud<ICliente>('clientes');
+  const empCrud = useCrud<IEmpleadoInformacion>('empleadoinformaciones');
+  const vehCrud = useCrud<IVehiculoDatos>('vehiculodatos');
 
   const { data: recepciones = [], isLoading: loadRec, error: errRec } = recepCrud.allQuery;
-  const { data: clientes   = [], isLoading: loadCli, error: errCli  } = cliCrud.allQuery;
-  const { data: empleados  = [], isLoading: loadEmp, error: errEmp } = empCrud.allQuery;
-  const { data: vehiculos  = [], isLoading: loadVeh, error: errVeh } = vehCrud.allQuery;
+  const { data: clientes = [], isLoading: loadCli, error: errCli } = cliCrud.allQuery;
+  const { data: empleados = [], isLoading: loadEmp, error: errEmp } = empCrud.allQuery;
+  const { data: vehiculos = [], isLoading: loadVeh, error: errVeh } = vehCrud.allQuery;
 
-  const [searchTerm, setSearchTerm]   = useState('');
-  const [page,        setPage]        = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editData,  setEditData]  = useState<IRecepcionVehiculo | null>(null);
+  const [editData, setEditData] = useState<IRecepcionVehiculo | null>(null);
 
   const [confirmDel, setConfirmDel] = useState(false);
-  const [toDelete,   setToDelete]   = useState<IRecepcionVehiculo | null>(null);
+  const [toDelete, setToDelete] = useState<IRecepcionVehiculo | null>(null);
 
   if (loadRec || loadCli || loadEmp || loadVeh) return <Typography>Loading…</Typography>;
   if (errRec) return <Typography color="error">{errRec.message}</Typography>;
@@ -55,19 +55,19 @@ export default function RecepcionVehiculosPage(): JSX.Element {
       : '';
     const empleado = rec
       ? empleados.find(e => {
-          const eid = typeof rec.id_empleadoInformacion === 'string'
-            ? rec.id_empleadoInformacion
-            : rec.id_empleadoInformacion._id;
-          return eid === e._id;
-        })?.nombre.toLowerCase() ?? ''
+        const eid = typeof rec.id_empleadoInformacion === 'string'
+          ? rec.id_empleadoInformacion
+          : rec.id_empleadoInformacion._id;
+        return eid === e._id;
+      })?.nombre.toLowerCase() ?? ''
       : '';
     const veh = rec
       ? vehiculos.find(v => {
-          const vid = typeof rec.id_vehiculo === 'string'
-            ? rec.id_vehiculo
-            : rec.id_vehiculo._id;
-          return vid === v._id;
-        })?.chasis.toLowerCase() ?? ''
+        const vid = typeof rec.id_vehiculo === 'string'
+          ? rec.id_vehiculo
+          : rec.id_vehiculo._id;
+        return vid === v._id;
+      })?.chasis.toLowerCase() ?? ''
       : '';
     const prob = (r.problema_reportado ?? '').toLowerCase();
 
@@ -81,20 +81,20 @@ export default function RecepcionVehiculosPage(): JSX.Element {
 
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  const handleSearch     = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
-  const handleChangePage = (_: unknown, newPage: number)          => setPage(newPage);
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
+  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
   const handleChangeRows = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     setRowsPerPage(parseInt(e.target.value, 10));
     setPage(0);
   };
 
-  const openNew    = () => { setEditData(null); setModalOpen(true); };
-  const openEdit   = (row: IRecepcionVehiculo) => { setEditData(row); setModalOpen(true); };
+  const openNew = () => { setEditData(null); setModalOpen(true); };
+  const openEdit = (row: IRecepcionVehiculo) => { setEditData(row); setModalOpen(true); };
   const closeModal = () => setModalOpen(false);
 
   const handleSubmit = async (payload: Partial<IRecepcionVehiculo>) => {
     if (editData) await recepCrud.updateM.mutateAsync({ id: editData._id, data: payload });
-    else          await recepCrud.createM.mutateAsync(payload);
+    else await recepCrud.createM.mutateAsync(payload);
     await recepCrud.allQuery.refetch();
     setModalOpen(false);
   };
@@ -136,19 +136,19 @@ export default function RecepcionVehiculosPage(): JSX.Element {
           </TableHead>
           <TableBody>
             {paginated.map((r, i) => {
-              const idx = page*rowsPerPage + i + 1;
+              const idx = page * rowsPerPage + i + 1;
               const fecha = new Date(r.fecha).toLocaleString();
               const empleado = empleados.find(e => {
                 const eid = typeof r.id_empleadoInformacion === 'string'
                   ? r.id_empleadoInformacion
                   : r.id_empleadoInformacion._id;
-                return eid===e._id;
+                return eid === e._id;
               })?.nombre ?? '—';
               const chasis = vehiculos.find(v => {
                 const vid = typeof r.id_vehiculo === 'string'
                   ? r.id_vehiculo
                   : r.id_vehiculo._id;
-                return vid===v._id;
+                return vid === v._id;
               })?.chasis ?? '—';
 
               return (
@@ -160,11 +160,11 @@ export default function RecepcionVehiculosPage(): JSX.Element {
                   <TableCell>{r.problema_reportado ?? '—'}</TableCell>
                   <TableCell>{r.comentario ?? '—'}</TableCell>
                   <TableCell align="right">
-                    <IconButton size="small" onClick={()=>openEdit(r)}>
-                      <EditIcon fontSize="small"/>
+                    <IconButton size="small" onClick={() => openEdit(r)}>
+                      <EditIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" color="error" onClick={()=>askDelete(r)}>
-                      <DeleteIcon fontSize="small"/>
+                    <IconButton size="small" color="error" onClick={() => askDelete(r)}>
+                      <DeleteIcon fontSize="small" />
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -180,9 +180,9 @@ export default function RecepcionVehiculosPage(): JSX.Element {
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRows}
-          rowsPerPageOptions={[5,10,25]}
+          rowsPerPageOptions={[5, 10, 25]}
           labelRowsPerPage="Ver"
-          labelDisplayedRows={({from,to,count})=>`${from}-${to} de ${count}`}
+          labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
         />
       </Paper>
 
@@ -196,12 +196,12 @@ export default function RecepcionVehiculosPage(): JSX.Element {
         onSubmit={handleSubmit}
       />
 
-      <Dialog open={confirmDel} onClose={()=>setConfirmDel(false)}>
-        <DialogTitle sx={{display:'flex',alignItems:'center',gap:1}}>
-          <WarningAmberIcon color="warning"/> ¿Eliminar esta recepción?
+      <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningAmberIcon color="warning" /> ¿Eliminar esta recepción?
         </DialogTitle>
         <DialogActions>
-          <Button onClick={()=>setConfirmDel(false)}>Cancelar</Button>
+          <Button onClick={() => setConfirmDel(false)}>Cancelar</Button>
           <Button color="error" variant="contained" onClick={confirmDelete}>
             Eliminar
           </Button>
