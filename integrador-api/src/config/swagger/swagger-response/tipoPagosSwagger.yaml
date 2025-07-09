@@ -1,3 +1,7 @@
+openapi: 3.0.0
+info:
+  title: API Tipos de Pago
+  version: '1.0'
 paths:
   /api/tipospagos:
     get:
@@ -94,7 +98,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TiposPagos'
         '404':
-          description: No encontrada
+          description: No encontrado
           content:
             application/json:
               schema:
@@ -117,7 +121,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TiposPagos'
         '404':
-          description: No encontrada
+          description: No encontrado
           content:
             application/json:
               schema:
@@ -130,7 +134,7 @@ paths:
         '204':
           description: Eliminado exitosamente
         '404':
-          description: No encontrada
+          description: No encontrado
           content:
             application/json:
               schema:
@@ -145,6 +149,11 @@ components:
           type: string
         nombre_tipo:
           type: string
+          enum:
+            - Cheque
+            - Transferencia
+            - Efectivo
+            - Tarjeta
       required:
         - _id
         - nombre_tipo
@@ -154,6 +163,11 @@ components:
       properties:
         nombre_tipo:
           type: string
+          enum:
+            - Cheque
+            - Transferencia
+            - Efectivo
+            - Tarjeta
       required:
         - nombre_tipo
 

@@ -1,11 +1,11 @@
-import  {RecepcionVehiculo, type IRecepcionVehiculo } from '../models/recepcionVehiculo'
+import { RecepcionVehiculo, type IRecepcionVehiculo } from '../models/recepcionVehiculo'
 import type { SeedContext } from './seedContext'
 
 export const seedRecepcionVehiculo = async (context: SeedContext): Promise<void> => {
   try {
     const recepcionesData: Partial<IRecepcionVehiculo>[] = [
       {
-        id_empleado: context.empleadoInformacion!._id,
+        id_empleadoInformacion: context.empleadoInformacion!._id,
         id_vehiculo: context.vehiculoDatos!._id,
         comentario: 'Vehículo ingresado con problema en frenos',
         problema_reportado: 'Frenos desgastados'

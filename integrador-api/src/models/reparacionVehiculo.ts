@@ -3,7 +3,7 @@ import { Schema, model, Document } from 'mongoose';
 export interface IReparacionVehiculo extends Document {
     _id: Schema.Types.ObjectId;
     id_inspeccion: Schema.Types.ObjectId;
-    id_empleado: Schema.Types.ObjectId;
+    id_empleadoInformacion: Schema.Types.ObjectId;
     fecha_inicio: Date;
     fecha_fin?: Date;
     descripcion: string;
@@ -13,11 +13,11 @@ export interface IReparacionVehiculo extends Document {
 const ReparacionVehiculoSchema = new Schema<IReparacionVehiculo>({
 
     id_inspeccion: { type: Schema.Types.ObjectId, ref: 'InspeccionVehiculo', required: true },
-    id_empleado: { type: Schema.Types.ObjectId, ref: 'EmpleadoInformacion', required: true },
+    id_empleadoInformacion: { type: Schema.Types.ObjectId, ref: 'EmpleadoInformacion', required: true },
     fecha_inicio: { type: Date, required: true, default: Date.now },
     fecha_fin: { type: Date, required: false },
     descripcion: { type: String, required: true },
-    costo_total: { type: Number, required: false }  
+    costo_total: { type: Number, required: false }
 });
 
 export const ReparacionVehiculo = model<IReparacionVehiculo>(

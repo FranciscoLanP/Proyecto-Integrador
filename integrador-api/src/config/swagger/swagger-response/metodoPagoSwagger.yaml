@@ -1,3 +1,8 @@
+# metodopago.swagger.yaml
+openapi: 3.0.0
+info:
+  title: API Métodos de Pago
+  version: '1.0'
 paths:
   /api/metodospagos:
     get:
@@ -9,7 +14,7 @@ paths:
           name: search
           schema:
             type: string
-          description: Filtrar por nombre o ID de método
+          description: Filtrar por nombre_metodo o id_tipo_pago
       responses:
         '200':
           description: Lista de métodos de pago
@@ -36,7 +41,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MetodoPago'
-
   /api/metodospagos/paginado:
     get:
       tags:
@@ -57,7 +61,7 @@ paths:
           name: search
           schema:
             type: string
-          description: Filtrar por nombre o ID de método
+          description: Filtrar por nombre_metodo o id_tipo_pago
       responses:
         '200':
           description: Resultado paginado de métodos de pago
@@ -76,7 +80,6 @@ paths:
                     type: integer
                   totalCount:
                     type: integer
-
   /api/metodospagos/{id}:
     parameters:
       - in: path
@@ -145,28 +148,30 @@ components:
       properties:
         _id:
           type: string
-        id_metodo_pago:
-          type: integer
-        nombre_metodo:
-          type: string
         id_tipo_pago:
           type: string
+        nombre_metodo:
+          type: string
+          enum:
+            - Contado
+            - Credito
       required:
         - _id
-        - id_metodo_pago
+        - id_tipo_pago
         - nombre_metodo
 
     MetodoPagoInput:
       type: object
       properties:
-        id_metodo_pago:
-          type: integer
-        nombre_metodo:
-          type: string
         id_tipo_pago:
           type: string
+        nombre_metodo:
+          type: string
+          enum:
+            - Contado
+            - Credito
       required:
-        - id_metodo_pago
+        - id_tipo_pago
         - nombre_metodo
 
     Error:

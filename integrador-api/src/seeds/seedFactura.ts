@@ -1,4 +1,4 @@
-import  { Factura,type IFactura } from '../models/factura'
+import { Factura, type IFactura } from '../models/factura'
 import type { SeedContext } from './seedContext'
 
 export const seedFactura = async (context: SeedContext): Promise<void> => {
@@ -9,12 +9,12 @@ export const seedFactura = async (context: SeedContext): Promise<void> => {
 
     const facturasData: Partial<IFactura>[] = [
       {
-        id_reparacion:   context.reparacionVehiculo!._id,
-        id_empleado:     context.empleadoInformacion!._id,
-        sub_total:       2500,
-        descuento:       0,
-        total:           2500,
-        id_metodo_pago:  context.metodoPago!._id as any
+        id_reparacion: context.reparacionVehiculo!._id,
+        id_empleadoInformacion: context.empleadoInformacion!._id,
+        sub_total: 2500,
+        descuento: 0,
+        total: 2500,
+        id_metodo_pago: context.metodoPago!._id as any
       }
     ]
 

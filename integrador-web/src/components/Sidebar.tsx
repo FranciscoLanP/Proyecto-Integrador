@@ -24,6 +24,9 @@ import {
   People as PeopleIcon,
   Home as HomeIcon,
   Payment as PaymentIcon,
+  Work as WorkIcon,
+  CarRepair as CarRepairIcon,
+  Receipt as ReceiptIcon,
   Build as BuildIcon,
   ExpandLess,
   ExpandMore,
@@ -34,33 +37,36 @@ import { JSX, useState } from 'react'
 import { useAuth } from '@/app/context/AuthContext'
 
 const navItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, href: '/' },
-  { text: 'Clientes', icon: <PeopleIcon />, href: '/clientes' },
-  { text: 'Vehículos', icon: <HomeIcon />, href: '/vehiculodatos' },
-  { text: 'Pagos', icon: <PaymentIcon />, href: '/facturas' },
+  { text: 'Dashboard',    icon: <DashboardIcon />, href: '/' },
+  { text: 'Clientes',     icon: <PeopleIcon />,    href: '/clientes' },
+  { text: 'Vehículos',    icon: <HomeIcon />,      href: '/vehiculodatos' },
+  { text: 'Pagos',        icon: <PaymentIcon />,   href: '/facturas' },
+  { text: 'Empleados',    icon: <WorkIcon />,      href: '/empleadoinformacion' },
+  { text: 'Recepciones',  icon: <CarRepairIcon />, href: '/recepcionvehiculos' },
+  { text: 'Recibos',      icon: <ReceiptIcon />,   href: '/recibosvehiculos' },
   {
     text: 'Mantenimiento',
     icon: <BuildIcon />,
     children: [
-      { text: 'Marcas',   href: '/marcasvehiculos' },
-      { text: 'Modelos',  href: '/modelosdatos'    },
-      { text: 'Colores',  href: '/coloresVehiculos' },
-      { text: 'Ubicaciones', href: '/ubicaciones'   }
+      { text: 'Marcas',     href: '/marcasvehiculos' },
+      { text: 'Modelos',    href: '/modelosdatos'    },
+      { text: 'Colores',    href: '/coloresVehiculos' },
+      { text: 'Ubicaciones', href: '/ubicaciones'     }
     ]
   },
-  { text: 'Usuarios', icon: <PersonIcon />, href: '/usuarios' },
-  { text: 'Mi Perfil', icon: <PersonIcon />, href: '/perfil' }
+  { text: 'Usuarios',     icon: <PersonIcon />,    href: '/usuarios' },
+  { text: 'Mi Perfil',    icon: <PersonIcon />,    href: '/perfil' }
 ]
 
 export default function Sidebar(): JSX.Element {
   const pathname = usePathname()
-  const [openMaint, setOpenMaint] = useState<boolean>(false)
-  const [openLogoutDialog, setOpenLogoutDialog] = useState<boolean>(false)
+  const [openMaint, setOpenMaint]         = useState(false)
+  const [openLogoutDialog, setOpenLogoutDialog] = useState(false)
   const { logout } = useAuth()
 
-  const handleLogoutClick = (): void => setOpenLogoutDialog(true)
-  const handleLogoutConfirm = (): void => { setOpenLogoutDialog(false); logout() }
-  const handleLogoutCancel = (): void => setOpenLogoutDialog(false)
+  const handleLogoutClick   = () => setOpenLogoutDialog(true)
+  const handleLogoutConfirm = () => { setOpenLogoutDialog(false); logout() }
+  const handleLogoutCancel  = () => setOpenLogoutDialog(false)
 
   const buttonSx = {
     transition: 'all 0.3s',
@@ -167,10 +173,7 @@ export default function Sidebar(): JSX.Element {
           )}
 
           <ListItem disablePadding sx={{ mt: 2 }}>
-            <ListItemButton
-              onClick={handleLogoutClick}
-              sx={buttonSx}
-            >
+            <ListItemButton onClick={handleLogoutClick} sx={buttonSx}>
               <ListItemIcon>
                 <ExitToAppIcon color="error" />
               </ListItemIcon>
@@ -189,9 +192,7 @@ export default function Sidebar(): JSX.Element {
         aria-labelledby="confirm-logout-title"
         PaperProps={{ sx: { borderRadius: 2 } }}
       >
-        <DialogTitle id="confirm-logout-title">
-          Confirmar cierre de sesión
-        </DialogTitle>
+        <DialogTitle id="confirm-logout-title">Confirmar cierre de sesión</DialogTitle>
         <DialogContent>
           <DialogContentText>
             ¿Estás seguro de que deseas cerrar sesión?

@@ -24,11 +24,8 @@ function ProtectedApp({ children }: { children: ReactNode }) {
     }
   }, [auth, pathname, router]);
 
-  // si estamos en /login, renderizamos la página de login
   if (pathname === '/login') return <>{children}</>;
-  // mientras no tenga auth, no renderiza nada
   if (!auth) return null;
-  // resto de la app
   return <Layout>{children}</Layout>;
 }
 

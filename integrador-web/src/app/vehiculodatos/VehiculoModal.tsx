@@ -53,7 +53,6 @@ const VehiculoModal: React.FC<Props> = ({
   const [colorId, setColorId] = useState('');
   const [chasisError, setChasisError] = useState('');
 
-  // años entre 1980 y actual
   const currentYear = new Date().getFullYear();
   const years = Array.from(
     { length: currentYear - 1980 + 1 },
@@ -61,14 +60,44 @@ const VehiculoModal: React.FC<Props> = ({
   );
 
   useEffect(() => {
-    if (open) {
-      setChasis(defaultData?.chasis ?? '');
-      setAnio(defaultData?.anio ?? '');
-      setClienteId(defaultData?.id_cliente.toString() ?? '');
-      const modeloEdit = modelos.find(m => m._id === defaultData?.id_modelo);
-      setMarcaId(modeloEdit?.id_marca.toString() ?? '');
-      setModeloId(defaultData?.id_modelo.toString() ?? '');
-      setColorId(defaultData?.id_color.toString() ?? '');
+    if (open && defaultData) {
+      setChasis(defaultData.chasis ?? '');
+      setAnio(defaultData.anio ?? '');
+
+      // --- Extraer ID de cliente (string o populated object)
+      const rawCli = defaultData.id_cliente;
+      const cliVal =
+        rawCli != null
+          ? typeof rawCli === 'string'
+            ? rawCli
+            : rawCli._id
+          : '';
+      setClienteId(cliVal);
+
+      // --- Extraer ID de modelo
+      const rawMod = defaultData.id_modelo;
+      const modVal =
+        rawMod != null
+          ? typeof rawMod === 'string'
+            ? rawMod
+            : rawMod._id
+          : '';
+      setModeloId(modVal);
+
+      // --- Con ese modelo, saco la marca
+      const modeloEdit = modelos.find(m => m._id === modVal);
+      setMarcaId(modeloEdit?.id_marca ?? '');
+
+      // --- Extraer ID de color
+      const rawCol = defaultData.id_color;
+      const colVal =
+        rawCol != null
+          ? typeof rawCol === 'string'
+            ? rawCol
+            : rawCol._id
+          : '';
+      setColorId(colVal);
+
       setChasisError('');
     } else {
       setChasis('');
@@ -81,19 +110,19 @@ const VehiculoModal: React.FC<Props> = ({
     }
   }, [open, defaultData, modelos]);
 
-  const handleChasisChange = (v: string) => {
+  const handleChasisChange = (v: string): void => {
     const s = v.toUpperCase().replace(/\s+/g, '');
     setChasis(s);
     setChasisError(s.length < 5 ? 'Chasis muy corto' : '');
   };
 
-  const onMarcaChange = (id: string) => {
+  const onMarcaChange = (id: string): void => {
     setMarcaId(id);
     setModeloId('');
   };
 
   const modelosFiltrados = modelos.filter(
-    m => m.id_marca.toString() === marcaId
+    m => m.id_marca === marcaId
   );
 
   const disabledSave =
@@ -105,7 +134,7 @@ const VehiculoModal: React.FC<Props> = ({
     !colorId ||
     !!chasisError;
 
-  const handleSave = () => {
+  const handleSave = (): void => {
     if (!disabledSave) {
       onSubmit({
         chasis,
@@ -133,7 +162,6 @@ const VehiculoModal: React.FC<Props> = ({
       <DialogContent dividers>
         <Box display="flex" flexDirection="column" gap={2}>
 
-          {/* Chasis */}
           <TextField
             label="Chasis"
             value={chasis}
@@ -144,7 +172,6 @@ const VehiculoModal: React.FC<Props> = ({
             fullWidth
           />
 
-          {/* Selector de Año */}
           <FormControl fullWidth required>
             <InputLabel id="year-label">Año</InputLabel>
             <Select
@@ -164,7 +191,6 @@ const VehiculoModal: React.FC<Props> = ({
             </Select>
           </FormControl>
 
-          {/* Cliente */}
           <TextField
             select
             label="Cliente"
@@ -180,7 +206,6 @@ const VehiculoModal: React.FC<Props> = ({
             ))}
           </TextField>
 
-          {/* Marca */}
           <TextField
             select
             label="Marca"
@@ -196,7 +221,6 @@ const VehiculoModal: React.FC<Props> = ({
             ))}
           </TextField>
 
-          {/* Modelo */}
           <TextField
             select
             label="Modelo"
@@ -213,7 +237,6 @@ const VehiculoModal: React.FC<Props> = ({
             ))}
           </TextField>
 
-          {/* Color */}
           <TextField
             select
             label="Color"

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, ChangeEvent, ChangeEventHandler } from 'react';
+import React, { useState, ChangeEvent, ChangeEventHandler } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -32,14 +32,12 @@ import type {
 import VehiculoModal from './VehiculoModal';
 
 export default function VehiculoDatosPage() {
-  // 1) Hooks de datos (useCrud) - siempre al inicio
   const vehCrud = useCrud<IVehiculoDatos>('vehiculodatos');
   const cliCrud = useCrud<ICliente>('clientes');
   const modCrud = useCrud<IModelosDatos>('modelosdatos');
   const colCrud = useCrud<IColoresDatos>('coloresdatos');
   const marCrud = useCrud<IMarcaVehiculo>('marcasvehiculos');
 
-  // 2) Hooks de estado UI - también incondicionales
   const [searchTerm, setSearchTerm]   = useState('');
   const [page, setPage]               = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -48,14 +46,12 @@ export default function VehiculoDatosPage() {
   const [confirmDel, setConfirmDel]   = useState(false);
   const [toDelete, setToDelete]       = useState<IVehiculoDatos | null>(null);
 
-  // 3) Extracción de los arrays de datos
   const vehiculos = vehCrud.allQuery.data || [];
   const clientes  = cliCrud.allQuery.data  || [];
   const modelos   = modCrud.allQuery.data  || [];
   const colores   = colCrud.allQuery.data  || [];
   const marcas    = marCrud.allQuery.data  || [];
 
-  // 4) Manejadores de búsqueda/paginación
   const handleSearch: ChangeEventHandler<HTMLInputElement> = e => {
     setSearchTerm(e.target.value);
     setPage(0);
@@ -66,7 +62,6 @@ export default function VehiculoDatosPage() {
     setPage(0);
   };
 
-  // 5) Condicionales de carga/errores (AHORA después de declarar todos los hooks)
   if (
     vehCrud.allQuery.isLoading ||
     cliCrud.allQuery.isLoading ||
@@ -86,7 +81,6 @@ export default function VehiculoDatosPage() {
     return <Typography color="error">{loadError.message}</Typography>;
   }
 
-  // 6) Filtrado y paginación de vehículos
   const filtered  = vehiculos.filter(v =>
     v.chasis.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -95,7 +89,6 @@ export default function VehiculoDatosPage() {
     page * rowsPerPage + rowsPerPage
   );
 
-  // 7) CRUD modals / toggles
   const openNew = () => { setEditData(null); setOpenForm(true); };
   const openEdit = (v: IVehiculoDatos) => { setEditData(v); setOpenForm(true); };
   const closeForm = () => setOpenForm(false);
@@ -116,7 +109,6 @@ export default function VehiculoDatosPage() {
     vehCrud.updateM.mutate({ id: v._id, data: { activo: !v.activo } });
   };
 
-  // 8) Render final
   return (
     <Box p={3}>
       <Typography variant="h5" gutterBottom>Gestión de Vehículos</Typography>
@@ -162,7 +154,11 @@ export default function VehiculoDatosPage() {
                 : (v.id_color as IColoresDatos)?.nombre_color;
 
               return (
-                <TableRow key={v._id} hover sx={{ '&:hover': { backgroundColor: 'action.selected' } }}>
+                <TableRow
+                  key={v._id}
+                  hover
+                  sx={{ '&:hover': { backgroundColor: 'action.selected' } }}
+                >
                   <TableCell>{v.chasis}</TableCell>
                   <TableCell>{clienteName  ?? '—'}</TableCell>
                   <TableCell>{brandName    ?? '—'}</TableCell>
@@ -170,13 +166,21 @@ export default function VehiculoDatosPage() {
                   <TableCell>{colorName    ?? '—'}</TableCell>
                   <TableCell>{v.anio}</TableCell>
                   <TableCell>
-                    <IconButton size="small" onClick={() => toggleActivo(v)} color={v.activo ? 'success' : 'warning'}>
-                      {v.activo ? <VisibilityIcon fontSize="small"/> : <VisibilityOffIcon fontSize="small"/>}
+                    <IconButton
+                      size="small"
+                      onClick={() => toggleActivo(v)}
+                      color={v.activo ? 'success' : 'warning'}
+                    >
+                      {v.activo ? <VisibilityIcon fontSize="small" /> : <VisibilityOffIcon fontSize="small" />}
                     </IconButton>
                   </TableCell>
                   <TableCell align="right">
-                    <IconButton size="small" onClick={() => openEdit(v)}><EditIcon fontSize="small"/></IconButton>
-                    <IconButton size="small" color="error" onClick={() => askDelete(v)}><DeleteIcon fontSize="small"/></IconButton>
+                    <IconButton size="small" onClick={() => openEdit(v)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" color="error" onClick={() => askDelete(v)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               );
@@ -211,7 +215,7 @@ export default function VehiculoDatosPage() {
 
       <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
         <DialogTitle sx={{ display:'flex', alignItems:'center', gap:1 }}>
-          <WarningAmberIcon color="warning"/> ¿Eliminar este vehículo?
+          <WarningAmberIcon color="warning" /> ¿Eliminar este vehículo?
         </DialogTitle>
         <DialogActions>
           <Button onClick={() => setConfirmDel(false)}>Cancelar</Button>

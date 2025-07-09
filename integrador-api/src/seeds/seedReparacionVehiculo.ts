@@ -1,4 +1,4 @@
-import  {ReparacionVehiculo, type IReparacionVehiculo } from '../models/reparacionVehiculo'
+import { ReparacionVehiculo, type IReparacionVehiculo } from '../models/reparacionVehiculo'
 import type { SeedContext } from './seedContext'
 
 export const seedReparacionVehiculo = async (context: SeedContext): Promise<void> => {
@@ -6,7 +6,7 @@ export const seedReparacionVehiculo = async (context: SeedContext): Promise<void
     const reparacionesData: Partial<IReparacionVehiculo>[] = [
       {
         id_inspeccion: context.inspeccionVehiculo!._id,
-        id_empleado: context.empleadoInformacion!._id,
+        id_empleadoInformacion: context.empleadoInformacion!._id,
         descripcion: 'Cambio de pastillas y aceite',
         costo_total: 2500
       }

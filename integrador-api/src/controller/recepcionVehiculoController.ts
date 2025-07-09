@@ -1,13 +1,19 @@
+// src/controllers/recepcionVehiculoController.ts
+
 import { Request, Response, NextFunction } from 'express'
 import { RecepcionVehiculo } from '../models/recepcionVehiculo'
 
-export const getAllRecepcionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getAllRecepcionVehiculo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { search } = req.query as { search?: string }
     const filter = search
       ? {
           $or: [
-            { id_empleado: search },
+            { id_empleadoInformacion: search },
             { id_vehiculo: search },
             { comentario: { $regex: search, $options: 'i' } },
             { problema_reportado: { $regex: search, $options: 'i' } }
@@ -21,7 +27,11 @@ export const getAllRecepcionVehiculo = async (req: Request, res: Response, next:
   }
 }
 
-export const getPaginatedRecepcionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getPaginatedRecepcionVehiculo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const page = parseInt((req.query.page as string) ?? '1', 10)
     const limit = parseInt((req.query.limit as string) ?? '10', 10)
@@ -29,7 +39,7 @@ export const getPaginatedRecepcionVehiculo = async (req: Request, res: Response,
     const filter = search
       ? {
           $or: [
-            { id_empleado: search },
+            { id_empleadoInformacion: search },
             { id_vehiculo: search },
             { comentario: { $regex: search, $options: 'i' } },
             { problema_reportado: { $regex: search, $options: 'i' } }
@@ -47,7 +57,11 @@ export const getPaginatedRecepcionVehiculo = async (req: Request, res: Response,
   }
 }
 
-export const getRecepcionVehiculoById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getRecepcionVehiculoById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const item = await RecepcionVehiculo.findById(req.params.id)
     if (!item) {
@@ -60,10 +74,25 @@ export const getRecepcionVehiculoById = async (req: Request, res: Response, next
   }
 }
 
-export const createRecepcionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const createRecepcionVehiculo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { id_empleado, id_vehiculo, comentario, problema_reportado } = req.body
-    const newItem = new RecepcionVehiculo({ id_empleado, id_vehiculo, comentario, problema_reportado })
+    const {
+      id_empleadoInformacion,
+      id_vehiculo,
+      comentario,
+      problema_reportado
+    } = req.body
+
+    const newItem = new RecepcionVehiculo({
+      id_empleadoInformacion,
+      id_vehiculo,
+      comentario,
+      problema_reportado
+    })
     const saved = await newItem.save()
     res.status(201).json(saved)
   } catch (error) {
@@ -71,9 +100,17 @@ export const createRecepcionVehiculo = async (req: Request, res: Response, next:
   }
 }
 
-export const updateRecepcionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updateRecepcionVehiculo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const updated = await RecepcionVehiculo.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    const updated = await RecepcionVehiculo.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    )
     if (!updated) {
       res.status(404).json({ message: 'Recepción no encontrada' })
       return
@@ -84,7 +121,11 @@ export const updateRecepcionVehiculo = async (req: Request, res: Response, next:
   }
 }
 
-export const deleteRecepcionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const deleteRecepcionVehiculo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const deleted = await RecepcionVehiculo.findByIdAndDelete(req.params.id)
     if (!deleted) {

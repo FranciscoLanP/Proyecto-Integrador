@@ -69,6 +69,32 @@ export interface IVehiculoDatos {
   activo?: boolean;
 }
 
+export interface IReciboVehiculo {
+  _id: string;
+  id_recepcion: string | IRecepcionVehiculo;
+  observaciones?: string;
+}
+export interface IRecepcionVehiculo {
+  _id: string;
+  id_empleadoInformacion: string | IEmpleadoInformacion;
+  id_vehiculo: string | IVehiculoDatos;
+  comentario?: string;
+  fecha: string; 
+  problema_reportado?: string;
+}
+export interface ITipoEmpleado {
+  _id: string;
+  nombre_tipo_empleado: 'Empleado Asalariado' | 'Empleado por Trabajo';
+}
+
+export interface IEmpleadoInformacion {
+  _id: string;
+  id_cliente?: string | ICliente;
+  id_tipo_empleado: string | ITipoEmpleado;
+  nombre: string;
+  telefono: string;
+  correo: string;
+}
 export type Role = 'administrador' | 'empleado';
 
 export interface IUsuario {
