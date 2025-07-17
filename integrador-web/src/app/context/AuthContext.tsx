@@ -18,23 +18,30 @@ interface Auth {
 
 interface AuthContextType {
   auth: Auth | null;
+  isLoading: boolean;
   login: (username: string, role: Auth['role'], token: string) => void;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType|undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [auth, setAuth] = useState<Auth | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const stored = typeof window !== 'undefined' && localStorage.getItem('auth');
     if (stored) {
-      const a: Auth = JSON.parse(stored);
-      setAuth(a);
-      apiClient.defaults.headers.common['Authorization'] = `Bearer ${a.token}`;
+      try {
+        const a: Auth = JSON.parse(stored);
+        setAuth(a);
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${a.token}`;
+      } catch {
+        localStorage.removeItem('auth');
+      }
     }
+    setIsLoading(false);
   }, []);
 
   const login = (username: string, role: Auth['role'], token: string) => {
@@ -42,18 +49,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('auth', JSON.stringify(a));
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setAuth(a);
-    router.push('/');
+    router.replace('/');
   };
 
   const logout = () => {
     localStorage.removeItem('auth');
     delete apiClient.defaults.headers.common['Authorization'];
     setAuth(null);
-    router.push('/login');
+    router.replace('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ auth, login, logout }}>
+    <AuthContext.Provider value={{ auth, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

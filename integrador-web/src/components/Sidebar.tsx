@@ -40,7 +40,6 @@ const navItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, href: '/' },
   { text: 'Clientes', icon: <PeopleIcon />, href: '/clientes' },
   { text: 'Vehículos', icon: <HomeIcon />, href: '/vehiculodatos' },
-  { text: 'Pagos', icon: <PaymentIcon />, href: '/facturas' },
   { text: 'Empleados', icon: <WorkIcon />, href: '/empleadoinformacion' },
   { text: 'Recepciones', icon: <CarRepairIcon />, href: '/recepcionvehiculos' },
   { text: 'Recibos', icon: <ReceiptIcon />, href: '/recibosvehiculos' },
@@ -55,7 +54,7 @@ const navItems = [
     ]
   },
   { text: 'Usuarios', icon: <PersonIcon />, href: '/usuarios' },
-  { text: 'Mi Perfil', icon: <PersonIcon />, href: '/perfil' }
+  // { text: 'Mi Perfil', icon: <PersonIcon />, href: '/perfil' }
 ]
 
 export default function Sidebar(): JSX.Element {

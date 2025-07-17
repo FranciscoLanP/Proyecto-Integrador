@@ -1,31 +1,41 @@
 'use client';
+
 import type { ReactNode } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import theme from '../styles/theme';
-import Layout from '../components/Layout';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import Layout from '../components/Layout';
+import FullScreenLoader from './vehiculodatos/FullScreenLoader';
 
 const queryClient = new QueryClient();
 
 function ProtectedApp({ children }: { children: ReactNode }) {
-  const { auth } = useAuth();
+  const { auth, isLoading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    if (!auth && pathname !== '/login') {
-      router.replace('/login');
+    if (!isLoading) {
+      if (!auth && pathname !== '/login') {
+        router.replace('/login');
+      } else if (auth && pathname === '/login') {
+        router.replace('/');
+      }
     }
-    if (auth && pathname === '/login') {
-      router.replace('/');
-    }
-  }, [auth, pathname, router]);
+  }, [auth, isLoading, pathname, router]);
 
-  if (pathname === '/login') return <>{children}</>;
-  if (!auth) return null;
+  if (isLoading) {
+    return <FullScreenLoader />;
+  }
+  if (!auth && pathname === '/login') {
+    return <>{children}</>;
+  }
+  if (!auth) {
+    return null;
+  }
   return <Layout>{children}</Layout>;
 }
 

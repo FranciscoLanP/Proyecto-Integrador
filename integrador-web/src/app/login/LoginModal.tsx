@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Box, Paper, Typography, TextField, Button } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { loginRequest } from '../../services/authService';
@@ -11,7 +11,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
     if (!username || !password) {
       setError('Usuario y contraseña son obligatorios');
       return;
@@ -27,28 +28,67 @@ export default function LoginPage() {
   return (
     <Box
       sx={{
+        position: 'relative',
         height: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: 'background.default'
+        bgcolor: 'background.default',
+        overflow: 'hidden'
       }}
     >
-      <Paper elevation={4} sx={{ p: 4, width: 360 }}>
-        <Typography variant="h5" mb={2}>
-          Iniciar Sesión
+      <Box
+        sx={{
+          position: 'absolute',
+          top: -60,
+          left: -60,
+          width: 200,
+          height: 200,
+          bgcolor: 'primary.main',
+          borderRadius: '50%',
+          opacity: 0.15
+        }}
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: -80,
+          right: -80,
+          width: 240,
+          height: 240,
+          bgcolor: 'secondary.main',
+          borderRadius: '50%',
+          opacity: 0.15
+        }}
+      />
+
+      {/* Formulario */}
+      <Paper
+        elevation={8}
+        sx={{
+          position: 'relative',
+          zIndex: 1,
+          p: 4,
+          width: 360,
+          borderRadius: 3,    // más redondeado
+          boxShadow: theme => theme.shadows[12]
+        }}
+      >
+        <Typography variant="h4" align="center" gutterBottom>
+          Bienvenido
         </Typography>
         {error && (
-          <Typography color="error" mb={2}>
+          <Typography color="error" mb={2} align="center">
             {error}
           </Typography>
         )}
-        <Box display="flex" flexDirection="column" gap={2}>
+        <Box component="form" onSubmit={handleSubmit} display="flex" flexDirection="column" gap={2}>
           <TextField
             label="Usuario"
             value={username}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
             fullWidth
+            autoFocus
           />
           <TextField
             label="Contraseña"
@@ -57,7 +97,7 @@ export default function LoginPage() {
             onChange={e => setPassword(e.target.value)}
             fullWidth
           />
-          <Button variant="contained" onClick={handleSubmit}>
+          <Button type="submit" variant="contained" size="large" sx={{ borderRadius: 2, mt: 1 }}>
             Entrar
           </Button>
         </Box>
