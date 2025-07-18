@@ -1,29 +1,23 @@
 'use client';
 
 import React, { useState, ChangeEvent, JSX } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TableCell from '@mui/material/TableCell';
-import TableBody from '@mui/material/TableBody';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import TablePagination from '@mui/material/TablePagination';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
+import {
+  Box, Typography, Paper, Table, TableHead, TableRow,
+  TableCell, TableBody, IconButton, Button, TextField,
+  TablePagination, Dialog, DialogTitle, DialogActions
+} from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+
 import { useCrud } from '../../hooks/useCrud';
+import { useNotification } from '../../components/utils/NotificationProvider';
 import type { IModelosDatos, IMarcaVehiculo } from '../types';
 import ModelosDatosModal from './ModelosDatosModal';
 
 export default function ModelosDatosPage(): JSX.Element {
+  const { notify } = useNotification();
+
   const marcaCrud = useCrud<IMarcaVehiculo>('marcasvehiculos');
   const modelosCrud = useCrud<IModelosDatos>('modelosdatos');
   const { data: marcas = [], isLoading: loadingMarcas, error: errMarcas } = marcaCrud.allQuery;
@@ -57,22 +51,48 @@ export default function ModelosDatosPage(): JSX.Element {
   const openNew = () => { setEditData(null); setModalOpen(true); };
   const openEdit = (m: IModelosDatos) => { setEditData(m); setModalOpen(true); };
   const closeModal = () => setModalOpen(false);
+
   const handleSubmit = (payload: Partial<IModelosDatos>) => {
-    if (editData) modelosCrud.updateM.mutate({ id: editData._id, data: payload });
-    else modelosCrud.createM.mutate(payload);
+    if (editData) {
+      modelosCrud.updateM.mutate(
+        { id: editData._id, data: payload },
+        {
+          onSuccess: () => notify('Modelo actualizado correctamente', 'success'),
+          onError: () => notify('Error al actualizar modelo', 'error'),
+        }
+      );
+    } else {
+      modelosCrud.createM.mutate(
+        payload,
+        {
+          onSuccess: () => notify('Modelo creado correctamente', 'success'),
+          onError: () => notify('Error al crear modelo', 'error'),
+        }
+      );
+    }
     setModalOpen(false);
   };
 
   const askDelete = (m: IModelosDatos) => { setToDelete(m); setConfirmDel(true); };
   const confirmDelete = () => {
-    if (toDelete) modelosCrud.deleteM.mutate(toDelete._id);
+    if (toDelete) {
+      modelosCrud.deleteM.mutate(
+        toDelete._id,
+        {
+          onSuccess: () => notify('Modelo eliminado correctamente', 'success'),
+          onError: () => notify('Error al eliminar modelo', 'error'),
+        }
+      );
+    }
     setConfirmDel(false);
     setToDelete(null);
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>Modelos de Vehículo</Typography>
+      <Typography variant="h5" gutterBottom>
+        Modelos de Vehículo
+      </Typography>
 
       <Box display="flex" gap={1} flexWrap="wrap" justifyContent="space-between" mb={2}>
         <TextField
@@ -82,7 +102,9 @@ export default function ModelosDatosPage(): JSX.Element {
           onChange={handleSearch}
           sx={{ flex: '1 1 200px' }}
         />
-        <Button variant="contained" onClick={openNew}>+ Nuevo Modelo</Button>
+        <Button variant="contained" onClick={openNew}>
+          + Nuevo Modelo
+        </Button>
       </Box>
 
       <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
@@ -105,8 +127,12 @@ export default function ModelosDatosPage(): JSX.Element {
                   <TableCell>{m.nombre_modelo}</TableCell>
                   <TableCell>{marca}</TableCell>
                   <TableCell align="right">
-                    <IconButton size="small" onClick={() => openEdit(m)}><EditIcon fontSize="small" /></IconButton>
-                    <IconButton size="small" color="error" onClick={() => askDelete(m)}><DeleteIcon fontSize="small" /></IconButton>
+                    <IconButton size="small" onClick={() => openEdit(m)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" color="error" onClick={() => askDelete(m)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               );
@@ -142,7 +168,9 @@ export default function ModelosDatosPage(): JSX.Element {
         </DialogTitle>
         <DialogActions>
           <Button onClick={() => setConfirmDel(false)}>Cancelar</Button>
-          <Button color="error" variant="contained" onClick={confirmDelete}>Eliminar</Button>
+          <Button color="error" variant="contained" onClick={confirmDelete}>
+            Eliminar
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

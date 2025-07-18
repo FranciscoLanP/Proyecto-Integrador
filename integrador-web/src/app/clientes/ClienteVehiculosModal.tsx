@@ -17,33 +17,21 @@ import {
   Typography
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { useCrud } from '../../hooks/useCrud';
-import type {
-  IVehiculoDatos,
-  IModelosDatos,
-  IColoresDatos,
-  IMarcaVehiculo,
-  ICliente
-} from '../types';
+import { ICliente, IVehiculoDatos } from '../types';
+import { useVehiculosCliente } from './useVehiculosCliente';
 
 interface Props {
   open: boolean;
   onClose: () => void;
   client: ICliente;
-  modelos: IModelosDatos[];
-  colores: IColoresDatos[];
-  marcas: IMarcaVehiculo[];
 }
 
 export default function ClienteVehiculosModal({
   open,
   onClose,
-  client,
-  modelos,
-  colores,
-  marcas
+  client
 }: Props) {
-  const vehQuery = useCrud<IVehiculoDatos>('vehiculodatos').allQuery;
+  const vehQuery = useVehiculosCliente(client._id);
   const vehiculos = vehQuery.data || [];
 
   if (vehQuery.isLoading) {
@@ -56,23 +44,23 @@ export default function ClienteVehiculosModal({
       </Dialog>
     );
   }
+
   if (vehQuery.error) {
     return (
       <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
         <DialogTitle>Vehículos de {client.nombre}</DialogTitle>
         <DialogContent>
-          <Typography color="error">{vehQuery.error.message}</Typography>
+          <Typography color="error">
+            {vehQuery.error instanceof Error
+              ? vehQuery.error.message
+              : String(vehQuery.error)}
+          </Typography>
         </DialogContent>
       </Dialog>
     );
   }
 
-  const listado = vehiculos.filter(v => {
-    const vid = typeof v.id_cliente === 'string'
-      ? v.id_cliente
-      : (v.id_cliente as ICliente)._id;
-    return vid === client._id && v.activo === true;
-  });
+  const listado = vehiculos.filter(v => v.activo);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
@@ -103,28 +91,25 @@ export default function ClienteVehiculosModal({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {listado.map(v => {
-                  const modeloId = typeof v.id_modelo === 'string'
-                    ? v.id_modelo
-                    : (v.id_modelo as IModelosDatos)._id;
-                  const colorId = typeof v.id_color === 'string'
-                    ? v.id_color
-                    : (v.id_color as IColoresDatos)._id;
-
-                  const modObj = modelos.find(m => m._id === modeloId);
-                  const modeloNombre = modObj?.nombre_modelo ?? '—';
-                  const marcaNombre = marcas.find(mk => mk._id === modObj?.id_marca)
-                    ?.nombre_marca ?? '—';
-                  const colorNombre = colores.find(c => c._id === colorId)
-                    ?.nombre_color ?? '—';
-
+                {listado.map((v: IVehiculoDatos) => {
+                  const modelo = typeof v.id_modelo === 'object' ? v.id_modelo : null;
+                  const marca = modelo && typeof modelo === 'object' && 'id_marca' in modelo
+                    ? (modelo.id_marca as { nombre_marca?: string })
+                    : null;
+                  const color = typeof v.id_color === 'object' ? v.id_color : null;
 
                   return (
                     <TableRow key={v._id} hover>
                       <TableCell>{v.chasis}</TableCell>
-                      <TableCell>{marcaNombre}</TableCell>
-                      <TableCell>{modeloNombre}</TableCell>
-                      <TableCell>{colorNombre}</TableCell>
+                      <TableCell>
+                        {typeof marca === 'object' && marca?.nombre_marca ? marca.nombre_marca : '—'}
+                      </TableCell>
+                      <TableCell>
+                        {modelo?.nombre_modelo ?? '—'}
+                      </TableCell>
+                      <TableCell>
+                        {color?.nombre_color ?? '—'}
+                      </TableCell>
                       <TableCell>{v.anio}</TableCell>
                     </TableRow>
                   );

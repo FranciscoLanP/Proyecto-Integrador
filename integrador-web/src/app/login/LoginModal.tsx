@@ -1,18 +1,21 @@
 'use client';
 
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent, JSX } from 'react';
 import { Box, Paper, Typography, TextField, Button } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { loginRequest } from '../../services/authService';
+import { useNotification } from '../../components/utils/NotificationProvider';
 
-export default function LoginPage() {
+export default function LoginPage(): JSX.Element {
   const { login } = useAuth();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const { notify } = useNotification();
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string>('');
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
+    setError('');
     if (!username || !password) {
       setError('Usuario y contraseña son obligatorios');
       return;
@@ -20,8 +23,10 @@ export default function LoginPage() {
     try {
       const { token, usuario } = await loginRequest({ username, password });
       login(usuario.username, usuario.role, token);
+      notify('Sesión iniciada correctamente', 'success');
     } catch (err: any) {
       setError(err.response?.data?.message || err.message);
+      notify('Error al iniciar sesión', 'error');
     }
   };
 
@@ -34,9 +39,10 @@ export default function LoginPage() {
         alignItems: 'center',
         justifyContent: 'center',
         bgcolor: 'background.default',
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}
     >
+      {/* Decorativos */}
       <Box
         sx={{
           position: 'absolute',
@@ -46,7 +52,7 @@ export default function LoginPage() {
           height: 200,
           bgcolor: 'primary.main',
           borderRadius: '50%',
-          opacity: 0.15
+          opacity: 0.15,
         }}
       />
       <Box
@@ -58,7 +64,7 @@ export default function LoginPage() {
           height: 240,
           bgcolor: 'secondary.main',
           borderRadius: '50%',
-          opacity: 0.15
+          opacity: 0.15,
         }}
       />
 
@@ -70,8 +76,8 @@ export default function LoginPage() {
           zIndex: 1,
           p: 4,
           width: 360,
-          borderRadius: 3,    // más redondeado
-          boxShadow: theme => theme.shadows[12]
+          borderRadius: 3,
+          boxShadow: theme => theme.shadows[12],
         }}
       >
         <Typography variant="h4" align="center" gutterBottom>

@@ -1,27 +1,43 @@
+
 'use client';
 
 import React, { useState, ChangeEvent, JSX } from 'react';
 import {
-  Box, Typography, Paper, Table, TableHead,
-  TableRow, TableCell, TableBody, IconButton,
-  Button, TextField, TablePagination,
-  Dialog, DialogTitle, DialogActions
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  IconButton,
+  Button,
+  TextField,
+  TablePagination,
+  Dialog,
+  DialogTitle,
+  DialogActions
 } from '@mui/material';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+
 import { useCrud } from '../../hooks/useCrud';
+import { useNotification } from '../../components/utils/NotificationProvider';
 import type {
   IReciboVehiculo,
   IRecepcionVehiculo,
   IEmpleadoInformacion,
-  ICliente
+  ICliente,
+  IVehiculoDatos
 } from '../types';
-import type { IVehiculoDatos } from '../types';
 import ReciboVehiculoModal from './ReciboVehiculoModal';
 
 export default function RecibosVehiculosPage(): JSX.Element {
+  const { notify } = useNotification();
+
   const reciboCrud = useCrud<IReciboVehiculo>('recibosvehiculos');
   const recepCrud = useCrud<IRecepcionVehiculo>('recepcionvehiculos');
   const empCrud = useCrud<IEmpleadoInformacion>('empleadoinformaciones');
@@ -34,44 +50,39 @@ export default function RecibosVehiculosPage(): JSX.Element {
   const { data: vehiculos = [], isLoading: loadVeh, error: errVeh } = vehCrud.allQuery;
   const { data: clientes = [], isLoading: loadCli, error: errCli } = cliCrud.allQuery;
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [page, setPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
 
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<IReciboVehiculo | null>(null);
 
-  const [confirmDel, setConfirmDel] = useState(false);
+  const [confirmDel, setConfirmDel] = useState<boolean>(false);
   const [toDelete, setToDelete] = useState<IReciboVehiculo | null>(null);
 
-  if (loadRec || loadRep || loadEmp || loadVeh || loadCli) return <Typography>Loading…</Typography>;
+  if (loadRec || loadRep || loadEmp || loadVeh || loadCli) {
+    return <Typography>Loading…</Typography>;
+  }
   if (errRec) return <Typography color="error">{errRec.message}</Typography>;
   if (errRep) return <Typography color="error">{errRep.message}</Typography>;
   if (errEmp) return <Typography color="error">{errEmp.message}</Typography>;
   if (errVeh) return <Typography color="error">{errVeh.message}</Typography>;
   if (errCli) return <Typography color="error">{errCli.message}</Typography>;
 
-  // Filtrado por cliente, chasis u observaciones
   const term = searchTerm.toLowerCase();
   const filtered = recibos.filter(r => {
     const rec = recepciones.find(rep => {
-      const rid = typeof r.id_recepcion === 'string'
-        ? r.id_recepcion
-        : r.id_recepcion._id;
+      const rid = typeof r.id_recepcion === 'string' ? r.id_recepcion : r.id_recepcion._id;
       return rid === rep._id;
     });
     if (!rec) return false;
     const veh = vehiculos.find(v => {
-      const vid = typeof rec.id_vehiculo === 'string'
-        ? rec.id_vehiculo
-        : rec.id_vehiculo._id;
+      const vid = typeof rec.id_vehiculo === 'string' ? rec.id_vehiculo : rec.id_vehiculo._id;
       return vid === v._id;
     });
     const cli = veh
       ? clientes.find(c => {
-        const cid = typeof veh.id_cliente === 'string'
-          ? veh.id_cliente
-          : veh.id_cliente._id;
+        const cid = typeof veh.id_cliente === 'string' ? veh.id_cliente : veh.id_cliente._id;
         return cid === c._id;
       })
       : null;
@@ -96,20 +107,37 @@ export default function RecibosVehiculosPage(): JSX.Element {
   const closeModal = () => setModalOpen(false);
 
   const handleSubmit = async (payload: Partial<IReciboVehiculo>) => {
-    if (editData) await reciboCrud.updateM.mutateAsync({ id: editData._id, data: payload });
-    else await reciboCrud.createM.mutateAsync(payload);
-    await reciboCrud.allQuery.refetch();
-    setModalOpen(false);
+    try {
+      if (editData) {
+        await reciboCrud.updateM.mutateAsync({ id: editData._id, data: payload });
+        notify('Recibo actualizado correctamente', 'success');
+      } else {
+        await reciboCrud.createM.mutateAsync(payload);
+        notify('Recibo creado correctamente', 'success');
+      }
+      await reciboCrud.allQuery.refetch();
+    } catch {
+      notify('Error al guardar recibo', 'error');
+    } finally {
+      setModalOpen(false);
+    }
   };
 
   const askDelete = (row: IReciboVehiculo) => { setToDelete(row); setConfirmDel(true); };
   const confirmDelete = () => {
-    if (toDelete) reciboCrud.deleteM.mutate(toDelete._id);
+    if (toDelete) {
+      reciboCrud.deleteM.mutate(
+        toDelete._id,
+        {
+          onSuccess: () => notify('Recibo eliminado correctamente', 'success'),
+          onError: () => notify('Error al eliminar recibo', 'error'),
+        }
+      );
+    }
     setConfirmDel(false);
     setToDelete(null);
   };
 
-  // Template de impresión con hora actual
   const handlePrint = (r: IReciboVehiculo) => {
     const rec = recepciones.find(rep => {
       const rid = typeof r.id_recepcion === 'string'
@@ -186,7 +214,10 @@ export default function RecibosVehiculosPage(): JSX.Element {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>Recibos de Vehículo</Typography>
+      <Typography variant="h5" gutterBottom>
+        Recibos de Vehículo
+      </Typography>
+
       <Box display="flex" gap={1} mb={2} alignItems="center">
         <TextField
           label="Buscar cliente, chasis u observaciones"
@@ -195,7 +226,9 @@ export default function RecibosVehiculosPage(): JSX.Element {
           onChange={handleSearch}
           sx={{ flex: '1 1 300px' }}
         />
-        <Button variant="contained" onClick={openNew}>+ Nuevo Recibo</Button>
+        <Button variant="contained" onClick={openNew}>
+          + Nuevo Recibo
+        </Button>
       </Box>
 
       <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
@@ -213,24 +246,18 @@ export default function RecibosVehiculosPage(): JSX.Element {
             {paginated.map((r, i) => {
               const idx = page * rowsPerPage + i + 1;
               const rec = recepciones.find(rep => {
-                const rid = typeof r.id_recepcion === 'string'
-                  ? r.id_recepcion
-                  : r.id_recepcion._id;
+                const rid = typeof r.id_recepcion === 'string' ? r.id_recepcion : r.id_recepcion._id;
                 return rid === rep._id;
               });
               const veh = rec
                 ? vehiculos.find(v => {
-                  const vid = typeof rec.id_vehiculo === 'string'
-                    ? rec.id_vehiculo
-                    : rec.id_vehiculo._id;
+                  const vid = typeof rec.id_vehiculo === 'string' ? rec.id_vehiculo : rec.id_vehiculo._id;
                   return vid === v._id;
                 })
                 : null;
               const cli = veh
                 ? clientes.find(c => {
-                  const cid = typeof veh.id_cliente === 'string'
-                    ? veh.id_cliente
-                    : veh.id_cliente._id;
+                  const cid = typeof veh.id_cliente === 'string' ? veh.id_cliente : veh.id_cliente._id;
                   return cid === c._id;
                 })
                 : null;
@@ -256,6 +283,7 @@ export default function RecibosVehiculosPage(): JSX.Element {
             })}
           </TableBody>
         </Table>
+
         <TablePagination
           component="div"
           count={filtered.length}

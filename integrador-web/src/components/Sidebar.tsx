@@ -54,7 +54,6 @@ const navItems = [
     ]
   },
   { text: 'Usuarios', icon: <PersonIcon />, href: '/usuarios' },
-  // { text: 'Mi Perfil', icon: <PersonIcon />, href: '/perfil' }
 ]
 
 export default function Sidebar(): JSX.Element {

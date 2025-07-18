@@ -1,3 +1,4 @@
+// 📁 src/app/clientes/page.tsx
 'use client';
 
 import React, { useState, ChangeEvent, JSX } from 'react';
@@ -13,31 +14,26 @@ import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import TablePagination from '@mui/material/TablePagination';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 
 import { useCrud } from '../../hooks/useCrud';
+import { useNotification } from '../../components/utils/NotificationProvider';
 import type {
   ICliente,
   IBarrio,
   IDistrito,
   ISector,
   IMunicipio,
-  IProvincia,
-  IVehiculoDatos,
-  IModelosDatos,
-  IColoresDatos,
-  IMarcaVehiculo
+  IProvincia
 } from '../types';
 import ClientModal from './ClientModal';
 import ClienteVehiculosModal from './ClienteVehiculosModal';
 
 export default function ClientesPage(): JSX.Element {
+  const { notify } = useNotification();
+
   const clienteCrud = useCrud<ICliente>('clientes');
   const provinciaCrud = useCrud<IProvincia>('provincias');
   const municipioCrud = useCrud<IMunicipio>('municipios');
@@ -45,22 +41,12 @@ export default function ClientesPage(): JSX.Element {
   const distritoCrud = useCrud<IDistrito>('distritos');
   const barrioCrud = useCrud<IBarrio>('barrios');
 
-  const vehCrud = useCrud<IVehiculoDatos>('vehiculodatos');
-  const modelosCrud = useCrud<IModelosDatos>('modelosdatos');
-  const coloresCrud = useCrud<IColoresDatos>('coloresdatos');
-  const marcasCrud = useCrud<IMarcaVehiculo>('marcasvehiculos');
-
   const clientes = clienteCrud.allQuery.data || [];
   const provincias = provinciaCrud.allQuery.data || [];
   const municipios = municipioCrud.allQuery.data || [];
   const sectores = sectorCrud.allQuery.data || [];
   const distritos = distritoCrud.allQuery.data || [];
   const barrios = barrioCrud.allQuery.data || [];
-
-  const vehiculos = vehCrud.allQuery.data || [];
-  const modelos = modelosCrud.allQuery.data || [];
-  const colores = coloresCrud.allQuery.data || [];
-  const marcas = marcasCrud.allQuery.data || [];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
@@ -72,13 +58,14 @@ export default function ClientesPage(): JSX.Element {
   const [selClient, setSelClient] = useState<ICliente | null>(null);
   const [openVeh, setOpenVeh] = useState(false);
 
-  const [confirmDel, setConfirmDel] = useState(false);
-  const [toDelete, setToDelete] = useState<ICliente | null>(null);
+  if (clienteCrud.allQuery.isLoading)
+    return <Typography>Loading…</Typography>;
+  if (clienteCrud.allQuery.error)
+    return <Typography color="error">{clienteCrud.allQuery.error.message}</Typography>;
 
-  if (clienteCrud.allQuery.isLoading) return <Typography>Loading…</Typography>;
-  if (clienteCrud.allQuery.error) return <Typography color="error">{clienteCrud.allQuery.error.message}</Typography>;
-
-  const filtered = clientes.filter(c => c.nombre.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filtered = clientes.filter(c =>
+    c.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const buildAddress = (barrioId: string) => {
@@ -100,17 +87,26 @@ export default function ClientesPage(): JSX.Element {
   const openCreate = () => { setEditData(null); setOpenForm(true); };
   const openEdit = (c: ICliente) => { setEditData(c); setOpenForm(true); };
   const closeForm = () => setOpenForm(false);
-  const submitClient = (data: Partial<ICliente>) => {
-    if (editData) clienteCrud.updateM.mutate({ id: editData._id, data });
-    else clienteCrud.createM.mutate(data);
-    closeForm();
-  };
 
-  const askDelete = (c: ICliente) => { setToDelete(c); setConfirmDel(true); };
-  const confirmDelete = () => {
-    if (toDelete) clienteCrud.deleteM.mutate(toDelete._id);
-    setConfirmDel(false);
-    setToDelete(null);
+  const submitClient = (data: Partial<ICliente>) => {
+    if (editData) {
+      clienteCrud.updateM.mutate(
+        { id: editData._id, data },
+        {
+          onSuccess: () => notify('Cliente actualizado correctamente', 'success'),
+          onError: () => notify('Error al actualizar cliente', 'error'),
+        }
+      );
+    } else {
+      clienteCrud.createM.mutate(
+        data,
+        {
+          onSuccess: () => notify('Cliente creado correctamente', 'success'),
+          onError: () => notify('Error al crear cliente', 'error'),
+        }
+      );
+    }
+    closeForm();
   };
 
   const openVehModal = (c: ICliente) => {
@@ -121,7 +117,9 @@ export default function ClientesPage(): JSX.Element {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>Gestión de Clientes</Typography>
+      <Typography variant="h5" gutterBottom>
+        Gestión de Clientes
+      </Typography>
 
       <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
         <TextField
@@ -165,9 +163,7 @@ export default function ClientesPage(): JSX.Element {
                   <IconButton size="small" onClick={() => openEdit(c)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" color="error" onClick={() => askDelete(c)}>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                  {/* — Botón de eliminar borrado */}
                 </TableCell>
               </TableRow>
             ))}
@@ -184,6 +180,7 @@ export default function ClientesPage(): JSX.Element {
           rowsPerPageOptions={[5, 10, 25]}
         />
       </Paper>
+
       <ClientModal
         open={openForm}
         defaultData={editData ?? undefined}
@@ -191,27 +188,14 @@ export default function ClientesPage(): JSX.Element {
         onClose={closeForm}
         onSubmit={submitClient}
       />
+
       {selClient && (
         <ClienteVehiculosModal
           open={openVeh}
           onClose={closeVehModal}
           client={selClient}
-          modelos={modelos}
-          colores={colores}
-          marcas={marcas}
         />
       )}
-      <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningAmberIcon color="warning" /> ¿Eliminar este cliente?
-        </DialogTitle>
-        <DialogActions>
-          <Button onClick={() => setConfirmDel(false)}>Cancelar</Button>
-          <Button color="error" variant="contained" onClick={confirmDelete}>
-            Eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }

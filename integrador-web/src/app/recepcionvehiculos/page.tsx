@@ -1,25 +1,29 @@
+
 'use client';
 
 import React, { useState, ChangeEvent, JSX } from 'react';
 import {
-  Box, Typography, Paper, Table, TableHead,
-  TableRow, TableCell, TableBody, IconButton,
-  Button, TextField, TablePagination,
-  Dialog, DialogTitle, DialogActions
+  Box, Typography, Paper, Table, TableHead, TableRow,
+  TableCell, TableBody, IconButton, Button, TextField,
+  TablePagination, Dialog, DialogTitle, DialogActions
 } from '@mui/material';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+
 import { useCrud } from '../../hooks/useCrud';
+import { useNotification } from '../../components/utils/NotificationProvider';
 import type {
   IRecepcionVehiculo,
   ICliente,
-  IEmpleadoInformacion
+  IEmpleadoInformacion,
+  IVehiculoDatos
 } from '../types';
-import type { IVehiculoDatos } from '../types';
 import RecepcionVehiculoModal from './RecepcionVehiculoModal';
 
 export default function RecepcionVehiculosPage(): JSX.Element {
+  const { notify } = useNotification();
+
   const recepCrud = useCrud<IRecepcionVehiculo>('recepcionvehiculos');
   const cliCrud = useCrud<ICliente>('clientes');
   const empCrud = useCrud<IEmpleadoInformacion>('empleadoinformaciones');
@@ -48,35 +52,21 @@ export default function RecepcionVehiculosPage(): JSX.Element {
 
   const term = searchTerm.toLowerCase();
   const filtered = recepciones.filter(r => {
-    // buscar por fecha, empleado o chasis
-    const rec = recepciones.find(rep => rep._id === r._id);
-    const fecha = rec
-      ? new Date(rec.fecha).toLocaleString().toLowerCase()
-      : '';
-    const empleado = rec
-      ? empleados.find(e => {
-        const eid = typeof rec.id_empleadoInformacion === 'string'
-          ? rec.id_empleadoInformacion
-          : rec.id_empleadoInformacion._id;
-        return eid === e._id;
-      })?.nombre.toLowerCase() ?? ''
-      : '';
-    const veh = rec
-      ? vehiculos.find(v => {
-        const vid = typeof rec.id_vehiculo === 'string'
-          ? rec.id_vehiculo
-          : rec.id_vehiculo._id;
-        return vid === v._id;
-      })?.chasis.toLowerCase() ?? ''
-      : '';
+    const fecha = new Date(r.fecha).toLocaleString().toLowerCase();
+    const empleado = empleados.find(e => {
+      const eid = typeof r.id_empleadoInformacion === 'string'
+        ? r.id_empleadoInformacion
+        : r.id_empleadoInformacion._id;
+      return eid === e._id;
+    })?.nombre.toLowerCase() ?? '';
+    const veh = vehiculos.find(v => {
+      const vid = typeof r.id_vehiculo === 'string'
+        ? r.id_vehiculo
+        : r.id_vehiculo._id;
+      return vid === v._id;
+    })?.chasis.toLowerCase() ?? '';
     const prob = (r.problema_reportado ?? '').toLowerCase();
-
-    return (
-      fecha.includes(term) ||
-      empleado.includes(term) ||
-      veh.includes(term) ||
-      prob.includes(term)
-    );
+    return fecha.includes(term) || empleado.includes(term) || veh.includes(term) || prob.includes(term);
   });
 
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -93,22 +83,42 @@ export default function RecepcionVehiculosPage(): JSX.Element {
   const closeModal = () => setModalOpen(false);
 
   const handleSubmit = async (payload: Partial<IRecepcionVehiculo>) => {
-    if (editData) await recepCrud.updateM.mutateAsync({ id: editData._id, data: payload });
-    else await recepCrud.createM.mutateAsync(payload);
-    await recepCrud.allQuery.refetch();
-    setModalOpen(false);
+    try {
+      if (editData) {
+        await recepCrud.updateM.mutateAsync({ id: editData._id, data: payload });
+        notify('Recepción actualizada correctamente', 'success');
+      } else {
+        await recepCrud.createM.mutateAsync(payload);
+        notify('Recepción creada correctamente', 'success');
+      }
+      await recepCrud.allQuery.refetch();
+    } catch {
+      notify('Error al guardar recepción', 'error');
+    } finally {
+      setModalOpen(false);
+    }
   };
 
   const askDelete = (row: IRecepcionVehiculo) => { setToDelete(row); setConfirmDel(true); };
   const confirmDelete = () => {
-    if (toDelete) recepCrud.deleteM.mutate(toDelete._id);
+    if (toDelete) {
+      recepCrud.deleteM.mutate(
+        toDelete._id,
+        {
+          onSuccess: () => notify('Recepción eliminada correctamente', 'success'),
+          onError: () => notify('Error al eliminar recepción', 'error'),
+        }
+      );
+    }
     setConfirmDel(false);
     setToDelete(null);
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>Recepción de Vehículos</Typography>
+      <Typography variant="h5" gutterBottom>
+        Recepción de Vehículos
+      </Typography>
 
       <Box display="flex" gap={1} mb={2} alignItems="center">
         <TextField
@@ -118,7 +128,9 @@ export default function RecepcionVehiculosPage(): JSX.Element {
           onChange={handleSearch}
           sx={{ flex: '1 1 300px' }}
         />
-        <Button variant="contained" onClick={openNew}>+ Nueva Recepción</Button>
+        <Button variant="contained" onClick={openNew}>
+          + Nueva Recepción
+        </Button>
       </Box>
 
       <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>

@@ -1,3 +1,4 @@
+// app/context/AuthContext.tsx
 'use client';
 
 import React, {
@@ -9,6 +10,7 @@ import React, {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '../../services/apiClient';
+import FullScreenLoader from '../vehiculodatos/FullScreenLoader';
 
 interface Auth {
   username: string;
@@ -19,15 +21,17 @@ interface Auth {
 interface AuthContextType {
   auth: Auth | null;
   isLoading: boolean;
-  login: (username: string, role: Auth['role'], token: string) => void;
-  logout: () => void;
+  transitionLoading: boolean;
+  login: (username: string, role: Auth['role'], token: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType|undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [auth, setAuth] = useState<Auth | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [transitionLoading, setTransitionLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -44,23 +48,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (username: string, role: Auth['role'], token: string) => {
+  const login = async (username: string, role: Auth['role'], token: string): Promise<void> => {
+    setTransitionLoading(true);
     const a: Auth = { username, role, token };
     localStorage.setItem('auth', JSON.stringify(a));
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setAuth(a);
-    router.replace('/');
+    await router.replace('/');
+    setTransitionLoading(false);
   };
 
-  const logout = () => {
+  const logout = async (): Promise<void> => {
+    setTransitionLoading(true);
     localStorage.removeItem('auth');
     delete apiClient.defaults.headers.common['Authorization'];
     setAuth(null);
-    router.replace('/login');
+    await router.replace('/login');
+    setTransitionLoading(false);
   };
 
   return (
-    <AuthContext.Provider value={{ auth, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ auth, isLoading, transitionLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

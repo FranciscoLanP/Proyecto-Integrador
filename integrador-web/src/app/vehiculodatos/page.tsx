@@ -1,6 +1,7 @@
+// 📁 src/app/vehiculodatos/page.tsx
 'use client';
 
-import React, { useState, ChangeEvent, ChangeEventHandler } from 'react';
+import React, { useState, ChangeEvent, ChangeEventHandler, JSX } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -22,6 +23,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useCrud } from '../../hooks/useCrud';
+import { useNotification } from '../../components/utils/NotificationProvider';
 import type {
   IVehiculoDatos,
   ICliente,
@@ -31,19 +33,21 @@ import type {
 } from '../types';
 import VehiculoModal from './VehiculoModal';
 
-export default function VehiculoDatosPage() {
+export default function VehiculoDatosPage(): JSX.Element {
+  const { notify } = useNotification();
+
   const vehCrud = useCrud<IVehiculoDatos>('vehiculodatos');
   const cliCrud = useCrud<ICliente>('clientes');
   const modCrud = useCrud<IModelosDatos>('modelosdatos');
   const colCrud = useCrud<IColoresDatos>('coloresdatos');
   const marCrud = useCrud<IMarcaVehiculo>('marcasvehiculos');
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [openForm, setOpenForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [page, setPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  const [openForm, setOpenForm] = useState<boolean>(false);
   const [editData, setEditData] = useState<IVehiculoDatos | null>(null);
-  const [confirmDel, setConfirmDel] = useState(false);
+  const [confirmDel, setConfirmDel] = useState<boolean>(false);
   const [toDelete, setToDelete] = useState<IVehiculoDatos | null>(null);
 
   const vehiculos = vehCrud.allQuery.data || [];
@@ -89,29 +93,65 @@ export default function VehiculoDatosPage() {
     page * rowsPerPage + rowsPerPage
   );
 
-  const openNew = () => { setEditData(null); setOpenForm(true); };
-  const openEdit = (v: IVehiculoDatos) => { setEditData(v); setOpenForm(true); };
-  const closeForm = () => setOpenForm(false);
-  const onSubmit = (data: Partial<IVehiculoDatos>) => {
-    if (editData) vehCrud.updateM.mutate({ id: editData._id, data });
-    else vehCrud.createM.mutate(data);
+  const openNew = (): void => { setEditData(null); setOpenForm(true); };
+  const openEdit = (v: IVehiculoDatos): void => { setEditData(v); setOpenForm(true); };
+  const closeForm = (): void => setOpenForm(false);
+
+  const onSubmit = (data: Partial<IVehiculoDatos>): void => {
+    if (editData) {
+      vehCrud.updateM.mutate(
+        { id: editData._id, data },
+        {
+          onSuccess: () => notify('Vehículo actualizado correctamente', 'success'),
+          onError: () => notify('Error al actualizar vehículo', 'error'),
+        }
+      );
+    } else {
+      vehCrud.createM.mutate(
+        data,
+        {
+          onSuccess: () => notify('Vehículo creado correctamente', 'success'),
+          onError: () => notify('Error al crear vehículo', 'error'),
+        }
+      );
+    }
     closeForm();
   };
 
-  const askDelete = (v: IVehiculoDatos) => { setToDelete(v); setConfirmDel(true); };
-  const confirmDelete = () => {
-    if (toDelete) vehCrud.deleteM.mutate(toDelete._id);
+  const askDelete = (v: IVehiculoDatos): void => { setToDelete(v); setConfirmDel(true); };
+  const confirmDelete = (): void => {
+    if (toDelete) {
+      vehCrud.deleteM.mutate(
+        toDelete._id,
+        {
+          onSuccess: () => notify('Vehículo eliminado correctamente', 'success'),
+          onError: () => notify('Error al eliminar vehículo', 'error'),
+        }
+      );
+    }
     setConfirmDel(false);
     setToDelete(null);
   };
 
-  const toggleActivo = (v: IVehiculoDatos) => {
-    vehCrud.updateM.mutate({ id: v._id, data: { activo: !v.activo } });
+  const toggleActivo = (v: IVehiculoDatos): void => {
+    vehCrud.updateM.mutate(
+      { id: v._id, data: { activo: !v.activo } },
+      {
+        onSuccess: () =>
+          notify(
+            `Vehículo ${v.activo ? 'desactivado' : 'activado'} correctamente`,
+            'success'
+          ),
+        onError: () => notify('Error al cambiar estado del vehículo', 'error'),
+      }
+    );
   };
 
   return (
     <Box p={3}>
-      <Typography variant="h5" gutterBottom>Gestión de Vehículos</Typography>
+      <Typography variant="h5" gutterBottom>
+        Gestión de Vehículos
+      </Typography>
 
       <Box display="flex" gap={1} flexWrap="wrap" justifyContent="space-between" mb={2}>
         <TextField
@@ -121,7 +161,9 @@ export default function VehiculoDatosPage() {
           onChange={handleSearch}
           sx={{ flex: '1 1 200px' }}
         />
-        <Button variant="contained" onClick={openNew}>+ Nuevo Vehículo</Button>
+        <Button variant="contained" onClick={openNew}>
+          + Nuevo Vehículo
+        </Button>
       </Box>
 
       <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
@@ -171,7 +213,11 @@ export default function VehiculoDatosPage() {
                       onClick={() => toggleActivo(v)}
                       color={v.activo ? 'success' : 'warning'}
                     >
-                      {v.activo ? <VisibilityIcon fontSize="small" /> : <VisibilityOffIcon fontSize="small" />}
+                      {v.activo ? (
+                        <VisibilityIcon fontSize="small" />
+                      ) : (
+                        <VisibilityOffIcon fontSize="small" />
+                      )}
                     </IconButton>
                   </TableCell>
                   <TableCell align="right">
@@ -219,7 +265,9 @@ export default function VehiculoDatosPage() {
         </DialogTitle>
         <DialogActions>
           <Button onClick={() => setConfirmDel(false)}>Cancelar</Button>
-          <Button color="error" variant="contained" onClick={confirmDelete}>Eliminar</Button>
+          <Button color="error" variant="contained" onClick={confirmDelete}>
+            Eliminar
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

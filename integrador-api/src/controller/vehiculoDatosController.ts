@@ -28,6 +28,8 @@ export const getAllVehiculoDatos = async (req: Request, res: Response, next: Nex
   }
 };
 
+
+
 export const getPaginatedVehiculoDatos = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const page  = parseInt((req.query.page  as string) ?? '1',  10);
@@ -130,15 +132,24 @@ export const deleteVehiculoDatos = async (req: Request, res: Response, next: Nex
   }
 };
 
-export const getVehiculosByCliente = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getVehiculosByCliente = async (req: Request, res: Response): Promise<void> => {
   try {
-    const clienteId = req.params.id;
-    const items = await VehiculoDatos.find({ id_cliente: clienteId, activo: true })
-      .populate('id_modelo')
-      .populate('id_color');
-    res.status(200).json(items);
-  } catch (err) {
-    next(err);
+    const { id } = req.params;
+
+    const vehiculos = await VehiculoDatos.find({ id_cliente: id })
+      .populate({
+        path: 'id_modelo',
+        populate: {
+          path: 'id_marca',
+          model: 'MarcaVehiculo'
+        }
+      })
+      .populate('id_color')
+      .populate('id_cliente');
+
+    res.status(200).json(vehiculos);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener vehículos', error });
   }
 };
 

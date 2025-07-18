@@ -27,11 +27,11 @@ export default function EmpleadoInformacionModal({
   onClose,
   onSubmit
 }: Props) {
-  const [tipoId,   setTipoId]   = useState('');
-  const [nombre,   setNombre]   = useState('');
+  const [tipoId, setTipoId] = useState('');
+  const [nombre, setNombre] = useState('');
   const [telefono, setTelefono] = useState('');
-  const [correo,   setCorreo]   = useState('');
-  const [errors,   setErrors]   = useState({
+  const [correo, setCorreo] = useState('');
+  const [errors, setErrors] = useState({
     tipo: false,
     nombre: false,
     telefono: false,
@@ -47,8 +47,12 @@ export default function EmpleadoInformacionModal({
     if (d.length <= 6) return `(${d.slice(0, 3)})- ${d.slice(3)}`;
     return `(${d.slice(0, 3)})- ${d.slice(3, 6)}-${d.slice(6)}`;
   };
-  const validPhone = (v: string) => /^\(\d{3}\)- \d{3}-\d{4}$/.test(v);
-  const validGmail = (v: string) => /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(v);
+
+  const validPhone = (v: string) =>
+    /^\(\d{3}\)- \d{3}-\d{4}$/.test(v);
+
+  const validEmail = (v: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
   useEffect(() => {
     if (!open) return;
@@ -67,10 +71,10 @@ export default function EmpleadoInformacionModal({
   }, [open, defaultData]);
 
   const isDirty = () =>
-    tipoId   !== initial.current.tipoId ||
-    nombre.trim()   !== initial.current.nombre ||
+    tipoId !== initial.current.tipoId ||
+    nombre.trim() !== initial.current.nombre ||
     telefono.trim() !== initial.current.telefono ||
-    correo.trim()   !== initial.current.correo;
+    correo.trim() !== initial.current.correo;
 
   const tryClose = () => isDirty() ? setConfirmDiscard(true) : onClose();
   const confirmClose = () => { setConfirmDiscard(false); onClose(); };
@@ -80,7 +84,7 @@ export default function EmpleadoInformacionModal({
       tipo: !tipoId,
       nombre: !nombre.trim(),
       telefono: !validPhone(telefono),
-      correo: !validGmail(correo)
+      correo: !validEmail(correo)
     };
     setErrors(e);
     if (!e.tipo && !e.nombre && !e.telefono && !e.correo) {
@@ -99,7 +103,7 @@ export default function EmpleadoInformacionModal({
         <DialogTitle sx={{ position: 'relative', pr: 6 }}>
           {defaultData ? 'Editar Empleado' : 'Nuevo Empleado'}
           <IconButton onClick={tryClose} sx={{ position: 'absolute', right: 8, top: 8 }} size="small">
-            <CloseIcon fontSize="small"/>
+            <CloseIcon fontSize="small" />
           </IconButton>
         </DialogTitle>
 
@@ -140,11 +144,11 @@ export default function EmpleadoInformacionModal({
             />
 
             <TextField
-              label="Correo (gmail.com)"
+              label="Correo electrónico"
               value={correo}
               onChange={e => setCorreo(e.target.value)}
               error={errors.correo}
-              helperText={errors.correo ? 'Debe ser un Gmail válido' : ''}
+              helperText={errors.correo ? 'Correo inválido' : ''}
               fullWidth
             />
           </Box>
@@ -160,7 +164,7 @@ export default function EmpleadoInformacionModal({
 
       <Dialog open={confirmDiscard} onClose={() => setConfirmDiscard(false)}>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningAmberIcon color="warning" fontSize="small"/> ¿Descartar cambios?
+          <WarningAmberIcon color="warning" fontSize="small" /> ¿Descartar cambios?
         </DialogTitle>
         <DialogActions>
           <Button onClick={() => setConfirmDiscard(false)}>Volver</Button>

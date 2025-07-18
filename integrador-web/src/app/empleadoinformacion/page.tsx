@@ -4,12 +4,11 @@ import React, { useState, ChangeEvent, JSX } from 'react';
 import {
   Box, Typography, Paper, Table, TableHead, TableRow,
   TableCell, TableBody, IconButton, Button, TextField,
-  TablePagination, Dialog, DialogTitle, DialogActions
+  TablePagination, Dialog
 } from '@mui/material';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { useCrud } from '../../hooks/useCrud';
+import { useNotification } from '../../components/utils/NotificationProvider';
 import type {
   IEmpleadoInformacion,
   ITipoEmpleado
@@ -17,24 +16,22 @@ import type {
 import EmpleadoInformacionModal from './EmpleadoInformacionModal';
 
 export default function EmpleadoInformacionPage(): JSX.Element {
+  const { notify } = useNotification();
   const empleadoCrud = useCrud<IEmpleadoInformacion>('empleadoinformaciones');
-  const tipoCrud     = useCrud<ITipoEmpleado>('tiposempleados');
+  const tipoCrud = useCrud<ITipoEmpleado>('tiposempleados');
 
   const { data: empleados = [], isLoading: loadingEmp, error: errEmp } = empleadoCrud.allQuery;
-  const { data: tipos     = [], isLoading: loadingTipo, error: errTipo } = tipoCrud.allQuery;
+  const { data: tipos = [], isLoading: loadingTipo, error: errTipo } = tipoCrud.allQuery;
 
-  const [searchTerm, setSearchTerm]     = useState('');
-  const [page,        setPage]          = useState(0);
-  const [rowsPerPage, setRowsPerPage]   = useState(5);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editData,  setEditData]  = useState<IEmpleadoInformacion | null>(null);
-
-  const [confirmDel, setConfirmDel] = useState(false);
-  const [toDelete,   setToDelete]   = useState<IEmpleadoInformacion | null>(null);
+  const [editData, setEditData] = useState<IEmpleadoInformacion | null>(null);
 
   if (loadingEmp || loadingTipo) return <Typography>Loading…</Typography>;
-  if (errEmp)  return <Typography color="error">{errEmp.message}</Typography>;
+  if (errEmp) return <Typography color="error">{errEmp.message}</Typography>;
   if (errTipo) return <Typography color="error">{errTipo.message}</Typography>;
 
   const term = searchTerm.toLowerCase();
@@ -53,33 +50,44 @@ export default function EmpleadoInformacionPage(): JSX.Element {
 
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  const handleSearch     = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
-  const handleChangePage = (_: unknown, newPage: number)          => setPage(newPage);
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
+  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
   const handleChangeRows = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     setRowsPerPage(parseInt(e.target.value, 10));
     setPage(0);
   };
 
-  const openNew    = () => { setEditData(null); setModalOpen(true); };
-  const openEdit   = (row: IEmpleadoInformacion) => { setEditData(row); setModalOpen(true); };
+  const openNew = () => { setEditData(null); setModalOpen(true); };
+  const openEdit = (row: IEmpleadoInformacion) => { setEditData(row); setModalOpen(true); };
   const closeModal = () => setModalOpen(false);
 
+  // ← Mutations con notificaciones
   const handleSubmit = (payload: Partial<IEmpleadoInformacion>) => {
-    if (editData) empleadoCrud.updateM.mutate({ id: editData._id, data: payload });
-    else          empleadoCrud.createM.mutate(payload);
+    if (editData) {
+      empleadoCrud.updateM.mutate(
+        { id: editData._id, data: payload },
+        {
+          onSuccess: () => notify('Empleado actualizado correctamente', 'success'),
+          onError: () => notify('Error al actualizar empleado', 'error'),
+        }
+      );
+    } else {
+      empleadoCrud.createM.mutate(
+        payload,
+        {
+          onSuccess: () => notify('Empleado creado correctamente', 'success'),
+          onError: () => notify('Error al crear empleado', 'error'),
+        }
+      );
+    }
     setModalOpen(false);
-  };
-
-  const askDelete = (row: IEmpleadoInformacion) => { setToDelete(row); setConfirmDel(true); };
-  const confirmDelete = () => {
-    if (toDelete) empleadoCrud.deleteM.mutate(toDelete._id);
-    setConfirmDel(false);
-    setToDelete(null);
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>Gestión de Empleados</Typography>
+      <Typography variant="h5" gutterBottom>
+        Gestión de Empleados
+      </Typography>
 
       <Box display="flex" gap={1} flexWrap="wrap" justifyContent="space-between" mb={2}>
         <TextField
@@ -89,7 +97,9 @@ export default function EmpleadoInformacionPage(): JSX.Element {
           onChange={handleSearch}
           sx={{ flex: '1 1 200px' }}
         />
-        <Button variant="contained" onClick={openNew}>+ Nuevo Empleado</Button>
+        <Button variant="contained" onClick={openNew}>
+          + Nuevo Empleado
+        </Button>
       </Box>
 
       <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
@@ -116,15 +126,24 @@ export default function EmpleadoInformacionPage(): JSX.Element {
                 })
                 ?.nombre_tipo_empleado ?? '—';
               return (
-                <TableRow key={e._id} hover sx={{ '&:hover': { backgroundColor: 'action.selected' } }}>
+                <TableRow
+                  key={e._id}
+                  hover
+                  sx={{ '&:hover': { backgroundColor: 'action.selected' } }}
+                >
                   <TableCell>{idx}</TableCell>
                   <TableCell>{e.nombre}</TableCell>
                   <TableCell>{tipoNombre}</TableCell>
                   <TableCell>{e.telefono}</TableCell>
                   <TableCell>{e.correo}</TableCell>
                   <TableCell align="right">
-                    <IconButton size="small" onClick={() => openEdit(e)}><EditIcon fontSize="small"/></IconButton>
-                    <IconButton size="small" color="error" onClick={() => askDelete(e)}><DeleteIcon fontSize="small"/></IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => openEdit(e)}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    {/* — Botón de eliminar eliminado */}
                   </TableCell>
                 </TableRow>
               );
@@ -154,15 +173,7 @@ export default function EmpleadoInformacionPage(): JSX.Element {
         onSubmit={handleSubmit}
       />
 
-      <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningAmberIcon color="warning" /> ¿Eliminar este empleado?
-        </DialogTitle>
-        <DialogActions>
-          <Button onClick={() => setConfirmDel(false)}>Cancelar</Button>
-          <Button color="error" variant="contained" onClick={confirmDelete}>Eliminar</Button>
-        </DialogActions>
-      </Dialog>
+      {/* — Diálogo de eliminación eliminado */}
     </Box>
   );
 }
