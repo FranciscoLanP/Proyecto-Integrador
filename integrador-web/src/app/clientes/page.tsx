@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, ChangeEvent, JSX } from 'react';
+import dynamic from 'next/dynamic';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -14,7 +15,6 @@ import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import TablePagination from '@mui/material/TablePagination';
-
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import EditIcon from '@mui/icons-material/Edit';
 
@@ -22,31 +22,20 @@ import { useCrud } from '../../hooks/useCrud';
 import { useNotification } from '../../components/utils/NotificationProvider';
 import type {
   ICliente,
-  IBarrio,
-  IDistrito,
-  ISector,
-  IMunicipio,
-  IProvincia
+
 } from '../types';
-import ClientModal from './ClientModal';
+
+// Cargamos el modal de cliente sin SSR para evitar errores de Leaflet en el servidor
+const ClientModal = dynamic(() => import('./ClientModal'), { ssr: false });
 import ClienteVehiculosModal from './ClienteVehiculosModal';
 
 export default function ClientesPage(): JSX.Element {
   const { notify } = useNotification();
 
   const clienteCrud = useCrud<ICliente>('clientes');
-  const provinciaCrud = useCrud<IProvincia>('provincias');
-  const municipioCrud = useCrud<IMunicipio>('municipios');
-  const sectorCrud = useCrud<ISector>('sectores');
-  const distritoCrud = useCrud<IDistrito>('distritos');
-  const barrioCrud = useCrud<IBarrio>('barrios');
+
 
   const clientes = clienteCrud.allQuery.data || [];
-  const provincias = provinciaCrud.allQuery.data || [];
-  const municipios = municipioCrud.allQuery.data || [];
-  const sectores = sectorCrud.allQuery.data || [];
-  const distritos = distritoCrud.allQuery.data || [];
-  const barrios = barrioCrud.allQuery.data || [];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
@@ -66,29 +55,38 @@ export default function ClientesPage(): JSX.Element {
   const filtered = clientes.filter(c =>
     c.nombre.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const paginated = filtered.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
-  const buildAddress = (barrioId: string) => {
-    const b = barrios.find(x => x._id === barrioId);
-    if (!b) return '—';
-    const d = distritos.find(x => x._id === b.id_distrito);
-    const s = d && sectores.find(x => x._id === d.id_sector);
-    const m = s && municipios.find(x => x._id === s.id_municipio);
-    const p = m && provincias.find(x => x._id === m.id_provincia);
-    return [p?.nombre_provincia, m?.nombre_municipio, s?.nombre_sector, d?.nombre_distrito, b.nombre_barrio]
-      .filter(Boolean)
-      .join(' / ');
+
+
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(0);
+  };
+  const handlePageChange = (_: unknown, newPage: number) => setPage(newPage);
+  const handleRowsChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(+e.target.value);
+    setPage(0);
   };
 
-  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
-  const handlePageChange = (_: unknown, newPage: number) => setPage(newPage);
-  const handleRowsChange = (e: ChangeEvent<HTMLInputElement>) => { setRowsPerPage(+e.target.value); setPage(0); };
-
-  const openCreate = () => { setEditData(null); setOpenForm(true); };
-  const openEdit = (c: ICliente) => { setEditData(c); setOpenForm(true); };
+  const openCreate = () => {
+    setEditData(null);
+    setOpenForm(true);
+  };
+  const openEdit = (c: ICliente) => {
+    setEditData(c);
+    setOpenForm(true);
+  };
   const closeForm = () => setOpenForm(false);
 
-  const submitClient = (data: Partial<ICliente>) => {
+  const submitClient = (data: Partial<ICliente> & {
+    latitude: number;
+    longitude: number;
+    direccion?: string;
+  }) => {
     if (editData) {
       clienteCrud.updateM.mutate(
         { id: editData._id, data },
@@ -98,13 +96,10 @@ export default function ClientesPage(): JSX.Element {
         }
       );
     } else {
-      clienteCrud.createM.mutate(
-        data,
-        {
-          onSuccess: () => notify('Cliente creado correctamente', 'success'),
-          onError: () => notify('Error al crear cliente', 'error'),
-        }
-      );
+      clienteCrud.createM.mutate(data, {
+        onSuccess: () => notify('Cliente creado correctamente', 'success'),
+        onError: () => notify('Error al crear cliente', 'error'),
+      });
     }
     closeForm();
   };
@@ -143,7 +138,6 @@ export default function ClientesPage(): JSX.Element {
               <TableCell>RNC</TableCell>
               <TableCell>Teléfono</TableCell>
               <TableCell>Correo</TableCell>
-              <TableCell>Dirección</TableCell>
               <TableCell align="right">Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -155,7 +149,6 @@ export default function ClientesPage(): JSX.Element {
                 <TableCell>{c.rnc || '—'}</TableCell>
                 <TableCell>{c.numero_telefono}</TableCell>
                 <TableCell>{c.correo}</TableCell>
-                <TableCell>{buildAddress(c.id_barrio!)}</TableCell>
                 <TableCell align="right">
                   <IconButton size="small" onClick={() => openVehModal(c)}>
                     <DriveEtaIcon fontSize="small" />
@@ -163,7 +156,6 @@ export default function ClientesPage(): JSX.Element {
                   <IconButton size="small" onClick={() => openEdit(c)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  {/* — Botón de eliminar borrado */}
                 </TableCell>
               </TableRow>
             ))}
@@ -183,8 +175,16 @@ export default function ClientesPage(): JSX.Element {
 
       <ClientModal
         open={openForm}
-        defaultData={editData ?? undefined}
-        barrios={barrios}
+        defaultData={
+          editData
+            ? {
+              ...editData,
+              latitude: (editData as any).location?.coordinates[1] ?? 0,
+              longitude: (editData as any).location?.coordinates[0] ?? 0,
+              direccion: (editData as any).direccion,
+            }
+            : undefined
+        }
         onClose={closeForm}
         onSubmit={submitClient}
       />

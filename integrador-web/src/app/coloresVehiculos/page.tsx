@@ -1,4 +1,3 @@
-// 📁 src/app/coloresVehiculos/ColoresDatosPage.tsx
 'use client';
 
 import React, { useState, ChangeEvent, JSX } from 'react';

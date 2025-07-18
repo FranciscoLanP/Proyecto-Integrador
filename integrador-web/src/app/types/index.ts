@@ -18,38 +18,27 @@ export interface ICliente {
   nombre: string;
   numero_telefono: string;
   correo: string;
-  id_barrio?: string;
   tipo_cliente: ClienteTipo;
+  location: {
+    type: 'Point';
+    coordinates: [number, number]; 
+  };
+  direccion?: string;
 }
 
-export interface IProvincia {
+export interface IUbicacion {
   _id: string;
-  nombre_provincia: string;
+  userId: string;
+  location: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+  direccion?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface IMunicipio {
-  _id: string;
-  nombre_municipio: string;
-  id_provincia: string;
-}
 
-export interface ISector {
-  _id: string;
-  nombre_sector: string;
-  id_municipio: string;
-}
-
-export interface IDistrito {
-  _id: string;
-  nombre_distrito: string;
-  id_sector: string;
-}
-
-export interface IBarrio {
-  _id: string;
-  nombre_barrio: string;
-  id_distrito: string;
-}
 
 export interface IModelosDatos {
   _id: string;

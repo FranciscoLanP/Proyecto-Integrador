@@ -50,7 +50,6 @@ const navItems = [
       { text: 'Marcas', href: '/marcasvehiculos' },
       { text: 'Modelos', href: '/modelosdatos' },
       { text: 'Colores', href: '/coloresVehiculos' },
-      { text: 'Ubicaciones', href: '/ubicaciones' }
     ]
   },
   { text: 'Usuarios', icon: <PersonIcon />, href: '/usuarios' },

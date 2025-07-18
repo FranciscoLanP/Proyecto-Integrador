@@ -1,29 +1,48 @@
 import { Schema, model, Document } from 'mongoose';
 
 export interface ICliente extends Document {
-    _id: Schema.Types.ObjectId;
-    cedula: string;
-    rnc?: string;
-    nombre: string;
-    numero_telefono: string;
-    correo: string;
-    tipo_cliente: 'Individual' | 'Empresarial' | 'Aseguradora' | 'Gobierno';
-    id_barrio?: Schema.Types.ObjectId;
+  _id: Schema.Types.ObjectId;
+  cedula: string;
+  rnc?: string;
+  nombre: string;
+  numero_telefono: string;
+  correo: string;
+  tipo_cliente: 'Individual' | 'Empresarial' | 'Aseguradora' | 'Gobierno';
+  location: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+  direccion?: string;
 }
 
-const PersonaSchema = new Schema<ICliente>({
+const ClienteSchema = new Schema<ICliente>(
+  {
     cedula: { type: String, unique: true, required: false },
     rnc: { type: String, required: false },
     nombre: { type: String, required: true },
     numero_telefono: { type: String, required: true },
     correo: { type: String, required: true },
-    id_barrio: { type: Schema.Types.ObjectId, ref: 'Barrio', required: false },
     tipo_cliente: {
-    type: String,
-    required: true,
-    enum: ['Individual', 'Empresarial', 'Aseguradora', 'Gobierno'],
-    trim: true,
-  },
-});
+      type: String,
+      required: true,
+      enum: ['Individual', 'Empresarial', 'Aseguradora', 'Gobierno'],
+      trim: true,
+    },
+    location: {
+      type: {
+        type: String,
+        enum: ['Point'] as const,
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
+    },
+    direccion: { type: String, required: false },
+  }
+);
 
-export const Cliente = model<ICliente>('Cliente', PersonaSchema);
+ClienteSchema.index({ location: '2dsphere' });
+
+export const Cliente = model<ICliente>('Cliente', ClienteSchema);

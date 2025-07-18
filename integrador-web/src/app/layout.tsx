@@ -1,14 +1,15 @@
-'use client';
+// src/app/layout.tsx
+'use client'
 
-import type { ReactNode } from 'react';
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import theme from '../styles/theme';
-import { AuthProvider } from './context/AuthContext';
-import { NotificationProvider } from '@/components/utils/NotificationProvider';
-import ProtectedApp from './vehiculodatos/ProtectedApp';
+import type { ReactNode } from 'react'
+import { ThemeProvider, CssBaseline } from '@mui/material'
+import { QueryClient, QueryClientProvider } from 'react-query'
+import theme from '../styles/theme'
+import { AuthProvider } from './context/AuthContext'
+import { NotificationProvider } from '@/components/utils/NotificationProvider'
+import ProtectedApp from './vehiculodatos/ProtectedApp'
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient()
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -27,5 +28,5 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

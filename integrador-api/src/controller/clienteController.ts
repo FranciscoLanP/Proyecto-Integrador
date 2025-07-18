@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { Cliente } from '../models/cliente';
 
 export const getAllClientes = async (
@@ -11,7 +11,7 @@ export const getAllClientes = async (
       search?: string;
       tipo_cliente?: string;
     };
-    const filter: any = {};
+    const filter: Record<string, unknown> = {};
 
     if (search) {
       filter.$or = [
@@ -44,7 +44,7 @@ export const getPaginatedClientes = async (
       search?: string;
       tipo_cliente?: string;
     };
-    const filter: any = {};
+    const filter: Record<string, unknown> = {};
 
     if (search) {
       filter.$or = [
@@ -99,18 +99,36 @@ export const createCliente = async (
       nombre,
       numero_telefono,
       correo,
-      id_barrio,
       tipo_cliente,
-    } = req.body;
+      latitude,
+      longitude,
+      direccion,
+    } = req.body as {
+      cedula: string;
+      rnc?: string;
+      nombre: string;
+      numero_telefono: string;
+      correo: string;
+      tipo_cliente: 'Individual' | 'Empresarial' | 'Aseguradora' | 'Gobierno';
+      latitude: number;
+      longitude: number;
+      direccion?: string;
+    };
+
     const newCliente = new Cliente({
       cedula,
       rnc,
       nombre,
       numero_telefono,
       correo,
-      id_barrio,
       tipo_cliente,
+      location: {
+        type: 'Point',
+        coordinates: [longitude, latitude],
+      },
+      direccion,
     });
+
     const saved = await newCliente.save();
     res.status(201).json(saved);
   } catch (error) {
@@ -124,9 +142,39 @@ export const updateCliente = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const updated = await Cliente.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    type Body = Partial<{
+      cedula: string;
+      rnc: string;
+      nombre: string;
+      numero_telefono: string;
+      correo: string;
+      tipo_cliente: 'Individual' | 'Empresarial' | 'Aseguradora' | 'Gobierno';
+      latitude: number;
+      longitude: number;
+      direccion: string;
+    }>;
+
+    const body = req.body as Body;
+    const { latitude, longitude, direccion, ...rest } = body;
+
+    const updateData: Record<string, unknown> = { ...rest };
+
+    if (latitude !== undefined && longitude !== undefined) {
+      updateData.location = {
+        type: 'Point',
+        coordinates: [longitude, latitude],
+      };
+    }
+
+    if (direccion !== undefined) {
+      updateData.direccion = direccion;
+    }
+
+    const updated = await Cliente.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
     if (!updated) {
       res.status(404).json({ message: 'Cliente no encontrada' });
       return;
