@@ -13,6 +13,7 @@ export interface ICliente extends Document {
     coordinates: [number, number];
   };
   direccion?: string;
+  ubicacionLabel?: string;
 }
 
 const ClienteSchema = new Schema<ICliente>(
@@ -40,7 +41,9 @@ const ClienteSchema = new Schema<ICliente>(
       },
     },
     direccion: { type: String, required: false },
-  }
+    ubicacionLabel: { type: String, required: false },
+  },
+  { timestamps: true }
 );
 
 ClienteSchema.index({ location: '2dsphere' });

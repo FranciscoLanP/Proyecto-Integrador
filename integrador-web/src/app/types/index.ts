@@ -23,7 +23,8 @@ export interface ICliente {
     type: 'Point';
     coordinates: [number, number]; 
   };
-  direccion?: string;
+  direccion?: string;          
+  ubicacionLabel?: string;      
 }
 
 export interface IUbicacion {

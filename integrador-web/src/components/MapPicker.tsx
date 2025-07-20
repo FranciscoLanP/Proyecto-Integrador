@@ -1,8 +1,7 @@
-// src/components/MapPicker.tsx
 'use client'
 
 import React, { useState, useEffect, JSX } from 'react'
-import type { LatLngExpression, LeafletMouseEvent } from 'leaflet'
+import type { LatLngExpression, LeafletMouseEvent, Map as LeafletMap } from 'leaflet'
 import {
   MapContainer,
   TileLayer,
@@ -16,7 +15,6 @@ import Box from '@mui/material/Box'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-// Configura el icono desde CDN
 L.Icon.Default.mergeOptions({
   iconUrl:
     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -35,12 +33,12 @@ export interface Suggestion {
 interface MapPickerProps {
   initialPosition?: LatLngExpression
   initialSearch?: string
-  /** Se pasa lat, lng y opcionalmente el label de la dirección */
+  skipInitial?: boolean
   onChange: (lat: number, lng: number, label?: string) => void
 }
 
 function Recenter({ center }: { center: LatLngExpression }): null {
-  const map = useMap() as any
+  const map = useMap() as LeafletMap
   useEffect(() => {
     map.setView(center, map.getZoom())
   }, [center, map])
@@ -50,18 +48,27 @@ function Recenter({ center }: { center: LatLngExpression }): null {
 export function MapPicker({
   initialPosition = [19.317, -70.255],
   initialSearch = '',
+  skipInitial = false,
   onChange
 }: MapPickerProps): JSX.Element {
   const [position, setPosition] = useState<LatLngExpression>(initialPosition)
   const [inputValue, setInputValue] = useState<string>(initialSearch)
   const [options, setOptions] = useState<Suggestion[]>(() =>
     initialSearch
-      ? [{ label: initialSearch, lat: (initialPosition as any)[0], lng: (initialPosition as any)[1] }]
+      ? [
+          {
+            label: initialSearch,
+            lat: (initialPosition as [number, number])[0],
+            lng: (initialPosition as [number, number])[1]
+          }
+        ]
       : []
   )
 
-  // Llamar onChange una vez al montar o al cambiar initialSearch/initialPosition
+  // Sólo si skipInitial===false
   useEffect(() => {
+    if (skipInitial) return
+
     const [lat, lng] = initialPosition as [number, number]
     if (initialSearch) {
       setInputValue(initialSearch)
@@ -82,9 +89,8 @@ export function MapPicker({
           onChange(lat, lng)
         })
     }
-  }, [initialPosition, initialSearch, onChange])
+  }, [initialPosition, initialSearch, skipInitial, onChange])
 
-  // Marker + reverse-geocode on click
   const LocationMarker = (): JSX.Element => {
     useMapEvents({
       click(e: LeafletMouseEvent): void {
@@ -109,7 +115,6 @@ export function MapPicker({
     return <Marker position={position as any} />
   }
 
-  // Sugerencias al teclear
   useEffect(() => {
     if (!inputValue || inputValue.length < 3) return
 
@@ -135,9 +140,7 @@ export function MapPicker({
             return [...prev, ...resp.filter(s => !existing.has(s.label))]
           })
         })
-        .catch(() => {
-          // no-op
-        })
+        .catch(() => {})
     }, 500)
     return () => clearTimeout(timer)
   }, [inputValue])

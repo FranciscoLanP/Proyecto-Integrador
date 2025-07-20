@@ -18,11 +18,11 @@ import type { ICliente, ClienteTipo } from '../types'
 import 'leaflet/dist/leaflet.css'
 import { MapPicker } from '@/components/MapPicker'
 
-/** Datos que envía el formulario, con ubicación opcional */
 export type ClienteConUbicacion = Partial<ICliente> & {
   latitude: number
   longitude: number
-  direccion?: string    // aquí guardamos solo la dirección detallada
+  direccion?: string
+  ubicacionLabel?: string
 }
 
 interface Props {
@@ -38,7 +38,7 @@ export default function ClientModal({
   onSubmit,
   defaultData,
 }: Props) {
-  // Campos básicos
+  // básicos
   const [cedula, setCedula] = useState<string>('')
   const [rnc, setRnc] = useState<string>('')
   const [nombre, setNombre] = useState<string>('')
@@ -46,42 +46,28 @@ export default function ClientModal({
   const [correo, setCorreo] = useState<string>('')
   const [tipoCliente, setTipoCliente] = useState<ClienteTipo | ''>('')
 
-  // Errores de validación
+  // errores
   const [cedulaError, setCedulaError] = useState<string>('')
   const [rncError, setRncError] = useState<string>('')
   const [correoError, setCorreoError] = useState<string>('')
   const [telefonoError, setTelefonoError] = useState<string>('')
 
-  // Estados de ubicación
+  // ubicación
   const [markerLat, setMarkerLat] = useState<number>(18.4861)
   const [markerLng, setMarkerLng] = useState<number>(-69.9312)
-  // Esta etiqueta la usaremos solo para inicializar el MapPicker
   const [mapLabel, setMapLabel] = useState<string>('')
-  // Este es el campo "Dirección detallada" que rellena el cliente manualmente
   const [direccionDetallada, setDireccionDetallada] = useState<string>('')
 
-  // Al abrir en modo editar, cargamos una sola vez:
   useEffect(() => {
     if (!open) {
-      // resetear todo al cerrar
-      setCedula('')
-      setRnc('')
-      setNombre('')
-      setTelefono('')
-      setCorreo('')
-      setTipoCliente('')
-      setMarkerLat(18.4861)
-      setMarkerLng(-69.9312)
-      setMapLabel('')
-      setDireccionDetallada('')
-      setCedulaError('')
-      setRncError('')
-      setCorreoError('')
-      setTelefonoError('')
+      // reset
+      setCedula(''); setRnc(''); setNombre('')
+      setTelefono(''); setCorreo(''); setTipoCliente('')
+      setMarkerLat(18.4861); setMarkerLng(-69.9312)
+      setMapLabel(''); setDireccionDetallada('')
+      setCedulaError(''); setRncError(''); setCorreoError(''); setTelefonoError('')
       return
     }
-
-    // Si hay datos por defecto, los ponemos
     if (defaultData) {
       setCedula(defaultData.cedula ?? '')
       setRnc(defaultData.rnc ?? '')
@@ -89,26 +75,22 @@ export default function ClientModal({
       setTelefono(defaultData.numero_telefono ?? '')
       setCorreo(defaultData.correo ?? '')
       setTipoCliente(defaultData.tipo_cliente ?? '')
-
       setMarkerLat(defaultData.latitude)
       setMarkerLng(defaultData.longitude)
       setDireccionDetallada(defaultData.direccion ?? '')
-
-      // Hacemos reverse-geocode UNA vez para llenar mapLabel
-      fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${defaultData.latitude}&lon=${defaultData.longitude}`
-      )
-        .then(res => res.json())
-        .then(data => {
-          setMapLabel(data.display_name as string)
-        })
-        .catch(() => {
-          setMapLabel('')
-        })
+      if (defaultData.ubicacionLabel) {
+        setMapLabel(defaultData.ubicacionLabel)
+      } else {
+        fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${defaultData.latitude}&lon=${defaultData.longitude}`
+        )
+          .then(r => r.json())
+          .then(d => setMapLabel(d.display_name as string))
+          .catch(() => setMapLabel(''))
+      }
+      setCedulaError(''); setRncError(''); setCorreoError(''); setTelefonoError('')
     }
   }, [open, defaultData])
-
-  // Formateadores y validaciones (igual que antes)
   const cedulaRegex = /^\d{3}-\d{7}-\d{1}$/
   const rncRegex = /^\d{3}-\d{6,7}$/
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -169,7 +151,8 @@ export default function ClientModal({
         tipo_cliente: tipoCliente,
         latitude: markerLat,
         longitude: markerLng,
-        direccion: direccionDetallada.trim() || undefined
+        direccion: direccionDetallada.trim() || undefined,
+        ubicacionLabel: mapLabel || undefined
       })
     }
   }
@@ -200,7 +183,6 @@ export default function ClientModal({
 
       <DialogContent dividers>
         <Box display="flex" flexDirection="column" gap={2}>
-          {/* Campos básicos */}
           <TextField
             label="Cédula"
             value={cedula}
@@ -261,11 +243,11 @@ export default function ClientModal({
             ))}
           </TextField>
 
-          {/* Mapa para seleccionar ubicación */}
           <Box mt={2}>
             <MapPicker
               initialPosition={[markerLat, markerLng]}
               initialSearch={mapLabel}
+              skipInitial={!defaultData}
               onChange={(lat, lng, label) => {
                 setMarkerLat(lat)
                 setMarkerLng(lng)
@@ -274,9 +256,9 @@ export default function ClientModal({
             />
           </Box>
 
-          {/* Campo de dirección detallada */}
           <TextField
             label="Dirección detallada"
+            placeholder="calle/casa #"
             value={direccionDetallada}
             onChange={e => setDireccionDetallada(e.target.value)}
             fullWidth

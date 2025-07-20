@@ -103,6 +103,7 @@ export const createCliente = async (
       latitude,
       longitude,
       direccion,
+      ubicacionLabel
     } = req.body as {
       cedula: string;
       rnc?: string;
@@ -113,6 +114,7 @@ export const createCliente = async (
       latitude: number;
       longitude: number;
       direccion?: string;
+      ubicacionLabel?: string;
     };
 
     const newCliente = new Cliente({
@@ -127,6 +129,7 @@ export const createCliente = async (
         coordinates: [longitude, latitude],
       },
       direccion,
+      ubicacionLabel,
     });
 
     const saved = await newCliente.save();
@@ -152,11 +155,11 @@ export const updateCliente = async (
       latitude: number;
       longitude: number;
       direccion: string;
+      ubicacionLabel: string;
     }>;
 
     const body = req.body as Body;
-    const { latitude, longitude, direccion, ...rest } = body;
-
+    const { latitude, longitude, direccion, ubicacionLabel, ...rest } = body;
     const updateData: Record<string, unknown> = { ...rest };
 
     if (latitude !== undefined && longitude !== undefined) {
@@ -165,9 +168,11 @@ export const updateCliente = async (
         coordinates: [longitude, latitude],
       };
     }
-
     if (direccion !== undefined) {
       updateData.direccion = direccion;
+    }
+    if (ubicacionLabel !== undefined) {
+      updateData.ubicacionLabel = ubicacionLabel;
     }
 
     const updated = await Cliente.findByIdAndUpdate(
@@ -176,7 +181,7 @@ export const updateCliente = async (
       { new: true }
     );
     if (!updated) {
-      res.status(404).json({ message: 'Cliente no encontrada' });
+      res.status(404).json({ message: 'Cliente no encontrado' });
       return;
     }
     res.status(200).json(updated);
@@ -184,6 +189,7 @@ export const updateCliente = async (
     next(error);
   }
 };
+
 
 export const deleteCliente = async (
   req: Request,
