@@ -1,87 +1,87 @@
-'use client';
+'use client'
 
-import React, { useState, ChangeEvent, JSX } from 'react';
+import React, { useState, ChangeEvent, JSX } from 'react'
 import {
-  Box, Typography, Paper, Table, TableHead, TableRow,
-  TableCell, TableBody, IconButton, Button, TextField,
-  TablePagination, Dialog
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import { useCrud } from '../../hooks/useCrud';
-import { useNotification } from '../../components/utils/NotificationProvider';
-import type {
-  IEmpleadoInformacion,
-  ITipoEmpleado
-} from '../types';
-import EmpleadoInformacionModal from './EmpleadoInformacionModal';
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  IconButton,
+  Button,
+  TextField,
+  TablePagination
+} from '@mui/material'
+import EditIcon from '@mui/icons-material/Edit'
+import { useCrud } from '@/hooks/useCrud'
+import { useNotification } from '@/components/utils/NotificationProvider'
+import { EmpleadoConUbicacion, IEmpleadoInformacion } from '../types'
+import EmpleadoInformacionModal from './EmpleadoInformacionModal'
 
 export default function EmpleadoInformacionPage(): JSX.Element {
-  const { notify } = useNotification();
-  const empleadoCrud = useCrud<IEmpleadoInformacion>('empleadoinformaciones');
-  const tipoCrud = useCrud<ITipoEmpleado>('tiposempleados');
+  const { notify } = useNotification()
+  const empleadoCrud = useCrud<IEmpleadoInformacion>('empleadoinformaciones')
 
-  const { data: empleados = [], isLoading: loadingEmp, error: errEmp } = empleadoCrud.allQuery;
-  const { data: tipos = [], isLoading: loadingTipo, error: errTipo } = tipoCrud.allQuery;
+  const { data: empleados = [], isLoading, error } = empleadoCrud.allQuery
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editData, setEditData] = useState<EmpleadoConUbicacion>()
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editData, setEditData] = useState<IEmpleadoInformacion | null>(null);
+  if (isLoading) return <Typography>Loading…</Typography>
+  if (error) return <Typography color="error">{error.message}</Typography>
 
-  if (loadingEmp || loadingTipo) return <Typography>Loading…</Typography>;
-  if (errEmp) return <Typography color="error">{errEmp.message}</Typography>;
-  if (errTipo) return <Typography color="error">{errTipo.message}</Typography>;
+  const filtered = empleados.filter(e =>
+    e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    e.tipo_empleado.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+  const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
 
-  const term = searchTerm.toLowerCase();
-  const filtered = empleados.filter(e => {
-    const nom = (e.nombre ?? '').toLowerCase().includes(term);
-    const tipo = tipos
-      .find(t => {
-        const tid = typeof e.id_tipo_empleado === 'string'
-          ? e.id_tipo_empleado
-          : e.id_tipo_empleado._id;
-        return tid === t._id;
-      })
-      ?.nombre_tipo_empleado.toLowerCase().includes(term) ?? false;
-    return nom || tipo;
-  });
+  const openNew = () => {
+    setEditData(undefined)
+    setModalOpen(true)
+  }
 
-  const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const openEdit = (row: IEmpleadoInformacion) => {
+    const coords = row.location?.coordinates ?? [-69.9312, 18.4861]
+    const [lng, lat] = coords as [number, number]
+    setEditData({
+      ...row,
+      latitude: lat,
+      longitude: lng,
+      direccion: row.direccion,
+      ubicacionLabel: row.ubicacionLabel
+    })
+    setModalOpen(true)
+  }
 
-  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
-  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
-  const handleChangeRows = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    setRowsPerPage(parseInt(e.target.value, 10));
-    setPage(0);
-  };
+  const closeModal = () => setModalOpen(false)
 
-  const openNew = () => { setEditData(null); setModalOpen(true); };
-  const openEdit = (row: IEmpleadoInformacion) => { setEditData(row); setModalOpen(true); };
-  const closeModal = () => setModalOpen(false);
-
-  // ← Mutations con notificaciones
-  const handleSubmit = (payload: Partial<IEmpleadoInformacion>) => {
-    if (editData) {
+  const handleSubmit = (payload: EmpleadoConUbicacion) => {
+    if (editData?._id) {
       empleadoCrud.updateM.mutate(
         { id: editData._id, data: payload },
         {
-          onSuccess: () => notify('Empleado actualizado correctamente', 'success'),
-          onError: () => notify('Error al actualizar empleado', 'error'),
+          onSuccess: () => notify('Empleado actualizado', 'success'),
+          onError: () => notify('Error al actualizar', 'error'),
         }
-      );
+      )
     } else {
       empleadoCrud.createM.mutate(
         payload,
         {
-          onSuccess: () => notify('Empleado creado correctamente', 'success'),
-          onError: () => notify('Error al crear empleado', 'error'),
+          onSuccess: () => notify('Empleado creado', 'success'),
+          onError: () => notify('Error al crear', 'error'),
         }
-      );
+      )
     }
-    setModalOpen(false);
-  };
+    setModalOpen(false)
+  }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -89,20 +89,23 @@ export default function EmpleadoInformacionPage(): JSX.Element {
         Gestión de Empleados
       </Typography>
 
-      <Box display="flex" gap={1} flexWrap="wrap" justifyContent="space-between" mb={2}>
+      <Box display="flex" gap={1} mb={2}>
         <TextField
           label="Buscar nombre o tipo"
           size="small"
           value={searchTerm}
-          onChange={handleSearch}
-          sx={{ flex: '1 1 200px' }}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            setSearchTerm(e.target.value)
+            setPage(0)
+          }}
+          sx={{ flex: 1 }}
         />
         <Button variant="contained" onClick={openNew}>
           + Nuevo Empleado
         </Button>
       </Box>
 
-      <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+      <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <Table size="small">
           <TableHead sx={{ backgroundColor: 'action.hover' }}>
             <TableRow>
@@ -115,39 +118,20 @@ export default function EmpleadoInformacionPage(): JSX.Element {
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginated.map((e, i) => {
-              const idx = page * rowsPerPage + i + 1;
-              const tipoNombre = tipos
-                .find(t => {
-                  const tid = typeof e.id_tipo_empleado === 'string'
-                    ? e.id_tipo_empleado
-                    : e.id_tipo_empleado._id;
-                  return tid === t._id;
-                })
-                ?.nombre_tipo_empleado ?? '—';
-              return (
-                <TableRow
-                  key={e._id}
-                  hover
-                  sx={{ '&:hover': { backgroundColor: 'action.selected' } }}
-                >
-                  <TableCell>{idx}</TableCell>
-                  <TableCell>{e.nombre}</TableCell>
-                  <TableCell>{tipoNombre}</TableCell>
-                  <TableCell>{e.telefono}</TableCell>
-                  <TableCell>{e.correo}</TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      size="small"
-                      onClick={() => openEdit(e)}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    {/* — Botón de eliminar eliminado */}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {paginated.map((e, i) => (
+              <TableRow key={e._id} hover>
+                <TableCell>{page * rowsPerPage + i + 1}</TableCell>
+                <TableCell>{e.nombre}</TableCell>
+                <TableCell>{e.tipo_empleado}</TableCell>
+                <TableCell>{e.telefono}</TableCell>
+                <TableCell>{e.correo}</TableCell>
+                <TableCell align="right">
+                  <IconButton size="small" onClick={() => openEdit(e)}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
 
@@ -155,25 +139,22 @@ export default function EmpleadoInformacionPage(): JSX.Element {
           component="div"
           count={filtered.length}
           page={page}
-          onPageChange={handleChangePage}
+          onPageChange={(_, newPage) => setPage(newPage)}
           rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRows}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10))
+            setPage(0)
+          }}
           rowsPerPageOptions={[5, 10, 25]}
-          labelRowsPerPage="Ver"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-          sx={{ '& .MuiTablePagination-toolbar': { py: 0, minHeight: 36 } }}
         />
       </Paper>
 
       <EmpleadoInformacionModal
         open={modalOpen}
-        defaultData={editData ?? undefined}
-        tipos={tipos}
+        defaultData={editData}
         onClose={closeModal}
         onSubmit={handleSubmit}
       />
-
-      {/* — Diálogo de eliminación eliminado */}
     </Box>
-  );
+  )
 }

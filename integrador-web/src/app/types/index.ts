@@ -1,4 +1,3 @@
-
 export interface IMarcaVehiculo {
   _id: string;
   nombre_marca: string;
@@ -21,10 +20,10 @@ export interface ICliente {
   tipo_cliente: ClienteTipo;
   location: {
     type: 'Point';
-    coordinates: [number, number]; 
+    coordinates: [number, number];
   };
-  direccion?: string;          
-  ubicacionLabel?: string;      
+  direccion?: string;
+  ubicacionLabel?: string;
 }
 
 export interface IUbicacion {
@@ -39,8 +38,6 @@ export interface IUbicacion {
   updatedAt: string;
 }
 
-
-
 export interface IModelosDatos {
   _id: string;
   nombre_modelo: string;
@@ -50,7 +47,6 @@ export interface IModelosDatos {
 export interface IVehiculoDatos {
   _id: string;
   chasis: string;
-
   id_cliente: string | ICliente;
   id_modelo: string | IModelosDatos;
   id_color: string | IColoresDatos;
@@ -63,6 +59,7 @@ export interface IReciboVehiculo {
   id_recepcion: string | IRecepcionVehiculo;
   observaciones?: string;
 }
+
 export interface IRecepcionVehiculo {
   _id: string;
   id_empleadoInformacion: string | IEmpleadoInformacion;
@@ -71,19 +68,29 @@ export interface IRecepcionVehiculo {
   fecha: string;
   problema_reportado?: string;
 }
-export interface ITipoEmpleado {
-  _id: string;
-  nombre_tipo_empleado: 'Empleado Asalariado' | 'Empleado por Trabajo';
-}
 
 export interface IEmpleadoInformacion {
   _id: string;
   id_cliente?: string | ICliente;
-  id_tipo_empleado: string | ITipoEmpleado;
+  tipo_empleado: 'Empleado Asalariado' | 'Empleado por Trabajo';
   nombre: string;
   telefono: string;
   correo: string;
+  location: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+  direccion?: string;
+  ubicacionLabel?: string;
 }
+
+export type EmpleadoConUbicacion = Partial<IEmpleadoInformacion> & {
+  latitude: number;
+  longitude: number;
+  direccion?: string;
+  ubicacionLabel?: string;
+};
+
 export type Role = 'administrador' | 'empleado';
 
 export interface IUsuario {

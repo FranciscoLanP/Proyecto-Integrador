@@ -1,4 +1,3 @@
-// src/components/ClientModal.tsx
 'use client'
 
 import React, { useState, useEffect } from 'react'
@@ -38,7 +37,6 @@ export default function ClientModal({
   onSubmit,
   defaultData,
 }: Props) {
-  // básicos
   const [cedula, setCedula] = useState<string>('')
   const [rnc, setRnc] = useState<string>('')
   const [nombre, setNombre] = useState<string>('')
@@ -46,13 +44,11 @@ export default function ClientModal({
   const [correo, setCorreo] = useState<string>('')
   const [tipoCliente, setTipoCliente] = useState<ClienteTipo | ''>('')
 
-  // errores
   const [cedulaError, setCedulaError] = useState<string>('')
   const [rncError, setRncError] = useState<string>('')
   const [correoError, setCorreoError] = useState<string>('')
   const [telefonoError, setTelefonoError] = useState<string>('')
 
-  // ubicación
   const [markerLat, setMarkerLat] = useState<number>(18.4861)
   const [markerLng, setMarkerLng] = useState<number>(-69.9312)
   const [mapLabel, setMapLabel] = useState<string>('')
@@ -60,7 +56,6 @@ export default function ClientModal({
 
   useEffect(() => {
     if (!open) {
-      // reset
       setCedula(''); setRnc(''); setNombre('')
       setTelefono(''); setCorreo(''); setTipoCliente('')
       setMarkerLat(18.4861); setMarkerLng(-69.9312)
