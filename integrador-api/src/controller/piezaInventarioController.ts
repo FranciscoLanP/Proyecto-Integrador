@@ -54,16 +54,58 @@ export const getPiezaInventarioById = async (req: Request, res: Response, next: 
   }
 }
 
-export const createPiezaInventario = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const createPiezaInventario = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { serial, nombre_pieza, id_tipo_pieza, costo, id_suplidor } = req.body
-    const newItem = new PiezaInventario({ serial, nombre_pieza, id_tipo_pieza, costo, id_suplidor })
-    const saved = await newItem.save()
-    res.status(201).json(saved)
+    const {
+      nombre_pieza,
+      cantidad_disponible,
+      costo_promedio,
+      historial
+    } = req.body as {
+      nombre_pieza: string;
+      cantidad_disponible: number;
+      costo_promedio: number;
+      historial: { cantidad: number; costo_unitario: number; fecha: string }[];
+    };
+
+    const newItem = new PiezaInventario({
+      nombre_pieza,
+      cantidad_disponible,
+      costo_promedio,
+      historial
+    });
+
+    const saved = await newItem.save();
+    res.status(201).json(saved);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
+export const addStockPieza = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { cantidad, costo_unitario } = req.body;
+    const pieza = await PiezaInventario.findById(id);
+    if (!pieza) {
+      res.status(404).json({ message: 'Pieza no encontrada' });
+      return;
+    }
+    pieza.historial.push({ cantidad, costo_unitario, fecha: new Date() });
+ 
+    await pieza.save();
+    res.status(200).json(pieza);
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const updatePiezaInventario = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

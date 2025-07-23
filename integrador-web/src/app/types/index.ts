@@ -102,3 +102,44 @@ export interface IUsuario {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface ISuplidor {
+  _id: string;
+  nombre: string;
+  cedula?: string;
+  rnc?: string;
+  numero_telefono: string;
+  correo: string;
+  latitude: number;
+  longitude: number;
+  location: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+  direccion?: string;
+  ubicacionLabel?: string;
+}
+
+// Evento histórico de stock en PiezaInventario
+export interface IEventoHistorico {
+  cantidad: number;
+  costo_unitario: number;
+  fecha: string;
+}
+
+// PiezaInventario unificado con stock e historial
+export interface IPiezaInventario {
+  _id: string;
+  serial: string;
+  nombre_pieza: string;
+  cantidad_disponible: number;
+  costo_promedio: number;
+  historial: IEventoHistorico[];
+}
+
+// Relación suplidor-pieza (para validaciones y dropdowns)
+export interface ISuplidorPiezaRelacion {
+  _id: string;
+  id_suplidor: string;
+  id_pieza: string;
+}

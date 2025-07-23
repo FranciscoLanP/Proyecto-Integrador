@@ -43,6 +43,8 @@ const navItems = [
   { text: 'Empleados', icon: <WorkIcon />, href: '/empleadoinformacion' },
   { text: 'Recepciones', icon: <CarRepairIcon />, href: '/recepcionvehiculos' },
   { text: 'Recibos', icon: <ReceiptIcon />, href: '/recibosvehiculos' },
+  { text: 'Suplidores', icon: <PeopleIcon />, href: '/suplidores' },
+  { text: 'Inventorio', icon: <BuildIcon />, href: '/inventorio' },
   {
     text: 'Mantenimiento',
     icon: <BuildIcon />,

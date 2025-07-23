@@ -1,6 +1,5 @@
 import { Router } from "express";
 import marcaVehiculosRoutes from "./marcaVehiculosRoutes";
-import inventarioRoutes from "./inventarioRoutes";
 import coloresDatosRoutes from "./coloresDatosRoutes";
 import empleadoInformacionRoutes from "./empleadoInformacionRoutes";
 import facturaRoutes from "./facturaRoutes";
@@ -17,10 +16,11 @@ import suplidorPiezaRoutes from "./suplidorPiezaRoutes";
 import suplidorPiezaRelacionRoutes from "./suplidorPiezaRelacionRoutes";
 import usuariosRoutes from "./usuariosRoutes";
 import vehiculoDatosRoutes from "./vehiculoDatosRoutes";
-import tipoPiezaRoutes from "./tipoPiezaRoutes";
 import tipoPagosRoutes from "./tipoPagosRoutes";
 import authRoutes from "./authRoutes";
 import ubicacionesRoutes from "./ubicacionesRoutes";
+import historialCompraRoutes from "./historialCompraRoutes";
+import piezaUsadaRoutes from "./piezaUsadaRoutes";
 
 const router = Router();
 
@@ -29,7 +29,6 @@ router.use(empleadoInformacionRoutes);
 router.use(facturaRoutes);
 router.use(garantiaRoutes);
 router.use(inspeccionVehiculoRoutes);
-router.use(inventarioRoutes);
 router.use(marcaVehiculosRoutes);
 router.use(metodoPagoRoutes);
 router.use(modelosDatosRoutes);
@@ -41,10 +40,11 @@ router.use(reparacionVehiculoRoutes);
 router.use(suplidorPiezaRelacionRoutes);
 router.use(suplidorPiezaRoutes);
 router.use(tipoPagosRoutes);
-router.use(tipoPiezaRoutes);
 router.use(usuariosRoutes);
 router.use(vehiculoDatosRoutes);
 router.use('/auth', authRoutes);
 router.use( ubicacionesRoutes);
+router.use( historialCompraRoutes);
+router.use( piezaUsadaRoutes);
 
 export default router;

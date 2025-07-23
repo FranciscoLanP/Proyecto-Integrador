@@ -1,23 +1,51 @@
-import { Schema, model, Document } from 'mongoose';
+// src/models/piezaInventario.ts
 
-export interface IPiezaInventario extends Document {
-    _id: Schema.Types.ObjectId;
-    serial: string;
-    nombre_pieza: string;
-    id_tipo_pieza: Schema.Types.ObjectId;
-    costo: number;
-    id_suplidor: Schema.Types.ObjectId;
+import { Schema, model, Document } from 'mongoose';
+import { Counter } from './counter';
+
+export interface IEventoHistorico {
+  cantidad: number;
+  costo_unitario: number;
+  fecha: Date;
 }
 
+export interface IPiezaInventario extends Document {
+  serial: string;
+  nombre_pieza: string;
+  cantidad_disponible: number;
+  costo_promedio: number;
+  historial: IEventoHistorico[];
+}
+
+const EventoSchema = new Schema<IEventoHistorico>({
+  cantidad: { type: Number, required: true },
+  costo_unitario: { type: Number, required: true },
+  fecha: { type: Date, default: Date.now }
+}, { _id: false });
+
 const PiezaInventarioSchema = new Schema<IPiezaInventario>({
-    serial: { type: String, unique: true, required: true },
-    nombre_pieza: { type: String, required: true },
-    id_tipo_pieza: { type: Schema.Types.ObjectId, ref: 'TipoPieza', required: true },
-    costo: { type: Number, required: true },
-    id_suplidor: { type: Schema.Types.ObjectId, ref: 'SuplidorPieza', required: false }
+  serial: { type: String, unique: true, required: true },
+  nombre_pieza: { type: String, required: true },
+  cantidad_disponible: { type: Number, default: 0 },
+  costo_promedio: { type: Number, default: 0 },
+  historial: { type: [EventoSchema], default: [] }
+}, {
+  timestamps: true
+});
+
+
+PiezaInventarioSchema.pre<IPiezaInventario>('validate', async function () {
+  if (this.isNew) {
+    const counter = await Counter.findOneAndUpdate(
+      { id: 'pieza_inventario' },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+    this.serial = counter.seq.toString();
+  }
 });
 
 export const PiezaInventario = model<IPiezaInventario>(
-    'PiezaInventario',
-    PiezaInventarioSchema
+  'PiezaInventario',
+  PiezaInventarioSchema
 );
