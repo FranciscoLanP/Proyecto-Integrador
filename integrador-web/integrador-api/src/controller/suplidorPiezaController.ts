@@ -45,7 +45,6 @@ export const getSuplidorPiezaById = async (req: Request, res: Response, next: Ne
 export const createSuplidorPieza = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
  try {
     const {
-      cedula,
       rnc,
       nombre,
       numero_telefono,
@@ -67,7 +66,6 @@ export const createSuplidorPieza = async (req: Request, res: Response, next: Nex
     };
 
     const newCliente = new SuplidorPieza({
-      cedula,
       rnc,
       nombre,
       numero_telefono,
@@ -90,7 +88,6 @@ export const createSuplidorPieza = async (req: Request, res: Response, next: Nex
 export const updateSuplidorPieza = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
    try {
      type Body = Partial<{
-       cedula: string;
        rnc: string;
        nombre: string;
        numero_telefono: string;

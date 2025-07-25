@@ -106,7 +106,6 @@ export interface IUsuario {
 export interface ISuplidor {
   _id: string;
   nombre: string;
-  cedula?: string;
   rnc?: string;
   numero_telefono: string;
   correo: string;

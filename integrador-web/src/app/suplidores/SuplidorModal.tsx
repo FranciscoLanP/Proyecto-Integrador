@@ -30,7 +30,6 @@ export default function SuplidorModal({
   onSubmit
 }: Props): JSX.Element {
   const [nombre, setNombre] = useState('')
-  const [cedula, setCedula] = useState('')
   const [rnc, setRnc] = useState('')
   const [telefono, setTelefono] = useState('')
   const [correo, setCorreo] = useState('')
@@ -42,7 +41,6 @@ export default function SuplidorModal({
   useEffect(() => {
     if (!open) {
       setNombre('')
-      setCedula('')
       setRnc('')
       setTelefono('')
       setCorreo('')
@@ -55,7 +53,6 @@ export default function SuplidorModal({
 
     if (defaultData) {
       setNombre(defaultData.nombre ?? '')
-      setCedula(defaultData.cedula ?? '')
       setRnc(defaultData.rnc ?? '')
       setTelefono(defaultData.numero_telefono ?? '')
       setCorreo(defaultData.correo ?? '')
@@ -70,7 +67,6 @@ export default function SuplidorModal({
     onSubmit({
       _id: defaultData?._id,
       nombre: nombre.trim(),
-      cedula: cedula.trim(),
       rnc: rnc.trim() || undefined,
       numero_telefono: telefono.trim(),
       correo: correo.trim(),
@@ -106,12 +102,7 @@ export default function SuplidorModal({
             required
             fullWidth
           />
-          <TextField
-            label="Cédula"
-            value={cedula}
-            onChange={(e) => setCedula(e.target.value)}
-            fullWidth
-          />
+
           <TextField
             label="RNC"
             value={rnc}

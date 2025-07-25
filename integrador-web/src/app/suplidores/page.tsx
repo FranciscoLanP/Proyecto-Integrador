@@ -45,7 +45,6 @@ export default function SuplidorPage(): JSX.Element {
 
   const filtered = suplidores.filter(s =>
     s.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.cedula?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.rnc?.toLowerCase().includes(searchTerm.toLowerCase())
   )
   const paginated = filtered.slice(
@@ -143,7 +142,7 @@ export default function SuplidorPage(): JSX.Element {
             <TableRow>
               <TableCell>#</TableCell>
               <TableCell>Nombre</TableCell>
-              <TableCell>Cédula / RNC</TableCell>
+              <TableCell>RNC</TableCell>
               <TableCell>Teléfono</TableCell>
               <TableCell>Correo</TableCell>
               <TableCell align="right">Acciones</TableCell>
@@ -154,7 +153,7 @@ export default function SuplidorPage(): JSX.Element {
               <TableRow key={s._id} hover>
                 <TableCell>{page * rowsPerPage + i + 1}</TableCell>
                 <TableCell>{s.nombre}</TableCell>
-                <TableCell>{s.cedula || s.rnc}</TableCell>
+                <TableCell>{s.rnc}</TableCell>
                 <TableCell>{s.numero_telefono}</TableCell>
                 <TableCell>{s.correo}</TableCell>
                 <TableCell align="right">
