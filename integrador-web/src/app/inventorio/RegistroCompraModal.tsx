@@ -38,7 +38,6 @@ export default function RegistroCompraModal({
   const { allQuery: suplQ } = useCrud<ISuplidor>('suplidorpiezas');
   const { allQuery: relQ } = useCrud<ISuplidorPiezaRelacion>('suplidorpiezasrelaciones');
   const { createM, updateM } = useCrud<IPiezaInventario>('piezasinventario');
-  // servicio para crear relaciones
   const { createM: createRel } = useCrud<ISuplidorPiezaRelacion>('suplidorpiezasrelaciones');
 
   const suplidores = suplQ.data ?? [];
@@ -52,17 +51,24 @@ export default function RegistroCompraModal({
 
   useEffect(() => {
     if (!open) return;
+    
     if (piezaToEdit) {
-      // Añadir stock
+      // MODO EDITAR: Cargar todos los datos de la pieza
       setNombre(piezaToEdit.nombre_pieza);
+      setCantidad(piezaToEdit.cantidad_disponible);
+      setCosto(piezaToEdit.costo_promedio);
+      
+      // Buscar el suplidor asociado a esta pieza
+      const relacion = relaciones.find(r => r.id_pieza === piezaToEdit._id);
+      setSupl(relacion?.id_suplidor || '');
     } else {
-      // Crear pieza
+      // MODO CREAR: Limpiar campos
       setNombre('');
+      setCantidad(0);
+      setCosto(0);
+      setSupl('');
     }
-    setCantidad(0);
-    setCosto(0);
-    setSupl('');
-  }, [open, piezaToEdit]);
+  }, [open, piezaToEdit?._id, relaciones.length]); // ✅ Usar solo el ID y la longitud
 
   const validSup = piezaToEdit
     ? relaciones
@@ -72,6 +78,10 @@ export default function RegistroCompraModal({
     : suplidores;
 
   const handleSave = (): void => {
+    if (!nombre.trim()) {
+      notify('El nombre de la pieza es requerido', 'error');
+      return;
+    }
     if (!supl) {
       notify('Debes seleccionar un suplidor', 'error');
       return;
@@ -82,6 +92,7 @@ export default function RegistroCompraModal({
     }
 
     if (!piezaToEdit) {
+      // CREAR NUEVA PIEZA
       const historial: IEventoHistorico[] = [{
         cantidad,
         costo_unitario: costo,
@@ -97,7 +108,6 @@ export default function RegistroCompraModal({
         },
         {
           onSuccess: pieza => {
-            // crear relación pieza↔suplidor
             createRel.mutate(
               { id_pieza: pieza._id, id_suplidor: supl },
               { onSuccess: () => {
@@ -113,33 +123,25 @@ export default function RegistroCompraModal({
         }
       );
     } else {
-      // AÑADIR STOCK
-      const nuevoEvento: IEventoHistorico = {
-        cantidad,
-        costo_unitario: costo,
-        fecha: new Date().toISOString()
-      };
-      const prevCant = piezaToEdit.cantidad_disponible;
-      const prevCost = piezaToEdit.costo_promedio;
-      const nuevaCant = prevCant + cantidad;
-      const nuevoProm = ((prevCost * prevCant) + (costo * cantidad)) / nuevaCant;
-
+      // EDITAR PIEZA EXISTENTE
       updateM.mutate(
         {
           id: piezaToEdit._id,
           data: {
-            cantidad_disponible: nuevaCant,
-            costo_promedio: nuevoProm,
-            historial: [...piezaToEdit.historial, nuevoEvento]
+            nombre_pieza: nombre.trim(),
+            cantidad_disponible: cantidad,
+            costo_promedio: costo,
+            // Mantener el historial existente
+            historial: piezaToEdit.historial
           }
         },
         {
           onSuccess: () => {
-            notify('Stock agregado correctamente', 'success');
+            notify('Pieza actualizada correctamente', 'success');
             onSaved();
             onClose();
           },
-          onError: () => notify('Error al agregar stock', 'error')
+          onError: () => notify('Error al actualizar pieza', 'error')
         }
       );
     }
@@ -148,19 +150,18 @@ export default function RegistroCompraModal({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
       <DialogTitle>
-        {piezaToEdit ? 'Agregar Stock' : 'Nueva Pieza'}
+        {piezaToEdit ? 'Editar Pieza' : 'Nueva Pieza'}
       </DialogTitle>
 
       <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-        {!piezaToEdit && (
-          <TextField
-            label="Nombre de la pieza"
-            fullWidth
-            size="small"
-            value={nombre}
-            onChange={e => setNombre(e.target.value)}
-          />
-        )}
+        <TextField
+          label="Nombre de la pieza"
+          fullWidth
+          size="small"
+          value={nombre}
+          onChange={e => setNombre(e.target.value)}
+          required
+        />
 
         <TextField
           select
@@ -169,8 +170,9 @@ export default function RegistroCompraModal({
           size="small"
           value={supl}
           onChange={e => setSupl(e.target.value)}
+          required
         >
-          {validSup.map(s => (
+          {(piezaToEdit ? validSup : suplidores).map(s => (
             <MenuItem key={s._id} value={s._id}>
               {s.nombre}
             </MenuItem>
@@ -178,28 +180,32 @@ export default function RegistroCompraModal({
         </TextField>
 
         <TextField
-          label="Cantidad"
+          label="Cantidad disponible"
           type="number"
           fullWidth
           size="small"
           value={cantidad}
           onChange={e => setCantidad(+e.target.value)}
+          required
+          inputProps={{ min: 0 }}
         />
 
         <TextField
-          label="Costo unitario"
+          label="Costo promedio"
           type="number"
           fullWidth
           size="small"
           value={costo}
           onChange={e => setCosto(+e.target.value)}
+          required
+          inputProps={{ min: 0, step: 0.01 }}
         />
       </DialogContent>
 
       <DialogActions sx={{ px: 2, py: 1 }}>
         <Button onClick={onClose}>Cancelar</Button>
         <Button variant="contained" onClick={handleSave}>
-          {piezaToEdit ? 'Agregar' : 'Crear'}
+          {piezaToEdit ? 'Actualizar' : 'Crear'}
         </Button>
       </DialogActions>
     </Dialog>

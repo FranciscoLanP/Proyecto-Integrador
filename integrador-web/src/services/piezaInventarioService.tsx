@@ -1,0 +1,145 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import {
+  Autocomplete,
+  TextField,
+  Box,
+  Typography,
+  CircularProgress,
+  Chip
+} from '@mui/material';
+import { createCrudService } from '@/services/crudService';
+
+interface Pieza {
+  _id: string;
+  nombre_pieza: string;
+  precio?: number;          // Mantener por compatibilidad
+  costo_promedio?: number;  // ← Agregar este campo
+  cantidad_disponible: number;
+  categoria?: string;
+}
+
+interface Props {
+  value: string;
+  onChange: (piezaId: string, piezaData?: Pieza) => void;
+  label?: string;
+  size?: 'small' | 'medium';
+  disabled?: boolean;
+  placeholder?: string;
+}
+
+const piezaInventarioService = createCrudService<Pieza>('piezasinventario');
+
+export default function PiezaBuscador({
+  value,
+  onChange,
+  label = 'Buscar pieza',
+  size = 'medium',
+  disabled = false,
+  placeholder = 'Escribe para buscar piezas...'
+}: Props) {
+  const [piezas, setPiezas] = useState<Pieza[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+
+  // Carga inicial de piezas
+  useEffect(() => {
+    fetchPiezas();
+  }, []);
+
+  const fetchPiezas = async () => {
+    setLoading(true);
+    try {
+      const data = await piezaInventarioService.fetchAll();
+      // Filtrar solo piezas que tienen nombre y están disponibles
+      const piezasValidas = data.filter(p => p.nombre_pieza && p.cantidad_disponible > 0);
+      setPiezas(piezasValidas);
+    } catch (error) {
+      console.error('Error loading piezas:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectedPieza = piezas.find(p => p._id === value) || null;
+
+  return (
+    <Autocomplete
+      options={piezas}
+      getOptionLabel={(option) => option.nombre_pieza || ''}
+      value={selectedPieza}
+      onChange={(_, newValue) => {
+        onChange(newValue?._id || '', newValue ?? undefined);
+      }}
+      inputValue={inputValue}
+      onInputChange={(_, newInput) => {
+        setInputValue(newInput);
+      }}
+      loading={loading}
+      disabled={disabled}
+      size={size}
+      noOptionsText="No se encontraron piezas"
+      loadingText="Cargando piezas..."
+      filterOptions={(options, { inputValue }) => {
+        if (!inputValue) return options.slice(0, 10); // Mostrar las primeras 10 si no hay texto
+        
+        const filtro = inputValue.toLowerCase();
+        return options.filter(option => {
+          const nombre = option.nombre_pieza?.toLowerCase() ?? '';
+          const categoria = option.categoria?.toLowerCase() ?? '';
+          return nombre.includes(filtro) || categoria.includes(filtro);
+        });
+      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={label}
+          placeholder={placeholder}
+          variant="outlined"
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <>
+                {loading ? <CircularProgress size={16} /> : null}
+                {params.InputProps.endAdornment}
+              </>
+            )
+          }}
+        />
+      )}
+      renderOption={(props, option) => {
+        const { key, ...rest } = props;
+        // Usar costo_promedio si existe, sino precio
+        const precioMostrar = option.costo_promedio ?? option.precio ?? 0;
+        
+        return (
+          <Box component="li" key={key} {...rest} sx={{ p: 1 }}>
+            <Box sx={{ width: '100%' }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Typography variant="body1" fontWeight="medium">
+                  {option.nombre_pieza}
+                </Typography>
+                <Typography variant="body2" color="primary" fontWeight="bold">
+                  ${precioMostrar.toFixed(2)}
+                </Typography>
+              </Box>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mt={0.5}>
+                <Typography variant="caption" color="text.secondary">
+                  {option.categoria ? `Categoría: ${option.categoria}` : 'Sin categoría'}
+                </Typography>
+                <Chip 
+                  label={`Stock: ${option.cantidad_disponible}`}
+                  size="small"
+                  variant="outlined"
+                  color={option.cantidad_disponible > 10 ? 'success' : 
+                         option.cantidad_disponible > 0 ? 'warning' : 'error'}
+                />
+              </Box>
+            </Box>
+          </Box>
+        );
+      }}
+    />
+  );
+}

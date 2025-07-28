@@ -8,16 +8,17 @@ export interface IReparacionVehiculo extends Document {
     fecha_fin?: Date;
     descripcion: string;
     costo_total?: number;
+    piezas_usadas?: Schema.Types.ObjectId[];
 }
 
 const ReparacionVehiculoSchema = new Schema<IReparacionVehiculo>({
-
     id_inspeccion: { type: Schema.Types.ObjectId, ref: 'InspeccionVehiculo', required: true },
     id_empleadoInformacion: { type: Schema.Types.ObjectId, ref: 'EmpleadoInformacion', required: true },
     fecha_inicio: { type: Date, required: true, default: Date.now },
     fecha_fin: { type: Date, required: false },
     descripcion: { type: String, required: true },
-    costo_total: { type: Number, required: false }
+    costo_total: { type: Number, required: false },
+    piezas_usadas: [{ type: Schema.Types.ObjectId, ref: 'PiezaUsada', required: false }]
 });
 
 export const ReparacionVehiculo = model<IReparacionVehiculo>(

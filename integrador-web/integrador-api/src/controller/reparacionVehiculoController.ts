@@ -1,5 +1,7 @@
-import { Request, Response, NextFunction } from 'express'
-import { ReparacionVehiculo } from '../models/reparacionVehiculo'
+import { Request, Response, NextFunction } from 'express';
+import { ReparacionVehiculo } from '../models/reparacionVehiculo';
+import { PiezaUsada } from '../models/piezaUsada';
+import { PiezaInventario } from '../models/piezaInventario';
 
 export const getAllReparacionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -60,12 +62,63 @@ export const getReparacionVehiculoById = async (req: Request, res: Response, nex
 
 export const createReparacionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id_inspeccion, id_empleado, descripcion, fecha_fin, costo_total } = req.body
-    const newItem = new ReparacionVehiculo({ id_inspeccion, id_empleado, descripcion, fecha_fin, costo_total })
-    const saved = await newItem.save()
-    res.status(201).json(saved)
+    const {
+      id_inspeccion,
+      id_empleadoInformacion,
+      fecha_inicio,
+      fecha_fin,
+      descripcion,
+      costo_total,
+      piezas_usadas // [{ id_pieza, cantidad }]
+    } = req.body;
+
+    if (!id_inspeccion || !id_empleadoInformacion || !descripcion) {
+      res.status(400).json({ message: 'id_inspeccion, id_empleadoInformacion y descripcion son requeridos' });
+      return;
+    }
+
+    // Registrar piezas usadas y descontar inventario
+    let piezasUsadasIds: any[] = [];
+    if (Array.isArray(piezas_usadas)) {
+      for (const pieza of piezas_usadas) {
+        const piezaUsada = await PiezaUsada.create({
+          id_pieza: pieza.id_pieza,
+          cantidad: pieza.cantidad,
+          origen: 'reparacion',
+          referencia: null // Se actualizará luego con el id de la reparación
+        });
+        piezasUsadasIds.push(piezaUsada._id);
+
+        // Descontar inventario
+        await PiezaInventario.findByIdAndUpdate(
+          pieza.id_pieza,
+          { $inc: { cantidad_disponible: -pieza.cantidad } }
+        );
+      }
+    }
+
+    // Crear la reparación
+    const reparacion = new ReparacionVehiculo({
+      id_inspeccion,
+      id_empleadoInformacion,
+      fecha_inicio,
+      fecha_fin,
+      descripcion,
+      costo_total,
+      piezas_usadas: piezasUsadasIds
+    });
+
+    const saved = await reparacion.save();
+
+    // Actualizar referencia en piezas usadas
+    await PiezaUsada.updateMany(
+      { _id: { $in: piezasUsadasIds } },
+      { referencia: saved._id }
+    );
+
+    res.status(201).json(saved);
   } catch (error) {
-    next(error)
+    next(error);
   }
 }
 

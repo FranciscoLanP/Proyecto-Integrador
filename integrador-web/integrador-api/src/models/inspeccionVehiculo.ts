@@ -10,6 +10,12 @@ export interface IInspeccionVehiculo extends Document {
     costo_mano_obra?: number;
     costo_aproximado?: number;
     resultado?: string;
+    piezas_sugeridas?: Array<{
+        id_pieza: Schema.Types.ObjectId;
+        nombre_pieza: string;
+        cantidad: number;
+        precio_unitario: number;
+    }>;
 }
 
 const InspeccionVehiculoSchema = new Schema<IInspeccionVehiculo>({
@@ -20,7 +26,13 @@ const InspeccionVehiculoSchema = new Schema<IInspeccionVehiculo>({
     tiempo_estimado: { type: Number, required: false },
     costo_mano_obra: { type: Number, required: false },
     costo_aproximado: { type: Number, required: false },
-    resultado: { type: String, required: false }
+    resultado: { type: String, required: false },
+    piezas_sugeridas: [{
+        id_pieza: { type: Schema.Types.ObjectId, ref: 'PiezaInventario', required: false },
+        nombre_pieza: { type: String, required: false },
+        cantidad: { type: Number, required: false },
+        precio_unitario: { type: Number, required: false }
+    }]
 });
 
 export const InspeccionVehiculo = model<IInspeccionVehiculo>(
