@@ -6,15 +6,49 @@ export const getAllInspeccionVehiculo = async (req: Request, res: Response, next
     const { search } = req.query as { search?: string };
     const filter = search
       ? {
-          $or: [
-            { id_recibo: search },
-            { id_empleadoInformacion: search },
-            { comentario: { $regex: search, $options: 'i' } },
-            { resultado: { $regex: search, $options: 'i' } }
+        $or: [
+          { id_recibo: search },
+          { id_empleadoInformacion: search },
+          { comentario: { $regex: search, $options: 'i' } },
+          { resultado: { $regex: search, $options: 'i' } }
+        ]
+      }
+      : {};
+    const items = await InspeccionVehiculo.find(filter)
+      .populate({
+        path: 'id_recibo',
+        populate: {
+          path: 'id_recepcion',
+          populate: [
+            {
+              path: 'id_vehiculo',
+              populate: [
+                {
+                  path: 'id_cliente',
+                  select: 'nombre cedula numero_telefono tipo_cliente'
+                },
+                {
+                  path: 'id_modelo',
+                  select: 'nombre_modelo',
+                  populate: {
+                    path: 'id_marca',
+                    select: 'nombre_marca'
+                  }
+                },
+                {
+                  path: 'id_color',
+                  select: 'nombre_color'
+                }
+              ]
+            },
+            {
+              path: 'id_empleadoInformacion',
+              select: 'nombre telefono tipo_empleado'
+            }
           ]
         }
-      : {};
-    const items = await InspeccionVehiculo.find(filter);
+      })
+      .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado');
     res.status(200).json(items);
   } catch (error) {
     next(error);
@@ -28,16 +62,52 @@ export const getPaginatedInspeccionVehiculo = async (req: Request, res: Response
     const { search } = req.query as { search?: string };
     const filter = search
       ? {
-          $or: [
-            { id_recibo: search },
-            { id_empleadoInformacion: search },
-            { comentario: { $regex: search, $options: 'i' } },
-            { resultado: { $regex: search, $options: 'i' } }
-          ]
-        }
+        $or: [
+          { id_recibo: search },
+          { id_empleadoInformacion: search },
+          { comentario: { $regex: search, $options: 'i' } },
+          { resultado: { $regex: search, $options: 'i' } }
+        ]
+      }
       : {};
     const totalCount = await InspeccionVehiculo.countDocuments(filter);
-    const data = await InspeccionVehiculo.find(filter).skip((page - 1) * limit).limit(limit);
+    const data = await InspeccionVehiculo.find(filter)
+      .populate({
+        path: 'id_recibo',
+        populate: {
+          path: 'id_recepcion',
+          populate: [
+            {
+              path: 'id_vehiculo',
+              populate: [
+                {
+                  path: 'id_cliente',
+                  select: 'nombre cedula numero_telefono tipo_cliente'
+                },
+                {
+                  path: 'id_modelo',
+                  select: 'nombre_modelo',
+                  populate: {
+                    path: 'id_marca',
+                    select: 'nombre_marca'
+                  }
+                },
+                {
+                  path: 'id_color',
+                  select: 'nombre_color'
+                }
+              ]
+            },
+            {
+              path: 'id_empleadoInformacion',
+              select: 'nombre telefono tipo_empleado'
+            }
+          ]
+        }
+      })
+      .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado')
+      .skip((page - 1) * limit)
+      .limit(limit);
     const totalPages = Math.ceil(totalCount / limit);
     res.status(200).json({ data, page, totalPages, totalCount });
   } catch (error) {
@@ -47,7 +117,41 @@ export const getPaginatedInspeccionVehiculo = async (req: Request, res: Response
 
 export const getInspeccionVehiculoById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const item = await InspeccionVehiculo.findById(req.params.id);
+    const item = await InspeccionVehiculo.findById(req.params.id)
+      .populate({
+        path: 'id_recibo',
+        populate: {
+          path: 'id_recepcion',
+          populate: [
+            {
+              path: 'id_vehiculo',
+              populate: [
+                {
+                  path: 'id_cliente',
+                  select: 'nombre cedula numero_telefono tipo_cliente'
+                },
+                {
+                  path: 'id_modelo',
+                  select: 'nombre_modelo',
+                  populate: {
+                    path: 'id_marca',
+                    select: 'nombre_marca'
+                  }
+                },
+                {
+                  path: 'id_color',
+                  select: 'nombre_color'
+                }
+              ]
+            },
+            {
+              path: 'id_empleadoInformacion',
+              select: 'nombre telefono tipo_empleado'
+            }
+          ]
+        }
+      })
+      .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado');
     if (!item) {
       res.status(404).json({ message: 'Inspección no encontrada' });
       return;

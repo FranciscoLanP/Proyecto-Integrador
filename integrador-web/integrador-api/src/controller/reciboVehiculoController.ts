@@ -6,13 +6,37 @@ export const getAllReciboVehiculo = async (req: Request, res: Response, next: Ne
     const { search } = req.query as { search?: string }
     const filter = search
       ? {
-          $or: [
-            { id_recepcion: search },
-            { observaciones: { $regex: search, $options: 'i' } }
-          ]
-        }
+        $or: [
+          { id_recepcion: search },
+          { observaciones: { $regex: search, $options: 'i' } }
+        ]
+      }
       : {}
     const items = await ReciboVehiculo.find(filter)
+      .populate({
+        path: 'id_recepcion',
+        populate: {
+          path: 'id_vehiculo',
+          populate: [
+            {
+              path: 'id_cliente',
+              select: 'nombre cedula numero_telefono tipo_cliente'
+            },
+            {
+              path: 'id_modelo',
+              select: 'nombre_modelo',
+              populate: {
+                path: 'id_marca',
+                select: 'nombre_marca'
+              }
+            },
+            {
+              path: 'id_color',
+              select: 'nombre_color'
+            }
+          ]
+        }
+      })
     res.status(200).json(items)
   } catch (error) {
     next(error)
@@ -26,14 +50,38 @@ export const getPaginatedReciboVehiculo = async (req: Request, res: Response, ne
     const { search } = req.query as { search?: string }
     const filter = search
       ? {
-          $or: [
-            { id_recepcion: search },
-            { observaciones: { $regex: search, $options: 'i' } }
-          ]
-        }
+        $or: [
+          { id_recepcion: search },
+          { observaciones: { $regex: search, $options: 'i' } }
+        ]
+      }
       : {}
     const totalCount = await ReciboVehiculo.countDocuments(filter)
     const data = await ReciboVehiculo.find(filter)
+      .populate({
+        path: 'id_recepcion',
+        populate: {
+          path: 'id_vehiculo',
+          populate: [
+            {
+              path: 'id_cliente',
+              select: 'nombre cedula numero_telefono tipo_cliente'
+            },
+            {
+              path: 'id_modelo',
+              select: 'nombre_modelo',
+              populate: {
+                path: 'id_marca',
+                select: 'nombre_marca'
+              }
+            },
+            {
+              path: 'id_color',
+              select: 'nombre_color'
+            }
+          ]
+        }
+      })
       .skip((page - 1) * limit)
       .limit(limit)
     const totalPages = Math.ceil(totalCount / limit)
@@ -46,6 +94,30 @@ export const getPaginatedReciboVehiculo = async (req: Request, res: Response, ne
 export const getReciboVehiculoById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const item = await ReciboVehiculo.findById(req.params.id)
+      .populate({
+        path: 'id_recepcion',
+        populate: {
+          path: 'id_vehiculo',
+          populate: [
+            {
+              path: 'id_cliente',
+              select: 'nombre cedula numero_telefono tipo_cliente'
+            },
+            {
+              path: 'id_modelo',
+              select: 'nombre_modelo',
+              populate: {
+                path: 'id_marca',
+                select: 'nombre_marca'
+              }
+            },
+            {
+              path: 'id_color',
+              select: 'nombre_color'
+            }
+          ]
+        }
+      })
     if (!item) {
       res.status(404).json({ message: 'ReciboVehiculo no encontrado' })
       return

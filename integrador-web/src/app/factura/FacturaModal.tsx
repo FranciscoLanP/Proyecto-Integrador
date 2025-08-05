@@ -27,15 +27,14 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
       total: 0,
       metodo_pago: '',
       detalles: '',
-      emitida: false
+      emitida: false,
+      descuento_porcentaje: 0
     }
   );
 
-  // Estados para los datos de los dropdowns
   const [reparaciones, setReparaciones] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Cargar datos para los dropdowns
   useEffect(() => {
     if (open) {
       fetchDropdownData();
@@ -44,14 +43,38 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
 
   useEffect(() => {
     if (defaultData) {
-      setForm(defaultData);
+      const processedData = {
+        ...defaultData,
+        id_reparacion: typeof defaultData.id_reparacion === 'object' && (defaultData.id_reparacion as any)?._id
+          ? (defaultData.id_reparacion as any)._id
+          : defaultData.id_reparacion
+      };
+
+      console.log('🔧 Datos procesados para edición:', {
+        original: defaultData,
+        processed: processedData
+      });
+
+      setForm(processedData);
+    } else {
+      
+      setForm({
+        id_reparacion: '',
+        fecha_emision: new Date().toISOString().slice(0, 10),
+        total: 0,
+        metodo_pago: '',
+        detalles: '',
+        emitida: false,
+        descuento_porcentaje: 0
+      });
     }
-  }, [defaultData]);
+  }, [defaultData, open]); 
 
   const fetchDropdownData = async () => {
     setLoading(true);
     try {
       const reparacionesData = await reparacionVehiculoService.fetchAll();
+      console.log('🚗 Reparaciones para factura:', reparacionesData); 
       setReparaciones(reparacionesData);
     } catch (error) {
       console.error('Error loading dropdown data:', error);
@@ -66,7 +89,7 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
   const handleReparacionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const reparacionId = e.target.value;
     const reparacionSeleccionada = reparaciones.find(r => r._id === reparacionId);
-    
+
     setForm(f => ({
       ...f,
       id_reparacion: reparacionId,
@@ -102,11 +125,33 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
             fullWidth
             disabled={form.emitida || loading}
           >
-            {reparaciones.map(reparacion => (
-              <MenuItem key={reparacion._id} value={reparacion._id}>
-                {`${reparacion._id} - ${reparacion.descripcion} ($${reparacion.costo_total || 0})`}
-              </MenuItem>
-            ))}
+            {reparaciones.map(reparacion => {
+              const infoText = (() => {
+                try {
+                  const inspeccion = reparacion.id_inspeccion;
+                  if (inspeccion && typeof inspeccion === 'object') {
+                    const cliente = inspeccion.id_recibo?.id_recepcion?.id_vehiculo?.id_cliente;
+                    const vehiculo = inspeccion.id_recibo?.id_recepcion?.id_vehiculo;
+
+                    if (cliente && vehiculo) {
+                      const clienteNombre = cliente.nombre || 'Cliente';
+                      const vehiculoInfo = vehiculo.id_modelo?.nombre_modelo || 'Vehículo';
+                      return `${clienteNombre} | ${vehiculoInfo} | $${reparacion.costo_total || 0}`;
+                    }
+                  }
+                  return `Reparación | ${reparacion.descripcion || 'Sin descripción'} | $${reparacion.costo_total || 0}`;
+                } catch (error) {
+                  console.error('Error al procesar reparación:', error);
+                  return `Reparación ${reparacion._id} | $${reparacion.costo_total || 0}`;
+                }
+              })();
+
+              return (
+                <MenuItem key={reparacion._id} value={reparacion._id}>
+                  {infoText}
+                </MenuItem>
+              );
+            })}
           </TextField>
 
           <TextField
@@ -127,6 +172,17 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
             onChange={handleChange}
             fullWidth
             disabled={form.emitida}
+          />
+          <TextField
+            label="Descuento (%)"
+            name="descuento_porcentaje"
+            type="number"
+            value={form.descuento_porcentaje ?? 0}
+            onChange={handleChange}
+            fullWidth
+            disabled={form.emitida}
+            inputProps={{ min: 0, max: 100, step: 0.1 }}
+            helperText="Porcentaje de descuento (0-100%)"
           />
           <TextField
             select

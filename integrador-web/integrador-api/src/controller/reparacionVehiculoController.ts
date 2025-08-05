@@ -8,14 +8,58 @@ export const getAllReparacionVehiculo = async (req: Request, res: Response, next
     const { search } = req.query as { search?: string }
     const filter = search
       ? {
-          $or: [
-            { id_inspeccion: search },
-            { id_empleado: search },
-            { descripcion: { $regex: search, $options: 'i' } }
-          ]
-        }
+        $or: [
+          { id_inspeccion: search },
+          { id_empleado: search },
+          { descripcion: { $regex: search, $options: 'i' } }
+        ]
+      }
       : {}
     const items = await ReparacionVehiculo.find(filter)
+      .populate({
+        path: 'piezas_usadas',
+        populate: {
+          path: 'id_pieza',
+          select: 'nombre_pieza costo_promedio precio'
+        }
+      })
+      .populate({
+        path: 'id_inspeccion',
+        populate: {
+          path: 'id_recibo',
+          populate: {
+            path: 'id_recepcion',
+            populate: [
+              {
+                path: 'id_vehiculo',
+                populate: [
+                  {
+                    path: 'id_cliente',
+                    select: 'nombre cedula numero_telefono tipo_cliente'
+                  },
+                  {
+                    path: 'id_modelo',
+                    select: 'nombre_modelo',
+                    populate: {
+                      path: 'id_marca',
+                      select: 'nombre_marca'
+                    }
+                  },
+                  {
+                    path: 'id_color',
+                    select: 'nombre_color'
+                  }
+                ]
+              },
+              {
+                path: 'id_empleadoInformacion',
+                select: 'nombre telefono tipo_empleado'
+              }
+            ]
+          }
+        }
+      })
+      .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado')
     res.status(200).json(items)
   } catch (error) {
     next(error)
@@ -29,15 +73,59 @@ export const getPaginatedReparacionVehiculo = async (req: Request, res: Response
     const { search } = req.query as { search?: string }
     const filter = search
       ? {
-          $or: [
-            { id_inspeccion: search },
-            { id_empleado: search },
-            { descripcion: { $regex: search, $options: 'i' } }
-          ]
-        }
+        $or: [
+          { id_inspeccion: search },
+          { id_empleado: search },
+          { descripcion: { $regex: search, $options: 'i' } }
+        ]
+      }
       : {}
     const totalCount = await ReparacionVehiculo.countDocuments(filter)
     const data = await ReparacionVehiculo.find(filter)
+      .populate({
+        path: 'piezas_usadas',
+        populate: {
+          path: 'id_pieza',
+          select: 'nombre_pieza costo_promedio precio'
+        }
+      })
+      .populate({
+        path: 'id_inspeccion',
+        populate: {
+          path: 'id_recibo',
+          populate: {
+            path: 'id_recepcion',
+            populate: [
+              {
+                path: 'id_vehiculo',
+                populate: [
+                  {
+                    path: 'id_cliente',
+                    select: 'nombre cedula numero_telefono tipo_cliente'
+                  },
+                  {
+                    path: 'id_modelo',
+                    select: 'nombre_modelo',
+                    populate: {
+                      path: 'id_marca',
+                      select: 'nombre_marca'
+                    }
+                  },
+                  {
+                    path: 'id_color',
+                    select: 'nombre_color'
+                  }
+                ]
+              },
+              {
+                path: 'id_empleadoInformacion',
+                select: 'nombre telefono tipo_empleado'
+              }
+            ]
+          }
+        }
+      })
+      .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado')
       .skip((page - 1) * limit)
       .limit(limit)
     const totalPages = Math.ceil(totalCount / limit)
@@ -50,6 +138,50 @@ export const getPaginatedReparacionVehiculo = async (req: Request, res: Response
 export const getReparacionVehiculoById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const item = await ReparacionVehiculo.findById(req.params.id)
+      .populate({
+        path: 'piezas_usadas',
+        populate: {
+          path: 'id_pieza',
+          select: 'nombre_pieza costo_promedio precio'
+        }
+      })
+      .populate({
+        path: 'id_inspeccion',
+        populate: {
+          path: 'id_recibo',
+          populate: {
+            path: 'id_recepcion',
+            populate: [
+              {
+                path: 'id_vehiculo',
+                populate: [
+                  {
+                    path: 'id_cliente',
+                    select: 'nombre cedula numero_telefono tipo_cliente'
+                  },
+                  {
+                    path: 'id_modelo',
+                    select: 'nombre_modelo',
+                    populate: {
+                      path: 'id_marca',
+                      select: 'nombre_marca'
+                    }
+                  },
+                  {
+                    path: 'id_color',
+                    select: 'nombre_color'
+                  }
+                ]
+              },
+              {
+                path: 'id_empleadoInformacion',
+                select: 'nombre telefono tipo_empleado'
+              }
+            ]
+          }
+        }
+      })
+      .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado')
     if (!item) {
       res.status(404).json({ message: 'Reparación no encontrada' })
       return
@@ -77,7 +209,19 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
       return;
     }
 
-    // Registrar piezas usadas y descontar inventario
+    // 1. Crear la reparación SIN piezas_usadas
+    const reparacion = new ReparacionVehiculo({
+      id_inspeccion,
+      id_empleadoInformacion,
+      fecha_inicio,
+      fecha_fin,
+      descripcion,
+      costo_total,
+      piezas_usadas: []
+    });
+    const savedReparacion = await reparacion.save();
+
+    // 2. Crear las piezas usadas con referencia al id de la reparación
     let piezasUsadasIds: any[] = [];
     if (Array.isArray(piezas_usadas)) {
       for (const pieza of piezas_usadas) {
@@ -85,7 +229,7 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
           id_pieza: pieza.id_pieza,
           cantidad: pieza.cantidad,
           origen: 'reparacion',
-          referencia: null // Se actualizará luego con el id de la reparación
+          referencia: savedReparacion._id
         });
         piezasUsadasIds.push(piezaUsada._id);
 
@@ -97,53 +241,205 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
       }
     }
 
-    // Crear la reparación
-    const reparacion = new ReparacionVehiculo({
+    // 3. Actualizar la reparación con los ids de las piezas usadas
+    savedReparacion.piezas_usadas = piezasUsadasIds;
+    await savedReparacion.save();
+
+    res.status(201).json(savedReparacion);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateReparacionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const {
       id_inspeccion,
       id_empleadoInformacion,
       fecha_inicio,
       fecha_fin,
       descripcion,
       costo_total,
-      piezas_usadas: piezasUsadasIds
-    });
+      piezas_usadas // [{ id_pieza, cantidad }]
+    } = req.body;
 
-    const saved = await reparacion.save();
+    // 1. Obtener la reparación actual para restaurar inventario de piezas anteriores
+    const reparacionActual = await ReparacionVehiculo.findById(req.params.id)
+      .populate('piezas_usadas')
+      .populate({
+        path: 'id_inspeccion',
+        populate: {
+          path: 'id_recibo',
+          populate: {
+            path: 'id_cliente'
+          }
+        }
+      })
+      .populate('id_empleadoInformacion');
+    if (!reparacionActual) {
+      res.status(404).json({ message: 'Reparación no encontrada' });
+      return;
+    }
 
-    // Actualizar referencia en piezas usadas
-    await PiezaUsada.updateMany(
-      { _id: { $in: piezasUsadasIds } },
-      { referencia: saved._id }
-    );
+    // 2. Restaurar inventario de las piezas usadas anteriores
+    if (reparacionActual.piezas_usadas && reparacionActual.piezas_usadas.length > 0) {
+      for (const piezaUsadaId of reparacionActual.piezas_usadas) {
+        const piezaUsada = await PiezaUsada.findById(piezaUsadaId);
+        if (piezaUsada) {
+          // Restaurar cantidad al inventario
+          await PiezaInventario.findByIdAndUpdate(
+            piezaUsada.id_pieza,
+            { $inc: { cantidad_disponible: piezaUsada.cantidad } }
+          );
+          // Eliminar la pieza usada
+          await PiezaUsada.findByIdAndDelete(piezaUsadaId);
+        }
+      }
+    }
 
-    res.status(201).json(saved);
+    // 3. Crear las nuevas piezas usadas
+    let piezasUsadasIds: any[] = [];
+    if (Array.isArray(piezas_usadas)) {
+      for (const pieza of piezas_usadas) {
+        const piezaUsada = await PiezaUsada.create({
+          id_pieza: pieza.id_pieza,
+          cantidad: pieza.cantidad,
+          origen: 'reparacion',
+          referencia: req.params.id
+        });
+        piezasUsadasIds.push(piezaUsada._id);
+
+        // Descontar inventario
+        await PiezaInventario.findByIdAndUpdate(
+          pieza.id_pieza,
+          { $inc: { cantidad_disponible: -pieza.cantidad } }
+        );
+      }
+    }
+
+    // 4. Actualizar la reparación
+    const updated = await ReparacionVehiculo.findByIdAndUpdate(
+      req.params.id,
+      {
+        id_inspeccion,
+        id_empleadoInformacion,
+        fecha_inicio,
+        fecha_fin,
+        descripcion,
+        costo_total,
+        piezas_usadas: piezasUsadasIds
+      },
+      { new: true }
+    ).populate('piezas_usadas')
+      .populate({
+        path: 'id_inspeccion',
+        populate: {
+          path: 'id_recibo',
+          populate: {
+            path: 'id_recepcion',
+            populate: [
+              {
+                path: 'id_vehiculo',
+                populate: [
+                  {
+                    path: 'id_cliente',
+                    select: 'nombre cedula numero_telefono tipo_cliente'
+                  },
+                  {
+                    path: 'id_modelo',
+                    select: 'nombre_modelo',
+                    populate: {
+                      path: 'id_marca',
+                      select: 'nombre_marca'
+                    }
+                  },
+                  {
+                    path: 'id_color',
+                    select: 'nombre_color'
+                  }
+                ]
+              },
+              {
+                path: 'id_empleadoInformacion',
+                select: 'nombre telefono tipo_empleado'
+              }
+            ]
+          }
+        }
+      })
+      .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado'); res.status(200).json(updated);
   } catch (error) {
     next(error);
   }
 }
 
-export const updateReparacionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const updated = await ReparacionVehiculo.findByIdAndUpdate(req.params.id, req.body, { new: true })
-    if (!updated) {
-      res.status(404).json({ message: 'Reparación no encontrada' })
-      return
-    }
-    res.status(200).json(updated)
-  } catch (error) {
-    next(error)
-  }
-}
-
 export const deleteReparacionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const deleted = await ReparacionVehiculo.findByIdAndDelete(req.params.id)
-    if (!deleted) {
-      res.status(404).json({ message: 'Reparación no encontrada' })
-      return
+    // 1. Obtener la reparación con sus piezas usadas
+    const reparacion = await ReparacionVehiculo.findById(req.params.id)
+      .populate('piezas_usadas')
+      .populate({
+        path: 'id_inspeccion',
+        populate: {
+          path: 'id_recibo',
+          populate: {
+            path: 'id_recepcion',
+            populate: [
+              {
+                path: 'id_vehiculo',
+                populate: [
+                  {
+                    path: 'id_cliente',
+                    select: 'nombre cedula numero_telefono tipo_cliente'
+                  },
+                  {
+                    path: 'id_modelo',
+                    select: 'nombre_modelo',
+                    populate: {
+                      path: 'id_marca',
+                      select: 'nombre_marca'
+                    }
+                  },
+                  {
+                    path: 'id_color',
+                    select: 'nombre_color'
+                  }
+                ]
+              },
+              {
+                path: 'id_empleadoInformacion',
+                select: 'nombre telefono tipo_empleado'
+              }
+            ]
+          }
+        }
+      })
+      .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado');
+    if (!reparacion) {
+      res.status(404).json({ message: 'Reparación no encontrada' });
+      return;
     }
-    res.sendStatus(204)
+
+    // 2. Restaurar inventario de las piezas usadas
+    if (reparacion.piezas_usadas && reparacion.piezas_usadas.length > 0) {
+      for (const piezaUsadaId of reparacion.piezas_usadas) {
+        const piezaUsada = await PiezaUsada.findById(piezaUsadaId);
+        if (piezaUsada) {
+          // Restaurar cantidad al inventario
+          await PiezaInventario.findByIdAndUpdate(
+            piezaUsada.id_pieza,
+            { $inc: { cantidad_disponible: piezaUsada.cantidad } }
+          );
+          // Eliminar la pieza usada
+          await PiezaUsada.findByIdAndDelete(piezaUsadaId);
+        }
+      }
+    }
+
+    // 3. Eliminar la reparación
+    await ReparacionVehiculo.findByIdAndDelete(req.params.id);
+    res.sendStatus(204);
   } catch (error) {
-    next(error)
+    next(error);
   }
 }

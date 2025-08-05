@@ -1,7 +1,17 @@
-
-
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import { PiezaUsada } from '../models/piezaUsada'
+export const getPiezaUsadaById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const pieza = await PiezaUsada.findById(req.params.id);
+    if (!pieza) {
+      res.status(404).json({ message: 'Pieza usada no encontrada' });
+      return;
+    }
+    res.status(200).json(pieza);
+  } catch (error) {
+    next(error);
+  }
+};
 
 
 export const getAllPiezasUsadas = async (req: Request, res: Response): Promise<void> => {

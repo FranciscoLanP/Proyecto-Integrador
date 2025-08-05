@@ -4,16 +4,16 @@ import { Router } from 'express'
 import {
   getAllPiezasUsadas,
   getPiezasPorReferencia,
-  // createPiezaUsada,
   updatePiezaUsada,
-  deletePiezaUsada
+  deletePiezaUsada,
+  getPiezaUsadaById
 } from '../controller/piezaUsadaController'
 
 const router = Router()
 
 router.get('/piezas-usadas', getAllPiezasUsadas)
 router.get('/piezas-usadas/:origen/:referencia', getPiezasPorReferencia)
-// router.post('/piezas-usadas', createPiezaUsada)
+router.get('/piezas-usadas/:id', getPiezaUsadaById)
 router.put('/piezas-usadas/:id', updatePiezaUsada)
 router.delete('/piezas-usadas/:id', deletePiezaUsada)
 

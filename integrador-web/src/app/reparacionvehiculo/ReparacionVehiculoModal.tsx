@@ -5,6 +5,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { ReparacionVehiculo, inspeccionVehiculoService, empleadoInformacionService } from '@/services/reparacionVehiculoService';
 import PiezaBuscador from '@/services/piezaInventarioService';
+import { piezaInventarioService } from '@/services/reparacionVehiculoService';
 
 interface Props {
   open: boolean;
@@ -14,41 +15,120 @@ interface Props {
 }
 
 export default function ReparacionVehiculoModal({ open, defaultData, onClose, onSubmit }: Props) {
-  const [form, setForm] = useState<ReparacionVehiculo>(
-    defaultData ?? {
-      id_inspeccion: '',
-      id_empleadoInformacion: '',
-      fecha_inicio: new Date().toISOString().slice(0, 10),
-      descripcion: '',
-      piezas_usadas: []
-    }
-  );
+  // 🔥 Estado inicial limpio - se resetea en useEffect
+  const [form, setForm] = useState<ReparacionVehiculo>({
+    id_inspeccion: '',
+    id_empleadoInformacion: '',
+    fecha_inicio: new Date().toISOString().slice(0, 10),
+    descripcion: '',
+    piezas_usadas: []
+  });
 
   // Estados para los datos de los dropdowns
   const [inspecciones, setInspecciones] = useState<any[]>([]);
   const [empleados, setEmpleados] = useState<any[]>([]);
+  const [piezasCatalogo, setPiezasCatalogo] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // 🔥 RESETEAR formulario cuando el modal se cierra
+  useEffect(() => {
+    if (!open) {
+      setForm({
+        id_inspeccion: '',
+        id_empleadoInformacion: '',
+        fecha_inicio: new Date().toISOString().slice(0, 10),
+        descripcion: '',
+        piezas_usadas: []
+      });
+    }
+  }, [open]);
 
   // Cargar datos para los dropdowns
   useEffect(() => {
     if (open) {
       fetchDropdownData();
+      piezaInventarioService.fetchAll().then(setPiezasCatalogo).catch(() => setPiezasCatalogo([]));
+
+      // 🔥 RESETEAR formulario cuando es nueva reparación
+      if (!defaultData) {
+        setForm({
+          id_inspeccion: '',
+          id_empleadoInformacion: '',
+          fecha_inicio: new Date().toISOString().slice(0, 10),
+          descripcion: '',
+          piezas_usadas: []
+        });
+      }
     }
-  }, [open]);
+  }, [open, defaultData]);
 
   useEffect(() => {
     if (defaultData) {
-      setForm(defaultData);
+      // Procesar piezas usadas según su formato
+      const cargarPiezasUsadas = async () => {
+        let piezasUsadas = defaultData.piezas_usadas;
+
+        if (Array.isArray(piezasUsadas) && piezasUsadas.length > 0) {
+          // Si las piezas ya son objetos completos (con populate), extraer solo id_pieza y cantidad
+          if (typeof piezasUsadas[0] === 'object' && piezasUsadas[0]?.id_pieza) {
+            piezasUsadas = piezasUsadas.map((p: any) => ({
+              id_pieza: p.id_pieza,
+              cantidad: p.cantidad
+            }));
+          }
+          // Si son solo IDs de string, hacer fetch individual (fallback)
+          else if (typeof piezasUsadas[0] === 'string') {
+            const detalles = await Promise.all(
+              piezasUsadas.map(async (id) => {
+                try {
+                  const res = await fetch(`/api/piezas-usadas/${id}`);
+                  if (!res.ok) return null;
+                  const data = await res.json();
+                  return { id_pieza: data.id_pieza, cantidad: data.cantidad };
+                } catch {
+                  return null;
+                }
+              })
+            );
+            piezasUsadas = detalles.filter(Boolean) as Array<{ id_pieza: string; cantidad: number; }>;
+          }
+        }
+
+        setForm({
+          ...defaultData,
+          // 🔥 EXTRAER solo los IDs de los objetos poblados
+          id_inspeccion: typeof defaultData.id_inspeccion === 'object'
+            ? (defaultData.id_inspeccion as any)?._id || defaultData.id_inspeccion
+            : defaultData.id_inspeccion,
+          id_empleadoInformacion: typeof defaultData.id_empleadoInformacion === 'object'
+            ? (defaultData.id_empleadoInformacion as any)?._id || defaultData.id_empleadoInformacion
+            : defaultData.id_empleadoInformacion,
+          fecha_inicio: defaultData.fecha_inicio ? new Date(defaultData.fecha_inicio).toISOString().slice(0, 10) : '',
+          fecha_fin: defaultData.fecha_fin ? new Date(defaultData.fecha_fin).toISOString().slice(0, 10) : '',
+          piezas_usadas: piezasUsadas ?? []
+        });
+      };
+      cargarPiezasUsadas();
     }
   }, [defaultData]);
 
   // 🔥 NUEVO useEffect: Cargar piezas cuando cambie la inspección en el form
   useEffect(() => {
-    if (form.id_inspeccion && inspecciones.length > 0) {
+    // Solo ejecutar si:
+    // 1. Hay una inspección seleccionada
+    // 2. Las inspecciones están cargadas
+    // 3. El modal está abierto
+    // 4. NO es una edición (defaultData está undefined/null)
+    // 5. NO hay piezas usadas ya en el formulario
+    if (
+      form.id_inspeccion &&
+      inspecciones.length > 0 &&
+      open &&
+      !defaultData &&
+      (!form.piezas_usadas || form.piezas_usadas.length === 0)
+    ) {
       const inspeccionSeleccionada = inspecciones.find(i => i._id === form.id_inspeccion);
-      
-      // Solo cargar piezas si no tiene piezas ya (para evitar sobrescribir en edición)
-      if (inspeccionSeleccionada?.piezas_sugeridas && (!form.piezas_usadas || form.piezas_usadas.length === 0)) {
+      if (inspeccionSeleccionada?.piezas_sugeridas) {
         setForm(f => ({
           ...f,
           piezas_usadas: inspeccionSeleccionada.piezas_sugeridas.map((pieza: any) => ({
@@ -58,7 +138,7 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
         }));
       }
     }
-  }, [form.id_inspeccion, inspecciones]); // Se ejecuta cuando cambia la inspección o se cargan las inspecciones
+  }, [form.id_inspeccion, inspecciones, open, defaultData, form.piezas_usadas]);
 
   const fetchDropdownData = async () => {
     setLoading(true);
@@ -90,8 +170,8 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
     setForm(f => ({
       ...f,
       piezas_usadas: f.piezas_usadas?.map((p, i) =>
-        i === idx ? { 
-          ...p, 
+        i === idx ? {
+          ...p,
           [field]: value
         } : p
       )
@@ -113,15 +193,16 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
   const handleInspeccionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inspeccionId = e.target.value;
     const inspeccionSeleccionada = inspecciones.find(i => i._id === inspeccionId);
-    
     setForm(f => ({
       ...f,
       id_inspeccion: inspeccionId,
-      // Siempre cargar las piezas cuando se cambia manualmente
-      piezas_usadas: inspeccionSeleccionada?.piezas_sugeridas?.map((pieza: any) => ({
-        id_pieza: pieza.id_pieza,
-        cantidad: pieza.cantidad
-      })) ?? []
+      // Solo autollenar piezas si no es edición
+      piezas_usadas: defaultData
+        ? f.piezas_usadas // Si es edición, no tocar piezas
+        : (inspeccionSeleccionada?.piezas_sugeridas?.map((pieza: any) => ({
+          id_pieza: pieza.id_pieza,
+          cantidad: pieza.cantidad
+        })) ?? [])
     }));
   };
 
@@ -149,11 +230,24 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
             fullWidth
             disabled={loading}
           >
-            {inspecciones.map(inspeccion => (
-              <MenuItem key={inspeccion._id} value={inspeccion._id}>
-                {`${inspeccion._id} - ${inspeccion.comentario || 'Sin comentario'}`}
-              </MenuItem>
-            ))}
+            {inspecciones.map(inspeccion => {
+              // Construir descripción rica de la inspección
+              const cliente = inspeccion.id_recibo?.id_recepcion?.id_vehiculo?.id_cliente;
+              const vehiculo = inspeccion.id_recibo?.id_recepcion?.id_vehiculo;
+              const recepcion = inspeccion.id_recibo?.id_recepcion;
+
+              const clienteInfo = cliente?.nombre || 'Cliente desconocido';
+              const vehiculoInfo = vehiculo
+                ? `${vehiculo.id_modelo?.id_marca?.nombre_marca || ''} ${vehiculo.id_modelo?.nombre_modelo || ''} ${vehiculo.anio || ''} (${vehiculo.id_color?.nombre_color || ''})`.trim()
+                : 'Vehículo desconocido';
+              const problemaInfo = recepcion?.problema_reportado || inspeccion.comentario || 'Sin comentario';
+
+              return (
+                <MenuItem key={inspeccion._id} value={inspeccion._id}>
+                  {`${clienteInfo} | ${vehiculoInfo} | ${problemaInfo}`}
+                </MenuItem>
+              );
+            })}
           </TextField>
 
           <TextField
@@ -221,27 +315,31 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
               </Box>
               <Button onClick={handleAddPieza} size="small" variant="outlined">Agregar pieza</Button>
             </Box>
-            {(form.piezas_usadas ?? []).map((pieza, idx) => (
-              <Box key={idx} display="flex" gap={1} mb={1} alignItems="center">
-                <Box sx={{ minWidth: 300 }}>
-                  <PiezaBuscador
-                    value={pieza.id_pieza}
-                    onChange={(piezaId, piezaData) => handlePiezaChange(idx, 'id_pieza', piezaId, piezaData)}
-                    label="Buscar pieza"
+            {(form.piezas_usadas ?? []).map((pieza, idx) => {
+              // Buscar el nombre de la pieza por id
+              const piezaInfo = piezasCatalogo.find(p => p._id === pieza.id_pieza);
+              return (
+                <Box key={idx} display="flex" gap={1} mb={1} alignItems="center">
+                  <Box sx={{ minWidth: 300 }}>
+                    <PiezaBuscador
+                      value={pieza.id_pieza}
+                      onChange={(piezaId, piezaData) => handlePiezaChange(idx, 'id_pieza', piezaId, piezaData)}
+                      label={piezaInfo ? `${piezaInfo.nombre_pieza}` : 'Buscar pieza'}
+                      size="small"
+                    />
+                  </Box>
+                  <TextField
+                    label="Cantidad"
+                    type="number"
+                    value={pieza.cantidad}
+                    onChange={e => handlePiezaChange(idx, 'cantidad', Number(e.target.value))}
                     size="small"
+                    sx={{ width: 120 }}
                   />
+                  <Button color="error" onClick={() => handleRemovePieza(idx)} size="small">Quitar</Button>
                 </Box>
-                <TextField
-                  label="Cantidad"
-                  type="number"
-                  value={pieza.cantidad}
-                  onChange={e => handlePiezaChange(idx, 'cantidad', Number(e.target.value))}
-                  size="small"
-                  sx={{ width: 120 }}
-                />
-                <Button color="error" onClick={() => handleRemovePieza(idx)} size="small">Quitar</Button>
-              </Box>
-            ))}
+              );
+            })}
           </Box>
         </Box>
         <Box mt={2} display="flex" justifyContent="flex-end" gap={2}>

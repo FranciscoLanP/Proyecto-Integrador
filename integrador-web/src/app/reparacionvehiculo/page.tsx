@@ -28,6 +28,10 @@ export default function ReparacionVehiculoPage() {
     setLoading(true);
     try {
       const data = await reparacionVehiculoService.fetchAll();
+      console.log('🔍 Reparaciones desde el backend:', data); // Debug
+      if (data.length > 0) {
+        console.log('🧩 Estructura de piezas_usadas:', data[0].piezas_usadas); // Debug
+      }
       setReparaciones(data);
     } catch (err) {
       alert('Error al cargar reparaciones');
@@ -68,6 +72,7 @@ export default function ReparacionVehiculoPage() {
         await reparacionVehiculoService.create(data);
       }
       setModalOpen(false);
+      setEditData(undefined); // 🔥 Resetear editData al guardar
       fetchReparaciones();
     } catch {
       alert('Error al guardar');
@@ -112,9 +117,9 @@ export default function ReparacionVehiculoPage() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Inspección</TableCell>
-                <TableCell>Empleado</TableCell>
+                {/* <TableCell>ID</TableCell> */}
+                <TableCell>Cliente | Vehículo | Problema</TableCell>
+                <TableCell>Empleado (Tipo)</TableCell>
                 <TableCell>Fecha inicio</TableCell>
                 <TableCell>Fecha fin</TableCell>
                 <TableCell>Descripción</TableCell>
@@ -125,16 +130,51 @@ export default function ReparacionVehiculoPage() {
             <TableBody>
               {reparaciones.map(rep => (
                 <TableRow key={rep._id}>
-                  <TableCell>{rep._id}</TableCell>
-                  <TableCell>{rep.id_inspeccion}</TableCell>
-                  <TableCell>{rep.id_empleadoInformacion}</TableCell>
+                  {/* <TableCell>{rep._id}</TableCell> */}
+                  <TableCell>
+                    {(() => {
+                      const inspeccion = rep.id_inspeccion as any;
+                      if (!inspeccion || typeof inspeccion === 'string') return rep.id_inspeccion;
+
+                      const cliente = inspeccion.id_recibo?.id_recepcion?.id_vehiculo?.id_cliente;
+                      const vehiculo = inspeccion.id_recibo?.id_recepcion?.id_vehiculo;
+                      const recepcion = inspeccion.id_recibo?.id_recepcion;
+
+                      const clienteInfo = cliente?.nombre || 'Cliente desconocido';
+                      const vehiculoInfo = vehiculo
+                        ? `${vehiculo.id_modelo?.id_marca?.nombre_marca || ''} ${vehiculo.id_modelo?.nombre_modelo || ''} ${vehiculo.anio || ''} (${vehiculo.id_color?.nombre_color || ''})`.trim()
+                        : 'Vehículo desconocido';
+                      const problemaInfo = recepcion?.problema_reportado || inspeccion.comentario || 'Sin comentario';
+
+                      return `${clienteInfo} | ${vehiculoInfo} | ${problemaInfo}`;
+                    })()}
+                  </TableCell>
+                  <TableCell>
+                    {(rep.id_empleadoInformacion as any)?.nombre
+                      ? `${(rep.id_empleadoInformacion as any).nombre} (${(rep.id_empleadoInformacion as any).tipo_empleado || 'N/A'})`
+                      : rep.id_empleadoInformacion
+                    }
+                  </TableCell>
                   <TableCell>{rep.fecha_inicio?.toString().slice(0, 10)}</TableCell>
                   <TableCell>{rep.fecha_fin?.toString().slice(0, 10)}</TableCell>
                   <TableCell>{rep.descripcion}</TableCell>
                   <TableCell>
-                    {(rep.piezas_usadas ?? []).map((p, idx) =>
-                      <div key={idx}>{p.id_pieza} (x{p.cantidad})</div>
-                    )}
+                    {(rep.piezas_usadas ?? []).map((p, idx) => (
+                      <div key={idx}>
+                        {(() => {
+                          // Verificar si la pieza viene poblada desde el backend
+                          const pieza = (p as any)?.id_pieza;
+                          if (pieza && typeof pieza === 'object' && pieza.nombre_pieza) {
+                            return `${pieza.nombre_pieza} (x${p.cantidad})`;
+                          } else if (pieza && typeof pieza === 'string') {
+                            // Si solo viene el ID, mostrar un mensaje más claro
+                            return `Pieza ID: ${pieza} (x${p.cantidad})`;
+                          } else {
+                            return `Pieza desconocida (x${p.cantidad})`;
+                          }
+                        })()}
+                      </div>
+                    ))}
                   </TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleEdit(rep)}><EditIcon /></IconButton>
@@ -157,7 +197,10 @@ export default function ReparacionVehiculoPage() {
       <ReparacionVehiculoModal
         open={modalOpen}
         defaultData={editData}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          setModalOpen(false);
+          setEditData(undefined); // 🔥 Resetear editData al cerrar
+        }}
         onSubmit={handleModalSubmit}
       />
       <FacturaModal

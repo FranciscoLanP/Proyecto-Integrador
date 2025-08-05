@@ -8,6 +8,7 @@ export interface Factura {
   metodo_pago: string;
   detalles?: string;
   emitida?: boolean;
+  descuento_porcentaje?: number;
 }
 
 export const facturaService = createCrudService<Factura>('facturas');

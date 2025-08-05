@@ -48,7 +48,13 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
 
   useEffect(() => {
     if (defaultData) {
-      setForm(defaultData);
+      // En modo edición, extraer solo los IDs para el formulario
+      const extractedForm = {
+        ...defaultData,
+        id_recibo: typeof defaultData.id_recibo === 'string' ? defaultData.id_recibo : (defaultData.id_recibo as any)?._id || '',
+        id_empleadoInformacion: typeof defaultData.id_empleadoInformacion === 'string' ? defaultData.id_empleadoInformacion : (defaultData.id_empleadoInformacion as any)?._id || ''
+      };
+      setForm(extractedForm);
       setPiezasSugeridas(
         defaultData.piezas_sugeridas?.map(p => ({
           piezaId: p.id_pieza,
@@ -57,6 +63,15 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
           precio_unitario: p.precio_unitario
         })) ?? []
       );
+    } else {
+      // Resetear formulario cuando no hay defaultData
+      setForm({
+        id_recibo: '',
+        id_empleadoInformacion: '',
+        fecha_inspeccion: new Date().toISOString().slice(0, 10),
+        piezas_sugeridas: []
+      });
+      setPiezasSugeridas([]);
     }
   }, [defaultData]);
 
@@ -119,7 +134,7 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
   };
 
   const calcularCostoTotal = () => {
-    return piezasSugeridas.reduce((total, pieza) => 
+    return piezasSugeridas.reduce((total, pieza) =>
       total + (pieza.cantidad * pieza.precio_unitario), 0
     );
   };
@@ -145,11 +160,25 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
             fullWidth
             disabled={loading}
           >
-            {recibos.map(recibo => (
-              <MenuItem key={recibo._id} value={recibo._id}>
-                {`${recibo._id} - ${recibo.observaciones || 'Sin observaciones'}`}
-              </MenuItem>
-            ))}
+            {recibos.map(recibo => {
+              // Extraer información del recibo para mostrar info descriptiva
+              const infoText = (() => {
+                if (recibo.id_recepcion?.id_vehiculo?.id_cliente) {
+                  const cliente = recibo.id_recepcion.id_vehiculo.id_cliente;
+                  const vehiculo = recibo.id_recepcion.id_vehiculo;
+                  const clienteName = cliente.nombre || 'Cliente sin nombre';
+                  const vehiculoInfo = vehiculo.id_modelo?.nombre_modelo || 'Modelo desconocido';
+                  return `${clienteName} | ${vehiculoInfo}`;
+                }
+                return `${recibo._id} - ${recibo.observaciones || 'Sin observaciones'}`;
+              })();
+
+              return (
+                <MenuItem key={recibo._id} value={recibo._id}>
+                  {infoText}
+                </MenuItem>
+              );
+            })}
           </TextField>
 
           <TextField
@@ -164,7 +193,7 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
           >
             {empleados.map(empleado => (
               <MenuItem key={empleado._id} value={empleado._id}>
-                {empleado.nombre}
+                {`${empleado.nombre} (${empleado.tipo_empleado || 'N/A'})`}
               </MenuItem>
             ))}
           </TextField>
@@ -178,7 +207,7 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
             fullWidth
             InputLabelProps={{ shrink: true }}
           />
-          
+
           {/* Más campos... */}
           <TextField
             label="Comentario"
@@ -189,7 +218,7 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
             multiline
             rows={2}
           />
-          
+
           <Box display="flex" gap={2}>
             <TextField
               label="Tiempo estimado (dias)"
@@ -226,23 +255,23 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
                   Las piezas sugeridas NO afectan el inventario. Solo son recomendaciones.
                 </Alert>
               </Box>
-              <Button 
-                onClick={handleAddPieza} 
-                size="small" 
+              <Button
+                onClick={handleAddPieza}
+                size="small"
                 variant="outlined"
                 startIcon={<AddIcon />}
               >
                 Agregar pieza
               </Button>
             </Box>
-            
+
             {piezasSugeridas.map((pieza, i) => (
               <Box
                 key={i}
-                sx={{ 
-                  display: 'flex', 
-                  gap: 1, 
-                  alignItems: 'flex-start', 
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                  alignItems: 'flex-start',
                   mb: 2,
                   p: 2,
                   border: '1px solid #e0e0e0',
@@ -256,24 +285,24 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
                     onChange={(id, data) => {
                       console.log('🔍 Pieza seleccionada:', data); // Debug
                       console.log('🏷️ Campos disponibles:', Object.keys(data || {})); // Ver qué campos tiene
-                      
+
                       setPiezasSugeridas(prev => {
                         const arr = [...prev];
-                        
+
                         // Probar diferentes campos de precio
-                        const precioUsar = data?.costo_promedio ?? 
-                                          data?.precio ?? 
-                                          data?.costo_promedio ?? 0;
-                        
+                        const precioUsar = data?.costo_promedio ??
+                          data?.precio ??
+                          data?.costo_promedio ?? 0;
+
                         console.log('💰 Precio que se va a asignar:', precioUsar); // Debug
-                        
-                        arr[i] = { 
-                          ...arr[i], 
-                          piezaId: id, 
+
+                        arr[i] = {
+                          ...arr[i],
+                          piezaId: id,
                           nombre_pieza: data?.nombre_pieza || '',
                           precio_unitario: precioUsar
                         };
-                        
+
                         console.log('✅ Estado actualizado:', arr[i]); // Debug
                         return arr;
                       });
@@ -301,8 +330,8 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
                   helperText="Precio del inventario"
                   disabled
                 />
-                <IconButton 
-                  color="error" 
+                <IconButton
+                  color="error"
                   onClick={() => quitarPieza(i)}
                   size="small"
                   sx={{ mt: 1 }}
@@ -319,7 +348,7 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
             )}
           </Box>
         </Box>
-        
+
         <Box mt={2} display="flex" justifyContent="flex-end" gap={2}>
           <Button onClick={onClose}>Cancelar</Button>
           <Button onClick={handleSave} variant="contained">Guardar</Button>

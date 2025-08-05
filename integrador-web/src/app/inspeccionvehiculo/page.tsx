@@ -31,31 +31,15 @@ export default function InspeccionVehiculoPage() {
     empleado: any
   } | null>(null);
 
-  const [recibos, setRecibos] = useState<any[]>([]);
-  const [empleados, setEmpleados] = useState<any[]>([]);
-  const [recepciones, setRecepciones] = useState<any[]>([]);
-  const [vehiculos, setVehiculos] = useState<any[]>([]);
-  const [clientes, setClientes] = useState<any[]>([]);
   const [printHtml, setPrintHtml] = useState<string | null>(null);
 
   const fetchInspecciones = async () => {
     setLoading(true);
     try {
-      const [inspeccionesData, recibosData, empleadosData, recepcionesData, vehiculosData, clientesData] = await Promise.all([
-        inspeccionVehiculoService.fetchAll(),
-        fetch('http://localhost:3001/api/recibosvehiculos').then(res => res.json()),
-        fetch('http://localhost:3001/api/empleadoinformaciones').then(res => res.json()),
-        fetch('http://localhost:3001/api/recepcionvehiculos').then(res => res.json()),
-        fetch('http://localhost:3001/api/vehiculodatos').then(res => res.json()),
-        fetch('http://localhost:3001/api/clientes').then(res => res.json())
-      ]);
-
+      // Solo necesitamos cargar las inspecciones ya pobladas desde el backend
+      const inspeccionesData = await inspeccionVehiculoService.fetchAll();
+      console.log('🔍 Inspecciones pobladas del backend:', inspeccionesData); // Debug
       setInspecciones(inspeccionesData);
-      setRecibos(recibosData);
-      setEmpleados(empleadosData);
-      setRecepciones(recepcionesData);
-      setVehiculos(vehiculosData);
-      setClientes(clientesData);
     } catch (err) {
       console.error('Error al cargar datos:', err);
       alert('Error al cargar inspecciones');
@@ -67,37 +51,31 @@ export default function InspeccionVehiculoPage() {
     fetchInspecciones();
   }, []);
 
-  const getClienteNombre = (reciboId: string) => {
-    // Encontrar el recibo
-    const recibo = recibos.find(r => r._id === reciboId);
-    if (!recibo) return 'Recibo no encontrado';
+  const getClienteNombre = (inspeccion: InspeccionVehiculo) => {
+    try {
+      // Los datos ya vienen poblados desde el backend
+      const recibo = inspeccion.id_recibo as any;
+      if (!recibo || typeof recibo === 'string') return 'Cliente no encontrado';
 
-    // Encontrar la recepción del recibo
-    const recepcion = recepciones.find(rec => {
-      const rid = typeof recibo.id_recepcion === 'string' ? recibo.id_recepcion : recibo.id_recepcion._id;
-      return rid === rec._id;
-    });
-    if (!recepcion) return 'Recepción no encontrada';
-
-    // Encontrar el vehículo de la recepción
-    const vehiculo = vehiculos.find(veh => {
-      const vid = typeof recepcion.id_vehiculo === 'string' ? recepcion.id_vehiculo : recepcion.id_vehiculo._id;
-      return vid === veh._id;
-    });
-    if (!vehiculo) return 'Vehículo no encontrado';
-
-    // Encontrar el cliente del vehículo
-    const cliente = clientes.find(cli => {
-      const cid = typeof vehiculo.id_cliente === 'string' ? vehiculo.id_cliente : vehiculo.id_cliente._id;
-      return cid === cli._id;
-    });
-
-    return cliente?.nombre || 'Cliente no encontrado';
+      const cliente = recibo.id_recepcion?.id_vehiculo?.id_cliente;
+      return cliente?.nombre || 'Cliente no encontrado';
+    } catch (error) {
+      console.error('Error al obtener cliente:', error);
+      return 'Error al obtener cliente';
+    }
   };
 
-  const getEmpleadoNombre = (empleadoId: string) => {
-    const empleado = empleados.find(e => e._id === empleadoId);
-    return empleado?.nombre || 'Empleado no encontrado';
+  const getEmpleadoNombre = (inspeccion: InspeccionVehiculo) => {
+    try {
+      // Los datos ya vienen poblados desde el backend
+      const empleado = inspeccion.id_empleadoInformacion as any;
+      if (!empleado || typeof empleado === 'string') return 'Empleado no encontrado';
+
+      return empleado.nombre || 'Empleado no encontrado';
+    } catch (error) {
+      console.error('Error al obtener empleado:', error);
+      return 'Error al obtener empleado';
+    }
   };
 
   const handleCreate = () => {
@@ -157,36 +135,35 @@ export default function InspeccionVehiculoPage() {
   };
 
   const handlePrint = (inspeccion: InspeccionVehiculo) => {
-    // Busca el cliente
-    const reciboId = inspeccion.id_recibo;
-    const recibo = recibos.find(r => r._id === reciboId);
-    if (!recibo) return alert('Recibo no encontrado');
+    try {
+      // Obtener datos directamente de los objetos poblados
+      const recibo = inspeccion.id_recibo as any;
+      const empleado = inspeccion.id_empleadoInformacion as any;
 
-    const recepcionId = typeof recibo.id_recepcion === 'string' ? recibo.id_recepcion : recibo.id_recepcion._id;
-    const recepcion = recepciones.find(r => r._id === recepcionId);
-    if (!recepcion) return alert('Recepción no encontrada');
+      if (!recibo || typeof recibo === 'string') {
+        return alert('Datos del recibo no disponibles');
+      }
 
-    const vehiculoId = typeof recepcion.id_vehiculo === 'string' ? recepcion.id_vehiculo : recepcion.id_vehiculo._id;
-    const vehiculo = vehiculos.find(v => v._id === vehiculoId);
-    if (!vehiculo) return alert('Vehículo no encontrado');
+      if (!empleado || typeof empleado === 'string') {
+        return alert('Datos del empleado no disponibles');
+      }
 
-    const clienteId = typeof vehiculo.id_cliente === 'string' ? vehiculo.id_cliente : vehiculo.id_cliente._id;
-    const cliente = clientes.find(c => c._id === clienteId);
-    if (!cliente) return alert('Cliente no encontrado');
+      const cliente = recibo.id_recepcion?.id_vehiculo?.id_cliente;
+      if (!cliente) {
+        return alert('Datos del cliente no disponibles');
+      }
 
-    const empleado = empleados.find(e => e._id === inspeccion.id_empleadoInformacion);
+      const now = new Date().toLocaleString();
 
-    const now = new Date().toLocaleString();
+      // Calcular totales
+      const piezas = inspeccion.piezas_sugeridas ?? [];
+      const total = piezas.reduce((acc, p) => acc + (p.precio_unitario ?? 0) * p.cantidad, 0);
+      const subtotal = total / 1.18;
+      const itbis = total - subtotal;
+      const descuento = 0;
 
-    // Calcular totales
-    const piezas = inspeccion.piezas_sugeridas ?? [];
-    const total = piezas.reduce((acc, p) => acc + (p.precio_unitario ?? 0) * p.cantidad, 0);
-    const subtotal = total / 1.18;
-    const itbis = total - subtotal;
-    const descuento = 0; // Si tienes lógica de descuento, cámbiala aquí
-
-    // SOLO el contenido del body y el style
-    const html = `
+      // SOLO el contenido del body y el style
+      const html = `
       <style>
         .container { max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Segoe UI', Tahoma, sans-serif; color:#222; background:#fff; }
         header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
@@ -288,7 +265,11 @@ export default function InspeccionVehiculoPage() {
       </div>
     `;
 
-    setPrintHtml(html);
+      setPrintHtml(html);
+    } catch (error) {
+      console.error('Error al generar la impresión:', error);
+      alert('Error al generar la cotización');
+    }
   };
 
   useEffect(() => {
@@ -329,8 +310,8 @@ export default function InspeccionVehiculoPage() {
               {inspecciones.map(ins => (
                 <TableRow key={ins._id}>
                   {/* Quitar celda ID */}
-                  <TableCell>{getClienteNombre(ins.id_recibo)}</TableCell>
-                  <TableCell>{getEmpleadoNombre(ins.id_empleadoInformacion)}</TableCell>
+                  <TableCell>{getClienteNombre(ins)}</TableCell>
+                  <TableCell>{getEmpleadoNombre(ins)}</TableCell>
                   <TableCell>{ins.fecha_inspeccion?.toString().slice(0, 10)}</TableCell>
                   <TableCell>{ins.comentario}</TableCell>
                   <TableCell>{ins.resultado}</TableCell>
