@@ -1,28 +1,15 @@
 
 'use client';
 
-import React, { useState, ChangeEvent, JSX } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  IconButton,
-  Button,
-  TextField,
-  TablePagination,
-  Dialog,
-  DialogTitle,
-  DialogActions
-} from '@mui/material';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import React, { useState } from 'react';
+import { Typography, Box, Chip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import PersonIcon from '@mui/icons-material/Person';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 import { useCrud } from '../../hooks/useCrud';
 import { useNotification } from '../../components/utils/NotificationProvider';
@@ -34,8 +21,15 @@ import type {
   IVehiculoDatos
 } from '../types';
 import ReciboVehiculoModal from './ReciboVehiculoModal';
+import {
+  ModernTable,
+  useModernTable,
+  StatusChip,
+  ActionButtons,
+  type TableColumn
+} from '@/components/ModernTable';
 
-export default function RecibosVehiculosPage(): JSX.Element {
+export default function RecibosVehiculosPage() {
   const { notify } = useNotification();
 
   const reciboCrud = useCrud<IReciboVehiculo>('recibosvehiculos');
@@ -50,60 +44,59 @@ export default function RecibosVehiculosPage(): JSX.Element {
   const { data: vehiculos = [], isLoading: loadVeh, error: errVeh } = vehCrud.allQuery;
   const { data: clientes = [], isLoading: loadCli, error: errCli } = cliCrud.allQuery;
 
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [page, setPage] = useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
-
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<IReciboVehiculo | null>(null);
 
-  const [confirmDel, setConfirmDel] = useState<boolean>(false);
-  const [toDelete, setToDelete] = useState<IReciboVehiculo | null>(null);
-
-  if (loadRec || loadRep || loadEmp || loadVeh || loadCli) {
-    return <Typography>Loading…</Typography>;
-  }
-  if (errRec) return <Typography color="error">{errRec.message}</Typography>;
-  if (errRep) return <Typography color="error">{errRep.message}</Typography>;
-  if (errEmp) return <Typography color="error">{errEmp.message}</Typography>;
-  if (errVeh) return <Typography color="error">{errVeh.message}</Typography>;
-  if (errCli) return <Typography color="error">{errCli.message}</Typography>;
-
-  const term = searchTerm.toLowerCase();
-  const filtered = recibos.filter(r => {
-    const rec = recepciones.find(rep => {
-      const rid = typeof r.id_recepcion === 'string' ? r.id_recepcion : r.id_recepcion._id;
-      return rid === rep._id;
-    });
-    if (!rec) return false;
-    const veh = vehiculos.find(v => {
-      const vid = typeof rec.id_vehiculo === 'string' ? rec.id_vehiculo : rec.id_vehiculo._id;
-      return vid === v._id;
-    });
-    const cli = veh
-      ? clientes.find(c => {
-        const cid = typeof veh.id_cliente === 'string' ? veh.id_cliente : veh.id_cliente._id;
-        return cid === c._id;
-      })
-      : null;
-    return (
-      (cli?.nombre.toLowerCase() ?? '').includes(term) ||
-      (veh?.chasis.toLowerCase() ?? '').includes(term) ||
-      (r.observaciones ?? '').toLowerCase().includes(term)
-    );
+  // Hook para manejar la tabla
+  const {
+    filteredData,
+    paginatedData,
+    searchQuery,
+    page,
+    rowsPerPage,
+    handleSearchChange,
+    handlePageChange,
+    handleRowsPerPageChange
+  } = useModernTable({
+    data: recibos,
+    searchFields: ['observaciones'],
+    initialRowsPerPage: 10
   });
 
-  const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-
-  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
-  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
-  const handleChangeRows = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    setRowsPerPage(parseInt(e.target.value, 10));
-    setPage(0);
+  // Funciones adaptadoras
+  const onSearchChange = (value: string) => {
+    const mockEvent = { target: { value } } as React.ChangeEvent<HTMLInputElement>;
+    handleSearchChange(mockEvent);
   };
 
-  const openNew = () => { setEditData(null); setModalOpen(true); };
-  const openEdit = (row: IReciboVehiculo) => { setEditData(row); setModalOpen(true); };
+  const onPageChange = (page: number) => {
+    handlePageChange(null, page);
+  };
+
+  const onRowsPerPageChange = (rowsPerPage: number) => {
+    const mockEvent = { target: { value: rowsPerPage.toString() } } as React.ChangeEvent<HTMLInputElement>;
+    handleRowsPerPageChange(mockEvent);
+  };
+
+  if (loadRec || loadRep || loadEmp || loadVeh || loadCli) {
+    return <Typography>Cargando recibos...</Typography>;
+  }
+  if (errRec) return <Typography color="error">Error recibos: {errRec.message}</Typography>;
+  if (errRep) return <Typography color="error">Error recepciones: {errRep.message}</Typography>;
+  if (errEmp) return <Typography color="error">Error empleados: {errEmp.message}</Typography>;
+  if (errVeh) return <Typography color="error">Error vehículos: {errVeh.message}</Typography>;
+  if (errCli) return <Typography color="error">Error clientes: {errCli.message}</Typography>;
+
+  const openNew = () => {
+    setEditData(null);
+    setModalOpen(true);
+  };
+
+  const openEdit = (row: IReciboVehiculo) => {
+    setEditData(row);
+    setModalOpen(true);
+  };
+
   const closeModal = () => setModalOpen(false);
 
   const handleSubmit = async (payload: Partial<IReciboVehiculo>) => {
@@ -123,19 +116,13 @@ export default function RecibosVehiculosPage(): JSX.Element {
     }
   };
 
-  const askDelete = (row: IReciboVehiculo) => { setToDelete(row); setConfirmDel(true); };
-  const confirmDelete = () => {
-    if (toDelete) {
-      reciboCrud.deleteM.mutate(
-        toDelete._id,
-        {
-          onSuccess: () => notify('Recibo eliminado correctamente', 'success'),
-          onError: () => notify('Error al eliminar recibo', 'error'),
-        }
-      );
+  const handleDelete = async (row: IReciboVehiculo) => {
+    try {
+      await reciboCrud.deleteM.mutateAsync(row._id);
+      notify('Recibo eliminado correctamente', 'success');
+    } catch {
+      notify('Error al eliminar recibo', 'error');
     }
-    setConfirmDel(false);
-    setToDelete(null);
   };
 
   const handlePrint = (r: IReciboVehiculo) => {
@@ -212,90 +199,265 @@ export default function RecibosVehiculosPage(): JSX.Element {
     w.print();
   };
 
+  // Funciones helper para obtener datos relacionados
+  const getRecepcionData = (recepcionId: string | IRecepcionVehiculo) => {
+    if (typeof recepcionId === 'object') return recepcionId;
+    return recepciones.find(r => r._id === recepcionId);
+  };
+
+  const getVehiculoFromRecepcion = (recepcion: IRecepcionVehiculo) => {
+    if (typeof recepcion.id_vehiculo === 'object') return recepcion.id_vehiculo;
+    return vehiculos.find(v => v._id === recepcion.id_vehiculo);
+  };
+
+  const getClienteFromVehiculo = (vehiculo: IVehiculoDatos) => {
+    if (typeof vehiculo.id_cliente === 'object') return vehiculo.id_cliente;
+    return clientes.find(c => c._id === vehiculo.id_cliente);
+  };
+
+  const getEmpleadoFromRecepcion = (recepcion: IRecepcionVehiculo) => {
+    if (typeof recepcion.id_empleadoInformacion === 'object') return recepcion.id_empleadoInformacion;
+    return empleados.find(e => e._id === recepcion.id_empleadoInformacion);
+  };
+
+  // Definir las columnas
+  const columns: TableColumn[] = [
+    {
+      id: 'recibo',
+      label: 'Recibo',
+      minWidth: 200,
+      render: (value, row) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #EC4899, #BE185D)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '1.2rem'
+            }}
+          >
+            <ReceiptIcon />
+          </Box>
+          <Box>
+            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1f2937' }}>
+              Recibo #{row._id.slice(-6).toUpperCase()}
+            </Typography>
+            <Chip
+              size="small"
+              label="Comprobante"
+              sx={{
+                background: 'linear-gradient(45deg, #EC4899, #F472B6)',
+                color: 'white',
+                fontSize: '0.7rem'
+              }}
+            />
+          </Box>
+        </Box>
+      )
+    },
+    {
+      id: 'cliente',
+      label: 'Cliente',
+      minWidth: 220,
+      render: (value, row) => {
+        const recepcion = getRecepcionData(row.id_recepcion);
+        const vehiculo = recepcion ? getVehiculoFromRecepcion(recepcion) : null;
+        const cliente = vehiculo ? getClienteFromVehiculo(vehiculo) : null;
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, #10B981, #059669)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white'
+              }}
+            >
+              <PersonIcon fontSize="small" />
+            </Box>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
+                {cliente?.nombre || 'Cliente no encontrado'}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.8rem' }}>
+                {cliente?.tipo_cliente || 'Tipo no especificado'}
+              </Typography>
+            </Box>
+          </Box>
+        );
+      }
+    },
+    {
+      id: 'vehiculo',
+      label: 'Vehículo',
+      minWidth: 200,
+      render: (value, row) => {
+        const recepcion = getRecepcionData(row.id_recepcion);
+        const vehiculo = recepcion ? getVehiculoFromRecepcion(recepcion) : null;
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, #6366F1, #4F46E5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white'
+              }}
+            >
+              <DirectionsCarIcon fontSize="small" />
+            </Box>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
+                Chasis: {vehiculo?.chasis || 'N/A'}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.8rem' }}>
+                Año: {vehiculo?.anio || 'N/A'}
+              </Typography>
+            </Box>
+          </Box>
+        );
+      }
+    },
+    {
+      id: 'empleado',
+      label: 'Empleado',
+      minWidth: 180,
+      render: (value, row) => {
+        const recepcion = getRecepcionData(row.id_recepcion);
+        const empleado = recepcion ? getEmpleadoFromRecepcion(recepcion) : null;
+
+        return (
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
+              {empleado?.nombre || 'Empleado no encontrado'}
+            </Typography>
+            <Chip
+              size="small"
+              label={empleado?.tipo_empleado || 'Tipo no especificado'}
+              sx={{
+                background: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
+                color: 'white',
+                fontSize: '0.7rem',
+                mt: 0.5
+              }}
+            />
+          </Box>
+        );
+      }
+    },
+    {
+      id: 'observaciones',
+      label: 'Observaciones',
+      minWidth: 300,
+      render: (value, row) => (
+        <Box>
+          <Typography
+            variant="body2"
+            sx={{
+              color: '#374151',
+              fontStyle: row.observaciones ? 'normal' : 'italic',
+              maxWidth: '300px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {row.observaciones || 'Sin observaciones adicionales'}
+          </Typography>
+          {row.observaciones && (
+            <Chip
+              size="small"
+              label="Con observaciones"
+              sx={{
+                background: 'linear-gradient(45deg, #F59E0B, #FBBF24)',
+                color: 'white',
+                fontSize: '0.7rem',
+                mt: 0.5
+              }}
+            />
+          )}
+        </Box>
+      )
+    },
+    {
+      id: 'estado',
+      label: 'Estado',
+      minWidth: 120,
+      render: (value, row) => (
+        <StatusChip
+          status="Completado"
+          colorMap={{
+            'Completado': 'linear-gradient(45deg, #10B981, #059669)',
+            'Pendiente': 'linear-gradient(45deg, #F59E0B, #FBBF24)',
+            'Anulado': 'linear-gradient(45deg, #EF4444, #F87171)'
+          }}
+        />
+      )
+    },
+    {
+      id: 'acciones',
+      label: 'Acciones',
+      align: 'center',
+      minWidth: 180,
+      render: (value, row) => (
+        <ActionButtons
+          onEdit={() => openEdit(row)}
+          onDelete={() => handleDelete(row)}
+          customActions={[
+            {
+              icon: <PrintIcon fontSize="small" />,
+              onClick: () => handlePrint(row),
+              color: 'linear-gradient(45deg, #06B6D4, #0891B2)',
+              tooltip: 'Imprimir Recibo'
+            },
+            {
+              icon: <AssignmentIcon fontSize="small" />,
+              onClick: () => notify('Ver detalles del recibo', 'info'),
+              color: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
+              tooltip: 'Ver Detalles'
+            }
+          ]}
+        />
+      )
+    }
+  ];
+
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Recibos de Vehículo
-      </Typography>
-
-      <Box display="flex" gap={1} mb={2} alignItems="center">
-        <TextField
-          label="Buscar cliente, chasis u observaciones"
-          size="small"
-          value={searchTerm}
-          onChange={handleSearch}
-          sx={{ flex: '1 1 300px' }}
-        />
-        <Button variant="contained" onClick={openNew}>
-          + Nuevo Recibo
-        </Button>
-      </Box>
-
-      <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <Table size="small">
-          <TableHead sx={{ backgroundColor: 'action.hover' }}>
-            <TableRow>
-              <TableCell>#</TableCell>
-              <TableCell>Cliente</TableCell>
-              <TableCell>Chasis</TableCell>
-              <TableCell>Observaciones</TableCell>
-              <TableCell align="right">Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginated.map((r, i) => {
-              const idx = page * rowsPerPage + i + 1;
-              const rec = recepciones.find(rep => {
-                const rid = typeof r.id_recepcion === 'string' ? r.id_recepcion : r.id_recepcion._id;
-                return rid === rep._id;
-              });
-              const veh = rec
-                ? vehiculos.find(v => {
-                  const vid = typeof rec.id_vehiculo === 'string' ? rec.id_vehiculo : rec.id_vehiculo._id;
-                  return vid === v._id;
-                })
-                : null;
-              const cli = veh
-                ? clientes.find(c => {
-                  const cid = typeof veh.id_cliente === 'string' ? veh.id_cliente : veh.id_cliente._id;
-                  return cid === c._id;
-                })
-                : null;
-              return (
-                <TableRow key={r._id} hover>
-                  <TableCell>{idx}</TableCell>
-                  <TableCell>{cli?.nombre ?? '—'}</TableCell>
-                  <TableCell>{veh?.chasis ?? '—'}</TableCell>
-                  <TableCell>{r.observaciones ?? '—'}</TableCell>
-                  <TableCell align="right">
-                    <IconButton size="small" onClick={() => handlePrint(r)}>
-                      <PrintIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => openEdit(r)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" color="error" onClick={() => askDelete(r)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-
-        <TablePagination
-          component="div"
-          count={filtered.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRows}
-          rowsPerPageOptions={[5, 10, 25]}
-          labelRowsPerPage="Ver"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-        />
-      </Paper>
+    <>
+      <ModernTable
+        title="Recibos de Vehículo"
+        subtitle="Gestiona los recibos y comprobantes de servicio vehicular"
+        titleIcon="🧾"
+        columns={columns}
+        data={paginatedData}
+        searchTerm={searchQuery}
+        onSearchChange={onSearchChange}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={onPageChange}
+        onRowsPerPageChange={onRowsPerPageChange}
+        onCreateNew={openNew}
+        createButtonText="Nuevo Recibo"
+        emptyMessage="No hay recibos registrados"
+        emptySubMessage="Comienza generando el primer recibo"
+        searchPlaceholder="Buscar por observaciones..."
+        height={700}
+      />
 
       <ReciboVehiculoModal
         open={modalOpen}
@@ -306,18 +468,6 @@ export default function RecibosVehiculosPage(): JSX.Element {
         onClose={closeModal}
         onSubmit={handleSubmit}
       />
-
-      <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningAmberIcon color="warning" /> ¿Eliminar este recibo?
-        </DialogTitle>
-        <DialogActions>
-          <Button onClick={() => setConfirmDel(false)}>Cancelar</Button>
-          <Button color="error" variant="contained" onClick={confirmDelete}>
-            Eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+    </>
   );
 }

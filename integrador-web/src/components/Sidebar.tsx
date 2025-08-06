@@ -36,7 +36,14 @@ import {
 import { JSX, useState } from 'react'
 import { useAuth } from '@/app/context/AuthContext'
 
-const navItems = [
+interface NavItem {
+  text: string;
+  icon: JSX.Element;
+  href?: string;
+  children?: { text: string; href: string }[];
+}
+
+const allNavItems: NavItem[] = [
   { text: 'Dashboard', icon: <DashboardIcon />, href: '/' },
   { text: 'Clientes', icon: <PeopleIcon />, href: '/clientes' },
   { text: 'Vehículos', icon: <HomeIcon />, href: '/vehiculodatos' },
@@ -60,11 +67,19 @@ const navItems = [
   { text: 'Usuarios', icon: <PersonIcon />, href: '/usuarios' },
 ]
 
+// Elementos que pueden ver los empleados
+const empleadoNavItems: NavItem[] = [
+  { text: 'Facturas', icon: <ReceiptIcon />, href: '/factura' },
+]
+
 export default function Sidebar(): JSX.Element {
   const pathname = usePathname()
   const [openMaint, setOpenMaint] = useState(false)
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false)
-  const { logout } = useAuth()
+  const { auth, logout } = useAuth()
+
+  // Determinar qué elementos mostrar según el rol del usuario
+  const navItems = auth?.role === 'empleado' ? empleadoNavItems : allNavItems
 
   const handleLogoutClick = () => setOpenLogoutDialog(true)
   const handleLogoutConfirm = () => { setOpenLogoutDialog(false); logout() }
@@ -154,7 +169,7 @@ export default function Sidebar(): JSX.Element {
                   </List>
                 </Collapse>
               </div>
-            ) : (
+            ) : item.href ? (
               <ListItem key={item.text} disablePadding>
                 <ListItemButton
                   component={Link}
@@ -171,7 +186,7 @@ export default function Sidebar(): JSX.Element {
                   />
                 </ListItemButton>
               </ListItem>
-            )
+            ) : null
           )}
 
           <ListItem disablePadding sx={{ mt: 2 }}>

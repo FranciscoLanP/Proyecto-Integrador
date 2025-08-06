@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Debug JWT Token</title>
+</head>
+
+<body>
+    <h1>JWT Token Debug</h1>
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+
+        // Función para hacer test del API
+        async function testAPI() {
+            const stored = localStorage.getItem('auth');
+            if (!stored) {
+                output.innerHTML += '<p>No auth data found. Please login first.</p>';
+                return;
+            }
+
+            try {
+                const auth = JSON.parse(stored);
+                const token = auth.token;
+
+                output.innerHTML += '<h2>Testing API Calls:</h2>';
+
+                // Test empleado informaciones
+                try {
+                    const response = await fetch('http://localhost:3001/api/empleadoinformaciones', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    output.innerHTML += `<p>Empleados API Status: ${response.status}</p>`;
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        output.innerHTML += `<p>Empleados Data: ${JSON.stringify(data).substring(0, 200)}...</p>`;
+                    } else {
+                        const error = await response.text();
+                        output.innerHTML += `<p>Empleados Error: ${error}</p>`;
+                    }
+                } catch (e) {
+                    output.innerHTML += `<p>Empleados Request Error: ${e.message}</p>`;
+                }
+
+                // Test recibos vehiculos
+                try {
+                    const response = await fetch('http://localhost:3001/api/recibosvehiculos', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    output.innerHTML += `<p>Recibos API Status: ${response.status}</p>`;
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        output.innerHTML += `<p>Recibos Data: ${JSON.stringify(data).substring(0, 200)}...</p>`;
+                    } else {
+                        const error = await response.text();
+                        output.innerHTML += `<p>Recibos Error: ${error}</p>`;
+                    }
+                } catch (e) {
+                    output.innerHTML += `<p>Recibos Request Error: ${e.message}</p>`;
+                }
+
+            } catch (e) {
+                output.innerHTML += `<p>Error testing API: ${e.message}</p>`;
+            }
+        }
+
+        // Verificar localStorage
+        const stored = localStorage.getItem('auth');
+        output.innerHTML += '<h2>LocalStorage Auth:</h2>';
+        if (stored) {
+            try {
+                const auth = JSON.parse(stored);
+                output.innerHTML += `<pre>${JSON.stringify(auth, null, 2)}</pre>`;
+
+                // Decodificar JWT
+                const token = auth.token;
+                if (token) {
+                    const parts = token.split('.');
+                    if (parts.length === 3) {
+                        try {
+                            const payload = JSON.parse(atob(parts[1]));
+                            output.innerHTML += '<h2>JWT Payload:</h2>';
+                            output.innerHTML += `<pre>${JSON.stringify(payload, null, 2)}</pre>`;
+
+                            // Verificar expiración
+                            const now = Math.floor(Date.now() / 1000);
+                            const exp = payload.exp;
+                            output.innerHTML += '<h2>Token Status:</h2>';
+                            output.innerHTML += `<p>Current time: ${now}</p>`;
+                            output.innerHTML += `<p>Token expires: ${exp}</p>`;
+                            output.innerHTML += `<p>Token expired: ${now > exp ? 'YES' : 'NO'}</p>`;
+                            output.innerHTML += `<p>Time until expiry: ${exp - now} seconds</p>`;
+
+                            // Auto test API si el token es válido
+                            if (now <= exp) {
+                                testAPI();
+                            }
+                        } catch (e) {
+                            output.innerHTML += '<p>Error decoding JWT payload: ' + e.message + '</p>';
+                        }
+                    } else {
+                        output.innerHTML += '<p>Invalid JWT format</p>';
+                    }
+                }
+            } catch (e) {
+                output.innerHTML += '<p>Error parsing stored auth: ' + e.message + '</p>';
+            }
+        } else {
+            output.innerHTML += '<p>No auth data in localStorage</p>';
+            output.innerHTML += '<p>Please go to <a href="http://localhost:3002/login">http://localhost:3002/login</a> and login first, then come back to this page.</p>';
+        }
+
+        // Botón para test manual
+        output.innerHTML += '<br><button onclick="testAPI()">Test API Calls</button>';
+    </script>
+</body>
+
+</html>

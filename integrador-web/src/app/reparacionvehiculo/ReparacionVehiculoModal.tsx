@@ -3,7 +3,7 @@ import {
   Dialog, DialogTitle, DialogContent, IconButton, Box, TextField, Button, MenuItem, Alert
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { ReparacionVehiculo, inspeccionVehiculoService, empleadoInformacionService } from '@/services/reparacionVehiculoService';
+import { ReparacionVehiculo, EmpleadoTrabajo, inspeccionVehiculoService, empleadoInformacionService } from '@/services/reparacionVehiculoService';
 import PiezaBuscador from '@/services/piezaInventarioService';
 import { piezaInventarioService } from '@/services/reparacionVehiculoService';
 
@@ -18,7 +18,7 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
   // 🔥 Estado inicial limpio - se resetea en useEffect
   const [form, setForm] = useState<ReparacionVehiculo>({
     id_inspeccion: '',
-    id_empleadoInformacion: '',
+    empleados_trabajos: [{ id_empleado: '', descripcion_trabajo: '' }],
     fecha_inicio: new Date().toISOString().slice(0, 10),
     descripcion: '',
     piezas_usadas: []
@@ -35,7 +35,7 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
     if (!open) {
       setForm({
         id_inspeccion: '',
-        id_empleadoInformacion: '',
+        empleados_trabajos: [{ id_empleado: '', descripcion_trabajo: '' }],
         fecha_inicio: new Date().toISOString().slice(0, 10),
         descripcion: '',
         piezas_usadas: []
@@ -53,7 +53,7 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
       if (!defaultData) {
         setForm({
           id_inspeccion: '',
-          id_empleadoInformacion: '',
+          empleados_trabajos: [{ id_empleado: '', descripcion_trabajo: '' }],
           fecha_inicio: new Date().toISOString().slice(0, 10),
           descripcion: '',
           piezas_usadas: []
@@ -66,47 +66,72 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
     if (defaultData) {
       // Procesar piezas usadas según su formato
       const cargarPiezasUsadas = async () => {
-        let piezasUsadas = defaultData.piezas_usadas;
+        let piezasUsadas = defaultData.piezas_usadas || [];
+
+        console.log('🔧 Procesando piezas usadas:', piezasUsadas);
 
         if (Array.isArray(piezasUsadas) && piezasUsadas.length > 0) {
-          // Si las piezas ya son objetos completos (con populate), extraer solo id_pieza y cantidad
-          if (typeof piezasUsadas[0] === 'object' && piezasUsadas[0]?.id_pieza) {
+          // Si las piezas tienen formato completo con id_pieza
+          if (piezasUsadas[0]?.id_pieza) {
             piezasUsadas = piezasUsadas.map((p: any) => ({
-              id_pieza: p.id_pieza,
-              cantidad: p.cantidad
+              id_pieza: typeof p.id_pieza === 'object' && p.id_pieza._id
+                ? p.id_pieza._id
+                : p.id_pieza,
+              cantidad: p.cantidad || 1
             }));
           }
-          // Si son solo IDs de string, hacer fetch individual (fallback)
-          else if (typeof piezasUsadas[0] === 'string') {
-            const detalles = await Promise.all(
-              piezasUsadas.map(async (id) => {
-                try {
-                  const res = await fetch(`/api/piezas-usadas/${id}`);
-                  if (!res.ok) return null;
-                  const data = await res.json();
-                  return { id_pieza: data.id_pieza, cantidad: data.cantidad };
-                } catch {
-                  return null;
-                }
-              })
-            );
-            piezasUsadas = detalles.filter(Boolean) as Array<{ id_pieza: string; cantidad: number; }>;
+          // Si son objetos pero sin id_pieza directa (fallback)
+          else if (typeof piezasUsadas[0] === 'object') {
+            piezasUsadas = piezasUsadas.map((p: any) => ({
+              id_pieza: p._id || p.id || '',
+              cantidad: p.cantidad || 1
+            }));
           }
         }
 
-        setForm({
+        console.log('🔧 Piezas procesadas:', piezasUsadas);
+
+        // Procesar empleados trabajos
+        let empleadosTrabajos = defaultData.empleados_trabajos || [];
+
+        // Compatibilidad con campo anterior
+        if ((!empleadosTrabajos || empleadosTrabajos.length === 0) && defaultData.id_empleadoInformacion) {
+          const empleadoId = typeof defaultData.id_empleadoInformacion === 'object'
+            ? (defaultData.id_empleadoInformacion as any)?._id || defaultData.id_empleadoInformacion
+            : defaultData.id_empleadoInformacion;
+
+          empleadosTrabajos = [{
+            id_empleado: empleadoId,
+            descripcion_trabajo: 'Trabajo general de reparación'
+          }];
+        }
+
+        // Procesar empleados poblados
+        if (empleadosTrabajos.length > 0) {
+          empleadosTrabajos = empleadosTrabajos.map((emp: any) => ({
+            id_empleado: typeof emp.id_empleado === 'object'
+              ? emp.id_empleado._id || emp.id_empleado
+              : emp.id_empleado,
+            descripcion_trabajo: emp.descripcion_trabajo || 'Trabajo general'
+          }));
+        }
+
+        const processedForm = {
           ...defaultData,
           // 🔥 EXTRAER solo los IDs de los objetos poblados
           id_inspeccion: typeof defaultData.id_inspeccion === 'object'
             ? (defaultData.id_inspeccion as any)?._id || defaultData.id_inspeccion
-            : defaultData.id_inspeccion,
-          id_empleadoInformacion: typeof defaultData.id_empleadoInformacion === 'object'
-            ? (defaultData.id_empleadoInformacion as any)?._id || defaultData.id_empleadoInformacion
-            : defaultData.id_empleadoInformacion,
+            : defaultData.id_inspeccion || '',
+          empleados_trabajos: empleadosTrabajos,
           fecha_inicio: defaultData.fecha_inicio ? new Date(defaultData.fecha_inicio).toISOString().slice(0, 10) : '',
           fecha_fin: defaultData.fecha_fin ? new Date(defaultData.fecha_fin).toISOString().slice(0, 10) : '',
-          piezas_usadas: piezasUsadas ?? []
-        });
+          piezas_usadas: piezasUsadas,
+          descripcion: defaultData.descripcion || '',
+          costo_total: defaultData.costo_total || 0
+        };
+
+        console.log('🔧 Formulario procesado:', processedForm);
+        setForm(processedForm);
       };
       cargarPiezasUsadas();
     }
@@ -153,6 +178,33 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
       console.error('Error loading dropdown data:', error);
     }
     setLoading(false);
+  };
+
+  // Manejo de empleados trabajos
+  const handleAddEmpleado = () => {
+    setForm(f => ({
+      ...f,
+      empleados_trabajos: [
+        ...(f.empleados_trabajos ?? []),
+        { id_empleado: '', descripcion_trabajo: '' }
+      ]
+    }));
+  };
+
+  const handleEmpleadoChange = (idx: number, field: keyof EmpleadoTrabajo, value: string) => {
+    setForm(f => ({
+      ...f,
+      empleados_trabajos: f.empleados_trabajos?.map((emp, i) =>
+        i === idx ? { ...emp, [field]: value } : emp
+      )
+    }));
+  };
+
+  const handleRemoveEmpleado = (idx: number) => {
+    setForm(f => ({
+      ...f,
+      empleados_trabajos: f.empleados_trabajos?.filter((_, i) => i !== idx)
+    }));
   };
 
   // Manejo de piezas usadas
@@ -250,22 +302,56 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
             })}
           </TextField>
 
-          <TextField
-            select
-            label="Empleado"
-            name="id_empleadoInformacion"
-            value={form.id_empleadoInformacion}
-            onChange={handleChange}
-            required
-            fullWidth
-            disabled={loading}
-          >
-            {empleados.map(empleado => (
-              <MenuItem key={empleado._id} value={empleado._id}>
-                {empleado.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
+          {/* Empleados trabajos */}
+          <Box>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+              <strong>Empleados y trabajos realizados</strong>
+              <Button onClick={handleAddEmpleado} size="small" variant="outlined">Agregar empleado</Button>
+            </Box>
+            {(form.empleados_trabajos ?? []).map((empleado, idx) => {
+              const empleadoInfo = empleados.find(e => e._id === empleado.id_empleado);
+              return (
+                <Box key={idx} display="flex" gap={1} mb={2} alignItems="flex-start">
+                  <TextField
+                    select
+                    label="Empleado"
+                    value={empleado.id_empleado}
+                    onChange={e => handleEmpleadoChange(idx, 'id_empleado', e.target.value)}
+                    required
+                    size="small"
+                    sx={{ minWidth: 200 }}
+                  >
+                    {empleados.map(emp => (
+                      <MenuItem key={emp._id} value={emp._id}>
+                        {`${emp.nombre} (${emp.tipo_empleado || 'N/A'})`}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    multiline
+                    minRows={2}
+                    label="Descripción del trabajo"
+                    value={empleado.descripcion_trabajo}
+                    onChange={e => handleEmpleadoChange(idx, 'descripcion_trabajo', e.target.value)}
+                    required
+                    size="small"
+                    sx={{ flex: 1 }}
+                    placeholder="Describe el trabajo realizado por este empleado..."
+                  />
+                  {(form.empleados_trabajos?.length ?? 0) > 1 && (
+                    <Button
+                      color="error"
+                      onClick={() => handleRemoveEmpleado(idx)}
+                      size="small"
+                      sx={{ mt: 1 }}
+                    >
+                      Quitar
+                    </Button>
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
 
           <TextField
             label="Fecha inicio"

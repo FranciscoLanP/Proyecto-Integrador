@@ -24,6 +24,7 @@ interface AuthContextType {
   transitionLoading: boolean;
   login: (username: string, role: Auth['role'], token: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateAuth: (username: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,8 +68,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTransitionLoading(false);
   };
 
+  const updateAuth = (username: string): void => {
+    if (auth) {
+      const updatedAuth = { ...auth, username };
+      localStorage.setItem('auth', JSON.stringify(updatedAuth));
+      setAuth(updatedAuth);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ auth, isLoading, transitionLoading, login, logout }}>
+    <AuthContext.Provider value={{ auth, isLoading, transitionLoading, login, logout, updateAuth }}>
       {children}
     </AuthContext.Provider>
   );

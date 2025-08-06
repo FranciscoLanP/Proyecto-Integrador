@@ -1,24 +1,14 @@
 'use client';
 
 import React, { useState, ChangeEvent, JSX } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TableCell from '@mui/material/TableCell';
-import TableBody from '@mui/material/TableBody';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import TablePagination from '@mui/material/TablePagination';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import {
+  Box, Typography, IconButton, CircularProgress, Chip
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ModernTable from '@/components/ModernTable/ModernTable';
+import { useHydration } from '@/hooks/useHydration';
+import { useTheme } from '@/app/context/ThemeContext';
 
 import { useCrud } from '../../hooks/useCrud';
 import { useNotification } from '../../components/utils/NotificationProvider';
@@ -27,236 +17,243 @@ import ColoresDatosModal from './ColoresModal';
 
 export default function ColoresDatosPage(): JSX.Element {
   const { notify } = useNotification();
+  const { currentTheme, isHydrated } = useTheme();
+  const isHydratedCustom = useHydration();
 
   const { allQuery, createM, updateM, deleteM } =
     useCrud<IColoresDatos>('coloresdatos');
   const { data: colores = [], isLoading, error } = allQuery;
 
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [page, setPage] = useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
-
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<IColoresDatos | null>(null);
-  const [confirmDel, setConfirmDel] = useState<boolean>(false);
-  const [toDelete, setToDelete] = useState<IColoresDatos | null>(null);
 
-  if (isLoading) return <Typography>Loading…</Typography>;
   if (error) return <Typography color="error">{error.message}</Typography>;
 
-  const filtered = colores.filter(c =>
-    c.nombre_color.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  const paginated = filtered.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
-
-  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPage(0);
-  };
-  const handleChangePage = (_: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-  const handleChangeRowsPerPage = (
-    e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) => {
-    setRowsPerPage(parseInt(e.target.value, 10));
-    setPage(0);
-  };
-
-  const openNew = (): void => {
+  const handleCreate = (): void => {
     setEditData(null);
     setModalOpen(true);
   };
-  const openEdit = (c: IColoresDatos): void => {
-    setEditData(c);
+
+  const handleEdit = (color: IColoresDatos): void => {
+    setEditData(color);
     setModalOpen(true);
   };
-  const closeModal = (): void => setModalOpen(false);
 
-  const handleSubmit = (payload: { nombre_color: string }): void => {
+  const handleDelete = async (id: string): Promise<void> => {
+    if (confirm('¿Seguro que deseas eliminar este color?')) {
+      deleteM.mutate(id, {
+        onSuccess: () => notify('Color eliminado correctamente', 'success'),
+        onError: () => notify('Error al eliminar color', 'error')
+      });
+    }
+  };
+
+  const handleModalSubmit = (payload: { nombre_color: string }): void => {
     if (editData) {
       updateM.mutate(
         { id: editData._id, data: { nombre_color: payload.nombre_color } },
         {
-          onSuccess: () => {
-            notify('Color actualizado correctamente', 'success');
-          },
-          onError: () => {
-            notify('Error al actualizar color', 'error');
-          }
+          onSuccess: () => notify('Color actualizado correctamente', 'success'),
+          onError: () => notify('Error al actualizar color', 'error')
         }
       );
     } else {
       createM.mutate(
         { nombre_color: payload.nombre_color },
         {
-          onSuccess: () => {
-            notify('Color creado correctamente', 'success');
-          },
-          onError: () => {
-            notify('Error al crear color', 'error');
-          }
+          onSuccess: () => notify('Color creado correctamente', 'success'),
+          onError: () => notify('Error al crear color', 'error')
         }
       );
     }
     setModalOpen(false);
   };
 
-  const askDelete = (c: IColoresDatos): void => {
-    setToDelete(c);
-    setConfirmDel(true);
-  };
-  const confirmDelete = (): void => {
-    if (toDelete) {
-      deleteM.mutate(
-        toDelete._id,
-        {
-          onSuccess: () => {
-            notify('Color eliminado correctamente', 'success');
-          },
-          onError: () => {
-            notify('Error al eliminar color', 'error');
-          }
-        }
-      );
-    }
-    setConfirmDel(false);
-    setToDelete(null);
+  // Función para obtener un color representativo basado en el nombre
+  const getColorFromName = (colorName: string): string => {
+    const colorLower = colorName.toLowerCase();
+    if (colorLower.includes('rojo') || colorLower.includes('red')) return '#EF4444';
+    if (colorLower.includes('azul') || colorLower.includes('blue')) return '#3B82F6';
+    if (colorLower.includes('verde') || colorLower.includes('green')) return '#10B981';
+    if (colorLower.includes('amarillo') || colorLower.includes('yellow')) return '#F59E0B';
+    if (colorLower.includes('negro') || colorLower.includes('black')) return '#374151';
+    if (colorLower.includes('blanco') || colorLower.includes('white')) return '#F3F4F6';
+    if (colorLower.includes('gris') || colorLower.includes('gray') || colorLower.includes('grey')) return '#6B7280';
+    if (colorLower.includes('naranja') || colorLower.includes('orange')) return '#F97316';
+    if (colorLower.includes('morado') || colorLower.includes('purple')) return '#8B5CF6';
+    if (colorLower.includes('rosa') || colorLower.includes('pink')) return '#EC4899';
+    return '#6B7280'; // Color por defecto
   };
 
-  return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" sx={{ fontWeight: 500, mb: 0.5 }}>
-        Colores de Datos
-      </Typography>
-      <Typography variant="subtitle2" color="text.secondary" mb={2}>
-        Administra los colores de datos de tu sistema
-      </Typography>
+  // Datos para la tabla moderna
+  const tableData = colores.map(color => {
+    const colorHex = getColorFromName(color.nombre_color);
 
-      <Box
-        sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 1,
-          justifyContent: 'space-between',
-          mb: 2
-        }}
-      >
-        <TextField
-          label="Buscar color"
-          size="small"
-          variant="outlined"
-          value={searchTerm}
-          onChange={handleSearch}
-          sx={{ flex: '1 1 200px' }}
-        />
-        <Button
-          variant="contained"
-          size="medium"
-          onClick={openNew}
-          sx={{ ml: 'auto' }}
-        >
-          + Nuevo Color
-        </Button>
-      </Box>
-
-      <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-            Colores del Sistema
+    return {
+      id: color._id || '',
+      color: (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 45,
+              height: 45,
+              borderRadius: '12px',
+              background: `linear-gradient(135deg, ${colorHex}, ${colorHex}CC)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: colorHex === '#F3F4F6' ? '#374151' : 'white',
+              fontWeight: 'bold',
+              fontSize: '1.1rem',
+              boxShadow: `0 4px 12px ${colorHex}40`,
+              border: colorHex === '#F3F4F6' ? '2px solid #E5E7EB' : 'none'
+            }}
+          >
+            🎨
+          </Box>
+          <Box>
+            <Typography variant="body1" sx={{ fontWeight: 'medium', color: '#374151' }}>
+              {color.nombre_color}
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#6B7280' }}>
+              {colorHex}
+            </Typography>
+          </Box>
+        </Box>
+      ),
+      muestra: (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: colorHex,
+              border: colorHex === '#F3F4F6' ? '2px solid #E5E7EB' : 'none',
+              boxShadow: `0 2px 8px ${colorHex}30`
+            }}
+          />
+          <Typography variant="body2" sx={{ color: '#374151', fontWeight: 'medium' }}>
+            Muestra
           </Typography>
         </Box>
-
-        <Table size="small" sx={{ minWidth: 360 }}>
-          <TableHead sx={{ backgroundColor: 'action.hover' }}>
-            <TableRow>
-              <TableCell sx={{ fontSize: '0.85rem' }}>#</TableCell>
-              <TableCell sx={{ fontSize: '0.85rem' }}>Nombre Color</TableCell>
-              <TableCell align="right" sx={{ fontSize: '0.85rem' }}>
-                Acciones
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginated.map((c, i) => {
-              const idx = page * rowsPerPage + i + 1;
-              return (
-                <TableRow
-                  key={c._id}
-                  hover
-                  sx={{ '&:hover': { backgroundColor: 'action.selected' } }}
-                >
-                  <TableCell sx={{ fontSize: '0.8rem', px: 1 }}>{idx}</TableCell>
-                  <TableCell sx={{ fontSize: '0.8rem', px: 1 }}>{c.nombre_color}</TableCell>
-                  <TableCell align="right" sx={{ px: 1 }}>
-                    <IconButton size="small" onClick={() => openEdit(c)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => askDelete(c)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-
-        <TablePagination
-          component="div"
-          count={filtered.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[5, 15, 25]}
-          labelRowsPerPage="Ver"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+      ),
+      estado: (
+        <Chip
+          label="Disponible"
           sx={{
-            '& .MuiTablePagination-toolbar': { minHeight: 36, py: 0 },
-            '& .MuiTablePagination-actions button': { padding: '4px' },
-            '& .MuiTablePagination-selectLabel, .MuiTablePagination-input': {
-              fontSize: '0.8rem'
-            }
+            background: 'linear-gradient(45deg, #10B981, #34D399)',
+            color: 'white',
+            fontWeight: 'medium'
           }}
+          size="small"
         />
-      </Paper>
+      ),
+      acciones: (
+        <Box display="flex" gap={0.5}>
+          <IconButton
+            size="small"
+            onClick={() => handleEdit(color)}
+            title="Editar"
+            sx={{
+              background: 'linear-gradient(45deg, #3B82F6, #60A5FA)',
+              color: 'white',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #2563EB, #3B82F6)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+              },
+              transition: 'all 0.3s ease',
+              width: 32,
+              height: 32
+            }}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => handleDelete(color._id)}
+            title="Eliminar"
+            sx={{
+              background: 'linear-gradient(45deg, #EF4444, #F87171)',
+              color: 'white',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #DC2626, #EF4444)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+              },
+              transition: 'all 0.3s ease',
+              width: 32,
+              height: 32
+            }}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      ),
+      originalData: color
+    };
+  });
 
+  const columns = [
+    { id: 'color', label: 'Color' },
+    { id: 'muestra', label: 'Muestra' },
+    { id: 'estado', label: 'Estado' },
+    { id: 'acciones', label: 'Acciones' }
+  ];
+
+  if (!isHydrated || !isHydratedCustom) {
+    return (
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#f8fafc' }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Colores de Vehículo</h1>
+          </div>
+          <div className="flex justify-center items-center h-64">
+            <CircularProgress size={40} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="min-h-screen p-6 transition-colors duration-300"
+      style={{
+        background: currentTheme.colors.background
+      }}
+    >
+      {/* Tabla Moderna */}
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <CircularProgress size={40} />
+        </div>
+      ) : (
+        <ModernTable
+          title="Colores de Vehículo"
+          subtitle="Administra los colores disponibles para los vehículos del sistema"
+          data={tableData}
+          columns={columns}
+          searchTerm=""
+          onSearchChange={() => { }}
+          page={0}
+          rowsPerPage={10}
+          onPageChange={() => { }}
+          onRowsPerPageChange={() => { }}
+          onCreateNew={handleCreate}
+          createButtonText="Nuevo Color"
+          emptyMessage="No se encontraron colores de vehículo"
+        />
+      )}
+
+      {/* Modal */}
       <ColoresDatosModal
         open={modalOpen}
         defaultData={editData ?? undefined}
-        onClose={closeModal}
-        onSubmit={handleSubmit}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleModalSubmit}
       />
-
-      <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
-        <DialogTitle
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9rem' }}
-        >
-          <WarningAmberIcon color="warning" />
-          ¿Confirma eliminar este color?
-        </DialogTitle>
-        <DialogActions sx={{ p: 1 }}>
-          <Button size="small" onClick={() => setConfirmDel(false)}>
-            Cancelar
-          </Button>
-          <Button
-            size="small"
-            color="error"
-            variant="contained"
-            onClick={confirmDelete}
-          >
-            Eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+    </div>
   );
 }

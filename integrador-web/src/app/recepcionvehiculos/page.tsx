@@ -1,15 +1,12 @@
 
 'use client';
 
-import React, { useState, ChangeEvent, JSX } from 'react';
-import {
-  Box, Typography, Paper, Table, TableHead, TableRow,
-  TableCell, TableBody, IconButton, Button, TextField,
-  TablePagination, Dialog, DialogTitle, DialogActions
-} from '@mui/material';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import React, { useState } from 'react';
+import { Typography, Box, Chip } from '@mui/material';
+import BuildIcon from '@mui/icons-material/Build';
+import PersonIcon from '@mui/icons-material/Person';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 import { useCrud } from '../../hooks/useCrud';
 import { useNotification } from '../../components/utils/NotificationProvider';
@@ -20,8 +17,16 @@ import type {
   IVehiculoDatos
 } from '../types';
 import RecepcionVehiculoModal from './RecepcionVehiculoModal';
+import {
+  ModernTable,
+  useModernTable,
+  StatusChip,
+  ActionButtons,
+  DateDisplay,
+  type TableColumn
+} from '@/components/ModernTable';
 
-export default function RecepcionVehiculosPage(): JSX.Element {
+export default function RecepcionVehiculosPage() {
   const { notify } = useNotification();
 
   const recepCrud = useCrud<IRecepcionVehiculo>('recepcionvehiculos');
@@ -34,52 +39,56 @@ export default function RecepcionVehiculosPage(): JSX.Element {
   const { data: empleados = [], isLoading: loadEmp, error: errEmp } = empCrud.allQuery;
   const { data: vehiculos = [], isLoading: loadVeh, error: errVeh } = vehCrud.allQuery;
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<IRecepcionVehiculo | null>(null);
 
-  const [confirmDel, setConfirmDel] = useState(false);
-  const [toDelete, setToDelete] = useState<IRecepcionVehiculo | null>(null);
-
-  if (loadRec || loadCli || loadEmp || loadVeh) return <Typography>Loading…</Typography>;
-  if (errRec) return <Typography color="error">{errRec.message}</Typography>;
-  if (errCli) return <Typography color="error">{errCli.message}</Typography>;
-  if (errEmp) return <Typography color="error">{errEmp.message}</Typography>;
-  if (errVeh) return <Typography color="error">{errVeh.message}</Typography>;
-
-  const term = searchTerm.toLowerCase();
-  const filtered = recepciones.filter(r => {
-    const fecha = new Date(r.fecha).toLocaleString().toLowerCase();
-    const empleado = empleados.find(e => {
-      const eid = typeof r.id_empleadoInformacion === 'string'
-        ? r.id_empleadoInformacion
-        : r.id_empleadoInformacion._id;
-      return eid === e._id;
-    })?.nombre.toLowerCase() ?? '';
-    const veh = vehiculos.find(v => {
-      const vid = typeof r.id_vehiculo === 'string'
-        ? r.id_vehiculo
-        : r.id_vehiculo._id;
-      return vid === v._id;
-    })?.chasis.toLowerCase() ?? '';
-    const prob = (r.problema_reportado ?? '').toLowerCase();
-    return fecha.includes(term) || empleado.includes(term) || veh.includes(term) || prob.includes(term);
+  // Hook para manejar la tabla
+  const {
+    filteredData,
+    paginatedData,
+    searchQuery,
+    page,
+    rowsPerPage,
+    handleSearchChange,
+    handlePageChange,
+    handleRowsPerPageChange
+  } = useModernTable({
+    data: recepciones,
+    searchFields: ['problema_reportado', 'comentario', 'fecha'],
+    initialRowsPerPage: 10
   });
 
-  const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-
-  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setPage(0); };
-  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
-  const handleChangeRows = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    setRowsPerPage(parseInt(e.target.value, 10));
-    setPage(0);
+  // Funciones adaptadoras
+  const onSearchChange = (value: string) => {
+    const mockEvent = { target: { value } } as React.ChangeEvent<HTMLInputElement>;
+    handleSearchChange(mockEvent);
   };
 
-  const openNew = () => { setEditData(null); setModalOpen(true); };
-  const openEdit = (row: IRecepcionVehiculo) => { setEditData(row); setModalOpen(true); };
+  const onPageChange = (page: number) => {
+    handlePageChange(null, page);
+  };
+
+  const onRowsPerPageChange = (rowsPerPage: number) => {
+    const mockEvent = { target: { value: rowsPerPage.toString() } } as React.ChangeEvent<HTMLInputElement>;
+    handleRowsPerPageChange(mockEvent);
+  };
+
+  if (loadRec || loadCli || loadEmp || loadVeh) return <Typography>Cargando recepciones...</Typography>;
+  if (errRec) return <Typography color="error">Error recepciones: {errRec.message}</Typography>;
+  if (errCli) return <Typography color="error">Error clientes: {errCli.message}</Typography>;
+  if (errEmp) return <Typography color="error">Error empleados: {errEmp.message}</Typography>;
+  if (errVeh) return <Typography color="error">Error vehículos: {errVeh.message}</Typography>;
+
+  const openNew = () => {
+    setEditData(null);
+    setModalOpen(true);
+  };
+
+  const openEdit = (row: IRecepcionVehiculo) => {
+    setEditData(row);
+    setModalOpen(true);
+  };
+
   const closeModal = () => setModalOpen(false);
 
   const handleSubmit = async (payload: Partial<IRecepcionVehiculo>) => {
@@ -99,104 +108,243 @@ export default function RecepcionVehiculosPage(): JSX.Element {
     }
   };
 
-  const askDelete = (row: IRecepcionVehiculo) => { setToDelete(row); setConfirmDel(true); };
-  const confirmDelete = () => {
-    if (toDelete) {
-      recepCrud.deleteM.mutate(
-        toDelete._id,
-        {
-          onSuccess: () => notify('Recepción eliminada correctamente', 'success'),
-          onError: () => notify('Error al eliminar recepción', 'error'),
-        }
-      );
+  const handleDelete = async (row: IRecepcionVehiculo) => {
+    try {
+      await recepCrud.deleteM.mutateAsync(row._id);
+      notify('Recepción eliminada correctamente', 'success');
+    } catch {
+      notify('Error al eliminar recepción', 'error');
     }
-    setConfirmDel(false);
-    setToDelete(null);
   };
 
+  // Funciones helper para obtener datos relacionados
+  const getEmpleadoName = (empId: string | IEmpleadoInformacion) => {
+    if (typeof empId === 'object') return empId.nombre;
+    const empleado = empleados.find(e => e._id === empId);
+    return empleado?.nombre || 'Empleado no encontrado';
+  };
+
+  const getVehiculoData = (vehId: string | IVehiculoDatos) => {
+    if (typeof vehId === 'object') return vehId;
+    return vehiculos.find(v => v._id === vehId);
+  };
+
+  const getClienteFromVehiculo = (vehiculo: IVehiculoDatos) => {
+    if (typeof vehiculo.id_cliente === 'object') return vehiculo.id_cliente.nombre;
+    const cliente = clientes.find(c => c._id === vehiculo.id_cliente);
+    return cliente?.nombre || 'Cliente no encontrado';
+  };
+
+  // Definir las columnas
+  const columns: TableColumn[] = [
+    {
+      id: 'fecha',
+      label: 'Fecha & Hora',
+      minWidth: 180,
+      render: (value, row) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #06B6D4, #0891B2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '1.2rem'
+            }}
+          >
+            📅
+          </Box>
+          <Box>
+            <DateDisplay date={row.fecha} format="long" />
+          </Box>
+        </Box>
+      )
+    },
+    {
+      id: 'empleado',
+      label: 'Empleado',
+      minWidth: 200,
+      render: (value, row) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #10B981, #059669)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white'
+            }}
+          >
+            <PersonIcon fontSize="small" />
+          </Box>
+          <Box>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
+              {getEmpleadoName(row.id_empleadoInformacion)}
+            </Typography>
+            <Chip
+              size="small"
+              label="Recepcionista"
+              sx={{
+                background: 'linear-gradient(45deg, #10B981, #34D399)',
+                color: 'white',
+                fontSize: '0.7rem'
+              }}
+            />
+          </Box>
+        </Box>
+      )
+    },
+    {
+      id: 'vehiculo',
+      label: 'Vehículo & Cliente',
+      minWidth: 250,
+      render: (value, row) => {
+        const vehiculo = getVehiculoData(row.id_vehiculo);
+        const clienteNombre = vehiculo ? getClienteFromVehiculo(vehiculo) : 'N/A';
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, #6366F1, #4F46E5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white'
+              }}
+            >
+              <DirectionsCarIcon fontSize="small" />
+            </Box>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
+                Chasis: {vehiculo?.chasis || 'N/A'}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.8rem' }}>
+                Cliente: {clienteNombre}
+              </Typography>
+            </Box>
+          </Box>
+        );
+      }
+    },
+    {
+      id: 'problema',
+      label: 'Problema Reportado',
+      minWidth: 300,
+      render: (value, row) => (
+        <Box>
+          <Typography variant="body2" sx={{ color: '#374151', fontWeight: 'medium', mb: 0.5 }}>
+            {row.problema_reportado || 'Sin problema especificado'}
+          </Typography>
+          {row.problema_reportado && (
+            <Chip
+              size="small"
+              label="Reportado"
+              sx={{
+                background: 'linear-gradient(45deg, #F59E0B, #FBBF24)',
+                color: 'white',
+                fontSize: '0.7rem'
+              }}
+            />
+          )}
+        </Box>
+      )
+    },
+    {
+      id: 'comentario',
+      label: 'Comentarios',
+      minWidth: 250,
+      render: (value, row) => (
+        <Box>
+          <Typography
+            variant="body2"
+            sx={{
+              color: '#6b7280',
+              fontStyle: row.comentario ? 'normal' : 'italic',
+              maxWidth: '250px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {row.comentario || 'Sin comentarios adicionales'}
+          </Typography>
+        </Box>
+      )
+    },
+    {
+      id: 'estado',
+      label: 'Estado',
+      minWidth: 120,
+      render: (value, row) => (
+        <StatusChip
+          status="Recibido"
+          colorMap={{
+            'Recibido': 'linear-gradient(45deg, #06B6D4, #0891B2)',
+            'En Proceso': 'linear-gradient(45deg, #F59E0B, #FBBF24)',
+            'Completado': 'linear-gradient(45deg, #10B981, #059669)'
+          }}
+        />
+      )
+    },
+    {
+      id: 'acciones',
+      label: 'Acciones',
+      align: 'center',
+      minWidth: 150,
+      render: (value, row) => (
+        <ActionButtons
+          onEdit={() => openEdit(row)}
+          onDelete={() => handleDelete(row)}
+          customActions={[
+            {
+              icon: <AssignmentIcon fontSize="small" />,
+              onClick: () => notify('Ver detalles de recepción', 'info'),
+              color: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
+              tooltip: 'Ver Detalles'
+            },
+            {
+              icon: <BuildIcon fontSize="small" />,
+              onClick: () => notify('Iniciar reparación', 'info'),
+              color: 'linear-gradient(45deg, #F59E0B, #FBBF24)',
+              tooltip: 'Iniciar Reparación'
+            }
+          ]}
+        />
+      )
+    }
+  ];
+
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Recepción de Vehículos
-      </Typography>
-
-      <Box display="flex" gap={1} mb={2} alignItems="center">
-        <TextField
-          label="Buscar fecha, empleado, chasis o problema"
-          size="small"
-          value={searchTerm}
-          onChange={handleSearch}
-          sx={{ flex: '1 1 300px' }}
-        />
-        <Button variant="contained" onClick={openNew}>
-          + Nueva Recepción
-        </Button>
-      </Box>
-
-      <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <Table size="small">
-          <TableHead sx={{ backgroundColor: 'action.hover' }}>
-            <TableRow>
-              <TableCell>#</TableCell>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Empleado</TableCell>
-              <TableCell>Chasis</TableCell>
-              <TableCell>Problema</TableCell>
-              <TableCell>Comentario</TableCell>
-              <TableCell align="right">Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginated.map((r, i) => {
-              const idx = page * rowsPerPage + i + 1;
-              const fecha = new Date(r.fecha).toLocaleString();
-              const empleado = empleados.find(e => {
-                const eid = typeof r.id_empleadoInformacion === 'string'
-                  ? r.id_empleadoInformacion
-                  : r.id_empleadoInformacion._id;
-                return eid === e._id;
-              })?.nombre ?? '—';
-              const chasis = vehiculos.find(v => {
-                const vid = typeof r.id_vehiculo === 'string'
-                  ? r.id_vehiculo
-                  : r.id_vehiculo._id;
-                return vid === v._id;
-              })?.chasis ?? '—';
-
-              return (
-                <TableRow key={r._id} hover>
-                  <TableCell>{idx}</TableCell>
-                  <TableCell>{fecha}</TableCell>
-                  <TableCell>{empleado}</TableCell>
-                  <TableCell>{chasis}</TableCell>
-                  <TableCell>{r.problema_reportado ?? '—'}</TableCell>
-                  <TableCell>{r.comentario ?? '—'}</TableCell>
-                  <TableCell align="right">
-                    <IconButton size="small" onClick={() => openEdit(r)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" color="error" onClick={() => askDelete(r)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-
-        <TablePagination
-          component="div"
-          count={filtered.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRows}
-          rowsPerPageOptions={[5, 10, 25]}
-          labelRowsPerPage="Ver"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-        />
-      </Paper>
+    <>
+      <ModernTable
+        title="Recepción de Vehículos"
+        subtitle="Gestiona las recepciones de vehículos para servicio y reparación"
+        titleIcon="🔧"
+        columns={columns}
+        data={paginatedData}
+        searchTerm={searchQuery}
+        onSearchChange={onSearchChange}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={onPageChange}
+        onRowsPerPageChange={onRowsPerPageChange}
+        onCreateNew={openNew}
+        createButtonText="Nueva Recepción"
+        emptyMessage="No hay recepciones registradas"
+        emptySubMessage="Comienza registrando la primera recepción"
+        searchPlaceholder="Buscar por problema, comentario o fecha..."
+        height={700}
+      />
 
       <RecepcionVehiculoModal
         open={modalOpen}
@@ -207,18 +355,6 @@ export default function RecepcionVehiculosPage(): JSX.Element {
         onClose={closeModal}
         onSubmit={handleSubmit}
       />
-
-      <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningAmberIcon color="warning" /> ¿Eliminar esta recepción?
-        </DialogTitle>
-        <DialogActions>
-          <Button onClick={() => setConfirmDel(false)}>Cancelar</Button>
-          <Button color="error" variant="contained" onClick={confirmDelete}>
-            Eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+    </>
   );
 }

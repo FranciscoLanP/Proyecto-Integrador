@@ -1,9 +1,14 @@
 import { createCrudService } from './crudService';
 
+export interface EmpleadoTrabajo {
+  id_empleado: string;
+  descripcion_trabajo: string;
+}
+
 export interface ReparacionVehiculo {
   _id?: string;
   id_inspeccion: string;
-  id_empleadoInformacion: string;
+  empleados_trabajos?: EmpleadoTrabajo[];
   fecha_inicio: string;
   fecha_fin?: string;
   descripcion: string;
@@ -12,6 +17,8 @@ export interface ReparacionVehiculo {
     id_pieza: string;
     cantidad: number;
   }>;
+  // Compatibilidad con campo anterior
+  id_empleadoInformacion?: string;
 }
 
 export const reparacionVehiculoService = createCrudService<ReparacionVehiculo>('reparacionvehiculos');

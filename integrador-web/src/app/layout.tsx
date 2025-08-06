@@ -6,6 +6,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import theme from '../styles/theme'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider as AppThemeProvider } from './context/ThemeContext'
 import { NotificationProvider } from '@/components/utils/NotificationProvider'
 import ProtectedApp from './vehiculodatos/ProtectedApp'
 
@@ -20,9 +21,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <CssBaseline />
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
-              <NotificationProvider>
-                <ProtectedApp>{children}</ProtectedApp>
-              </NotificationProvider>
+              <AppThemeProvider>
+                <NotificationProvider>
+                  <ProtectedApp>{children}</ProtectedApp>
+                </NotificationProvider>
+              </AppThemeProvider>
             </AuthProvider>
           </QueryClientProvider>
         </ThemeProvider>

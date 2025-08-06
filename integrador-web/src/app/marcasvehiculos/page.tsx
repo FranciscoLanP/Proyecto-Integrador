@@ -2,13 +2,13 @@
 
 import React, { useState, ChangeEvent, JSX } from 'react';
 import {
-  Box, Typography, Paper, Table, TableHead, TableRow,
-  TableCell, TableBody, IconButton, Button, TextField,
-  TablePagination, Dialog, DialogTitle, DialogActions
+  Box, Typography, IconButton, CircularProgress, Chip
 } from '@mui/material';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ModernTable from '@/components/ModernTable/ModernTable';
+import { useHydration } from '@/hooks/useHydration';
+import { useTheme } from '@/app/context/ThemeContext';
 
 import { useCrud } from '../../hooks/useCrud';
 import { useNotification } from '../../components/utils/NotificationProvider';
@@ -17,56 +17,38 @@ import MarcasVehiculoModal from './MarcasVehiculoModal';
 
 export default function MarcasVehiculoPage(): JSX.Element {
   const { notify } = useNotification();
+  const { currentTheme, isHydrated } = useTheme();
+  const isHydratedCustom = useHydration();
 
   const { allQuery, createM, updateM, deleteM } =
     useCrud<IMarcaVehiculo>('marcasvehiculos');
   const { data: marcas = [], isLoading, error } = allQuery;
 
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [page, setPage] = useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
-
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<IMarcaVehiculo | null>(null);
-  const [confirmDel, setConfirmDel] = useState<boolean>(false);
-  const [toDelete, setToDelete] = useState<IMarcaVehiculo | null>(null);
 
-  if (isLoading) return <Typography>Loading…</Typography>;
   if (error) return <Typography color="error">{error.message}</Typography>;
 
-  const filtered = marcas.filter(m =>
-    m.nombre_marca.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  const paginated = filtered.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
-
-  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPage(0);
-  };
-  const handleChangePage = (_: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-  const handleChangeRowsPerPage = (
-    e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ) => {
-    setRowsPerPage(parseInt(e.target.value, 10));
-    setPage(0);
-  };
-
-  const openNew = (): void => {
+  const handleCreate = (): void => {
     setEditData(null);
     setModalOpen(true);
   };
-  const openEdit = (m: IMarcaVehiculo): void => {
-    setEditData(m);
+
+  const handleEdit = (marca: IMarcaVehiculo): void => {
+    setEditData(marca);
     setModalOpen(true);
   };
-  const closeModal = (): void => setModalOpen(false);
 
-  const handleSubmit = (payload: { nombre_marca: string }): void => {
+  const handleDelete = async (id: string): Promise<void> => {
+    if (confirm('¿Seguro que deseas eliminar esta marca?')) {
+      deleteM.mutate(id, {
+        onSuccess: () => notify('Marca eliminada correctamente', 'success'),
+        onError: () => notify('Error al eliminar marca', 'error')
+      });
+    }
+  };
+
+  const handleModalSubmit = (payload: { nombre_marca: string }): void => {
     if (editData) {
       updateM.mutate(
         { id: editData._id, data: { nombre_marca: payload.nombre_marca } },
@@ -87,155 +69,147 @@ export default function MarcasVehiculoPage(): JSX.Element {
     setModalOpen(false);
   };
 
-  const askDelete = (m: IMarcaVehiculo): void => {
-    setToDelete(m);
-    setConfirmDel(true);
-  };
-  const confirmDelete = (): void => {
-    if (toDelete) {
-      deleteM.mutate(
-        toDelete._id,
-        {
-          onSuccess: () => notify('Marca eliminada correctamente', 'success'),
-          onError: () => notify('Error al eliminar marca', 'error')
-        }
-      );
-    }
-    setConfirmDel(false);
-    setToDelete(null);
-  };
+  // Datos para la tabla moderna
+  const tableData = marcas.map(marca => ({
+    id: marca._id || '',
+    marca: (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box
+          sx={{
+            width: 45,
+            height: 45,
+            borderRadius: '12px',
+            background: currentTheme.buttonGradient,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '1.1rem',
+            boxShadow: `0 4px 12px ${currentTheme.colors.primary}30`
+          }}
+        >
+          🏷️
+        </Box>
+        <Typography variant="body1" sx={{ fontWeight: 'medium', color: '#374151' }}>
+          {marca.nombre_marca}
+        </Typography>
+      </Box>
+    ),
+    estado: (
+      <Chip
+        label="Activa"
+        sx={{
+          background: 'linear-gradient(45deg, #10B981, #34D399)',
+          color: 'white',
+          fontWeight: 'medium'
+        }}
+        size="small"
+      />
+    ),
+    acciones: (
+      <Box display="flex" gap={0.5}>
+        <IconButton
+          size="small"
+          onClick={() => handleEdit(marca)}
+          title="Editar"
+          sx={{
+            background: 'linear-gradient(45deg, #3B82F6, #60A5FA)',
+            color: 'white',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #2563EB, #3B82F6)',
+              transform: 'translateY(-1px)',
+              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+            },
+            transition: 'all 0.3s ease',
+            width: 32,
+            height: 32
+          }}
+        >
+          <EditIcon fontSize="small" />
+        </IconButton>
+        <IconButton
+          size="small"
+          onClick={() => handleDelete(marca._id)}
+          title="Eliminar"
+          sx={{
+            background: 'linear-gradient(45deg, #EF4444, #F87171)',
+            color: 'white',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #DC2626, #EF4444)',
+              transform: 'translateY(-1px)',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+            },
+            transition: 'all 0.3s ease',
+            width: 32,
+            height: 32
+          }}
+        >
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      </Box>
+    ),
+    originalData: marca
+  }));
+
+  const columns = [
+    { id: 'marca', label: 'Marca de Vehículo' },
+    { id: 'estado', label: 'Estado' },
+    { id: 'acciones', label: 'Acciones' }
+  ];
+
+  if (!isHydrated || !isHydratedCustom) {
+    return (
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#f8fafc' }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Marcas de Vehículo</h1>
+          </div>
+          <div className="flex justify-center items-center h-64">
+            <CircularProgress size={40} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" sx={{ fontWeight: 500, mb: 0.5 }}>
-        Marcas de Vehículo
-      </Typography>
-      <Typography variant="subtitle2" color="text.secondary" mb={2}>
-        Administra las marcas de vehículo de tu sistema
-      </Typography>
-
-      <Box
-        sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 1,
-          justifyContent: 'space-between',
-          mb: 2
-        }}
-      >
-        <TextField
-          label="Buscar marca"
-          size="small"
-          variant="outlined"
-          value={searchTerm}
-          onChange={handleSearch}
-          sx={{ flex: '1 1 200px' }}
+    <div
+      className="min-h-screen p-6 transition-colors duration-300"
+      style={{
+        background: currentTheme.colors.background
+      }}
+    >
+      {/* Tabla Moderna */}
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <CircularProgress size={40} />
+        </div>
+      ) : (
+        <ModernTable
+          title="Marcas de Vehículo"
+          subtitle="Administra las marcas de vehículo disponibles en el sistema"
+          data={tableData}
+          columns={columns}
+          searchTerm=""
+          onSearchChange={() => { }}
+          page={0}
+          rowsPerPage={10}
+          onPageChange={() => { }}
+          onRowsPerPageChange={() => { }}
+          onCreateNew={handleCreate}
+          createButtonText="Nueva Marca"
+          emptyMessage="No se encontraron marcas de vehículo"
         />
-        <Button
-          variant="contained"
-          size="medium"
-          onClick={openNew}
-          sx={{ ml: 'auto' }}
-        >
-          + Nueva Marca
-        </Button>
-      </Box>
+      )}
 
-      <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-            Listado de Marcas
-          </Typography>
-        </Box>
-        <Table size="small" sx={{ minWidth: 360 }}>
-          <TableHead sx={{ backgroundColor: 'action.hover' }}>
-            <TableRow>
-              <TableCell sx={{ fontSize: '0.85rem' }}>#</TableCell>
-              <TableCell sx={{ fontSize: '0.85rem' }}>Nombre</TableCell>
-              <TableCell align="right" sx={{ fontSize: '0.85rem' }}>
-                Acciones
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginated.map((m, i) => {
-              const idx = page * rowsPerPage + i + 1;
-              return (
-                <TableRow
-                  key={m._id}
-                  hover
-                  sx={{ '&:hover': { backgroundColor: 'action.selected' } }}
-                >
-                  <TableCell sx={{ fontSize: '0.8rem', px: 1 }}>{idx}</TableCell>
-                  <TableCell sx={{ fontSize: '0.8rem', px: 1 }}>
-                    {m.nombre_marca}
-                  </TableCell>
-                  <TableCell align="right" sx={{ px: 1 }}>
-                    <IconButton size="small" onClick={() => openEdit(m)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => askDelete(m)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-
-        <TablePagination
-          component="div"
-          count={filtered.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[5, 15, 25]}
-          labelRowsPerPage="Ver"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-          sx={{
-            '& .MuiTablePagination-toolbar': { minHeight: 36, py: 0 },
-            '& .MuiTablePagination-actions button': { padding: '4px' },
-            '& .MuiTablePagination-selectLabel, .MuiTablePagination-input': {
-              fontSize: '0.8rem'
-            }
-          }}
-        />
-      </Paper>
-
+      {/* Modal */}
       <MarcasVehiculoModal
         open={modalOpen}
         defaultData={editData ?? undefined}
-        onClose={closeModal}
-        onSubmit={handleSubmit}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleModalSubmit}
       />
-
-      <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
-        <DialogTitle
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9rem' }}
-        >
-          <WarningAmberIcon color="warning" />
-          ¿Confirma eliminar esta marca?
-        </DialogTitle>
-        <DialogActions sx={{ p: 1 }}>
-          <Button size="small" onClick={() => setConfirmDel(false)}>
-            Cancelar
-          </Button>
-          <Button
-            size="small"
-            color="error"
-            variant="contained"
-            onClick={confirmDelete}
-          >
-            Eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+    </div>
   );
 }

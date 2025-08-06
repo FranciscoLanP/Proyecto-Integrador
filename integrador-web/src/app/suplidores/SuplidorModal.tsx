@@ -64,8 +64,7 @@ export default function SuplidorModal({
   }, [open, defaultData])
 
   const handleSave = (): void => {
-    onSubmit({
-      _id: defaultData?._id,
+    const payload: any = {
       nombre: nombre.trim(),
       rnc: rnc.trim() || undefined,
       numero_telefono: telefono.trim(),
@@ -78,7 +77,14 @@ export default function SuplidorModal({
       ubicacionLabel: mapLabel || undefined,
       latitude: markerLat,
       longitude: markerLng
-    })
+    };
+
+    // Solo agregar _id si existe
+    if (defaultData?._id) {
+      payload._id = defaultData._id;
+    }
+
+    onSubmit(payload);
   }
 
   return (

@@ -1,20 +1,33 @@
 'use client';
 
 import React from 'react';
-import { Box, CircularProgress } from '@mui/material';
 
 export default function FullScreenLoader() {
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         height: '100vh',
         width: '100vw',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        backgroundColor: '#f0f9ff',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 9999
       }}
     >
-      <CircularProgress />
-    </Box>
+      <div
+        style={{
+          width: '40px',
+          height: '40px',
+          border: '4px solid #e5e7eb',
+          borderTop: '4px solid #0ea5e9',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }}
+      />
+    </div>
   );
 }

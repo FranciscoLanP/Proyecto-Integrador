@@ -1,29 +1,18 @@
 // 📁 src/app/vehiculodatos/page.tsx
 'use client';
 
-import React, { useState, ChangeEvent, ChangeEventHandler, JSX } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TableCell from '@mui/material/TableCell';
-import TableBody from '@mui/material/TableBody';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import TablePagination from '@mui/material/TablePagination';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import React, { useState } from 'react';
+import { Typography, Chip, Box } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CarRepairIcon from '@mui/icons-material/CarRepair';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useCrud } from '../../hooks/useCrud';
 import { useNotification } from '../../components/utils/NotificationProvider';
+import { useHydration, defaultTheme } from '@/hooks/useHydration';
+import { useTheme } from '../context/ThemeContext';
 import type {
   IVehiculoDatos,
   ICliente,
@@ -32,9 +21,18 @@ import type {
   IMarcaVehiculo
 } from '../types';
 import VehiculoModal from './VehiculoModal';
+import {
+  ModernTable,
+  useModernTable,
+  StatusChip,
+  ActionButtons,
+  type TableColumn
+} from '@/components/ModernTable';
 
-export default function VehiculoDatosPage(): JSX.Element {
+export default function VehiculoDatosPage() {
   const { notify } = useNotification();
+  const isHydrated = useHydration();
+  const { currentTheme } = useTheme();
 
   const vehCrud = useCrud<IVehiculoDatos>('vehiculodatos');
   const cliCrud = useCrud<ICliente>('clientes');
@@ -42,29 +40,53 @@ export default function VehiculoDatosPage(): JSX.Element {
   const colCrud = useCrud<IColoresDatos>('coloresdatos');
   const marCrud = useCrud<IMarcaVehiculo>('marcasvehiculos');
 
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [page, setPage] = useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  const { data: vehiculos = [], isLoading, error } = vehCrud.allQuery;
+  const { data: clientes = [] } = cliCrud.allQuery;
+  const { data: modelos = [] } = modCrud.allQuery;
+  const { data: colores = [] } = colCrud.allQuery;
+  const { data: marcas = [] } = marCrud.allQuery;
+
   const [openForm, setOpenForm] = useState<boolean>(false);
   const [editData, setEditData] = useState<IVehiculoDatos | null>(null);
-  const [confirmDel, setConfirmDel] = useState<boolean>(false);
-  const [toDelete, setToDelete] = useState<IVehiculoDatos | null>(null);
 
-  const vehiculos = vehCrud.allQuery.data || [];
-  const clientes = cliCrud.allQuery.data || [];
-  const modelos = modCrud.allQuery.data || [];
-  const colores = colCrud.allQuery.data || [];
-  const marcas = marCrud.allQuery.data || [];
+  // Hook para manejar la tabla
+  const {
+    filteredData,
+    paginatedData,
+    searchQuery,
+    page,
+    rowsPerPage,
+    handleSearchChange,
+    handlePageChange,
+    handleRowsPerPageChange
+  } = useModernTable({
+    data: vehiculos,
+    searchFields: ['chasis'],
+    initialRowsPerPage: 10
+  });
 
-  const handleSearch: ChangeEventHandler<HTMLInputElement> = e => {
-    setSearchTerm(e.target.value);
-    setPage(0);
+  // Funciones adaptadoras
+  const onSearchChange = (value: string) => {
+    const mockEvent = { target: { value } } as React.ChangeEvent<HTMLInputElement>;
+    handleSearchChange(mockEvent);
   };
-  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
-  const handleChangeRows = (e: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    setRowsPerPage(parseInt(e.target.value, 10));
-    setPage(0);
+
+  const onPageChange = (page: number) => {
+    handlePageChange(null, page);
   };
+
+  const onRowsPerPageChange = (rowsPerPage: number) => {
+    const mockEvent = { target: { value: rowsPerPage.toString() } } as React.ChangeEvent<HTMLInputElement>;
+    handleRowsPerPageChange(mockEvent);
+  };
+
+  // Verificar errores de carga
+  const loadError =
+    vehCrud.allQuery.error ||
+    cliCrud.allQuery.error ||
+    modCrud.allQuery.error ||
+    colCrud.allQuery.error ||
+    marCrud.allQuery.error;
 
   if (
     vehCrud.allQuery.isLoading ||
@@ -73,28 +95,42 @@ export default function VehiculoDatosPage(): JSX.Element {
     colCrud.allQuery.isLoading ||
     marCrud.allQuery.isLoading
   ) {
-    return <Typography>Loading…</Typography>;
+    return <Typography>Cargando vehículos...</Typography>;
   }
-  const loadError =
-    vehCrud.allQuery.error ||
-    cliCrud.allQuery.error ||
-    modCrud.allQuery.error ||
-    colCrud.allQuery.error ||
-    marCrud.allQuery.error;
+
   if (loadError) {
-    return <Typography color="error">{loadError.message}</Typography>;
+    return <Typography color="error">Error: {loadError.message}</Typography>;
   }
 
-  const filtered = vehiculos.filter(v =>
-    v.chasis.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  const paginated = filtered.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+  // Mostrar loader durante la hidratación
+  if (!isHydrated) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '50vh'
+      }}>
+        <Typography variant="h6" sx={{ color: '#6b7280' }}>
+          Cargando vehículos...
+        </Typography>
+      </Box>
+    )
+  }
 
-  const openNew = (): void => { setEditData(null); setOpenForm(true); };
-  const openEdit = (v: IVehiculoDatos): void => { setEditData(v); setOpenForm(true); };
+  // Usar tema por defecto durante la hidratación para evitar cambios visuales
+  const safeTheme = isHydrated ? currentTheme : defaultTheme;
+
+  const openNew = (): void => {
+    setEditData(null);
+    setOpenForm(true);
+  };
+
+  const openEdit = (v: IVehiculoDatos): void => {
+    setEditData(v);
+    setOpenForm(true);
+  };
+
   const closeForm = (): void => setOpenForm(false);
 
   const onSubmit = (data: Partial<IVehiculoDatos>): void => {
@@ -118,19 +154,13 @@ export default function VehiculoDatosPage(): JSX.Element {
     closeForm();
   };
 
-  const askDelete = (v: IVehiculoDatos): void => { setToDelete(v); setConfirmDel(true); };
-  const confirmDelete = (): void => {
-    if (toDelete) {
-      vehCrud.deleteM.mutate(
-        toDelete._id,
-        {
-          onSuccess: () => notify('Vehículo eliminado correctamente', 'success'),
-          onError: () => notify('Error al eliminar vehículo', 'error'),
-        }
-      );
+  const handleDelete = async (v: IVehiculoDatos) => {
+    try {
+      await vehCrud.deleteM.mutateAsync(v._id);
+      notify('Vehículo eliminado correctamente', 'success');
+    } catch (error) {
+      notify('Error al eliminar vehículo', 'error');
     }
-    setConfirmDel(false);
-    setToDelete(null);
   };
 
   const toggleActivo = (v: IVehiculoDatos): void => {
@@ -147,106 +177,195 @@ export default function VehiculoDatosPage(): JSX.Element {
     );
   };
 
+  // Función para obtener nombre del cliente
+  const getClienteName = (clienteId: string | ICliente) => {
+    if (typeof clienteId === 'object') return clienteId.nombre;
+    const cliente = clientes.find(c => c._id === clienteId);
+    return cliente?.nombre || 'Cliente no encontrado';
+  };
+
+  // Función para obtener datos de modelo
+  const getModeloInfo = (modeloId: string | IModelosDatos) => {
+    if (typeof modeloId === 'object') return modeloId;
+    return modelos.find(m => m._id === modeloId);
+  };
+
+  // Función para obtener color
+  const getColorName = (colorId: string | IColoresDatos) => {
+    if (typeof colorId === 'object') return colorId.nombre_color;
+    const color = colores.find(c => c._id === colorId);
+    return color?.nombre_color || 'Color no encontrado';
+  };
+
+  // Función para obtener marca
+  const getMarcaName = (marcaId: string | IMarcaVehiculo) => {
+    if (typeof marcaId === 'object') return marcaId.nombre_marca;
+    const marca = marcas.find(m => m._id === marcaId);
+    return marca?.nombre_marca || 'Marca no encontrada';
+  };
+
+  // Definir las columnas
+  const columns: TableColumn[] = [
+    {
+      id: 'vehiculo',
+      label: 'Vehículo',
+      minWidth: 280,
+      render: (value, row) => {
+        const modelo = getModeloInfo(row.id_modelo);
+        const marca = modelo ? getMarcaName(modelo.id_marca) : 'N/A';
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)'
+              }}
+            >
+              <DirectionsCarIcon />
+            </Box>
+            <Box>
+              <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1f2937' }}>
+                {marca} {modelo?.nombre_modelo || 'Modelo N/A'}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#6b7280' }}>
+                Chasis: {row.chasis}
+              </Typography>
+            </Box>
+          </Box>
+        );
+      }
+    },
+    {
+      id: 'propietario',
+      label: 'Propietario',
+      minWidth: 200,
+      render: (value, row) => (
+        <Box>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
+            {getClienteName(row.id_cliente)}
+          </Typography>
+          <Chip
+            size="small"
+            label="Cliente"
+            sx={{
+              background: 'linear-gradient(45deg, #10B981, #34D399)',
+              color: 'white',
+              fontSize: '0.7rem',
+              mt: 0.5
+            }}
+          />
+        </Box>
+      )
+    },
+    {
+      id: 'identificacion',
+      label: 'Identificación',
+      minWidth: 200,
+      render: (value, row) => (
+        <Box>
+          <Typography variant="body2" sx={{ color: '#4b5563', mb: 0.5 }}>
+            <strong>Chasis:</strong> {row.chasis}
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#4b5563' }}>
+            <strong>Año:</strong> {row.anio}
+          </Typography>
+        </Box>
+      )
+    },
+    {
+      id: 'detalles',
+      label: 'Detalles',
+      minWidth: 180,
+      render: (value, row) => (
+        <Box>
+          <Typography variant="body2" sx={{ color: '#4b5563', mb: 0.5 }}>
+            <strong>Año:</strong> {row.anio}
+          </Typography>
+          <Chip
+            size="small"
+            label={getColorName(row.id_color)}
+            sx={{
+              background: 'linear-gradient(45deg, #F59E0B, #FBBF24)',
+              color: 'white',
+              fontSize: '0.7rem'
+            }}
+          />
+        </Box>
+      )
+    },
+    {
+      id: 'estado',
+      label: 'Estado',
+      minWidth: 120,
+      render: (value, row) => (
+        <StatusChip
+          status={row.activo ? 'Activo' : 'Inactivo'}
+          colorMap={{
+            'Activo': 'linear-gradient(45deg, #10B981, #34D399)',
+            'Inactivo': 'linear-gradient(45deg, #EF4444, #F87171)',
+            'Mantenimiento': 'linear-gradient(45deg, #F59E0B, #FBBF24)'
+          }}
+        />
+      )
+    },
+    {
+      id: 'acciones',
+      label: 'Acciones',
+      align: 'center',
+      minWidth: 180,
+      render: (value, row) => (
+        <ActionButtons
+          onEdit={() => openEdit(row)}
+          onDelete={() => handleDelete(row)}
+          customActions={[
+            {
+              icon: row.activo ? <VisibilityIcon fontSize="small" /> : <VisibilityOffIcon fontSize="small" />,
+              onClick: () => toggleActivo(row),
+              color: row.activo
+                ? 'linear-gradient(45deg, #10B981, #34D399)'
+                : 'linear-gradient(45deg, #F59E0B, #FBBF24)',
+              tooltip: row.activo ? 'Desactivar' : 'Activar'
+            },
+            {
+              icon: <CarRepairIcon fontSize="small" />,
+              onClick: () => notify('Ver historial de reparaciones', 'info'),
+              color: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
+              tooltip: 'Historial de Reparaciones'
+            }
+          ]}
+        />
+      )
+    }
+  ];
+
   return (
-    <Box p={3}>
-      <Typography variant="h5" gutterBottom>
-        Gestión de Vehículos
-      </Typography>
-
-      <Box display="flex" gap={1} flexWrap="wrap" justifyContent="space-between" mb={2}>
-        <TextField
-          label="Buscar chasis"
-          size="small"
-          value={searchTerm}
-          onChange={handleSearch}
-          sx={{ flex: '1 1 200px' }}
-        />
-        <Button variant="contained" onClick={openNew}>
-          + Nuevo Vehículo
-        </Button>
-      </Box>
-
-      <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <Table size="small">
-          <TableHead sx={{ backgroundColor: 'action.hover' }}>
-            <TableRow>
-              <TableCell>Chasis</TableCell>
-              <TableCell>Cliente</TableCell>
-              <TableCell>Marca</TableCell>
-              <TableCell>Modelo</TableCell>
-              <TableCell>Color</TableCell>
-              <TableCell>Año</TableCell>
-              <TableCell>Activo</TableCell>
-              <TableCell align="right">Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginated.map(v => {
-              const clienteName = typeof v.id_cliente === 'string'
-                ? clientes.find(c => c._id === v.id_cliente)?.nombre
-                : (v.id_cliente as ICliente)?.nombre;
-              const modeloObj = typeof v.id_modelo === 'string'
-                ? modelos.find(m => m._id === v.id_modelo)
-                : (v.id_modelo as IModelosDatos);
-              const modeloName = modeloObj?.nombre_modelo;
-              const brandId = modeloObj?.id_marca;
-              const brandName = marcas.find(mk => mk._id === brandId)?.nombre_marca;
-              const colorName = typeof v.id_color === 'string'
-                ? colores.find(c => c._id === v.id_color)?.nombre_color
-                : (v.id_color as IColoresDatos)?.nombre_color;
-
-              return (
-                <TableRow
-                  key={v._id}
-                  hover
-                  sx={{ '&:hover': { backgroundColor: 'action.selected' } }}
-                >
-                  <TableCell>{v.chasis}</TableCell>
-                  <TableCell>{clienteName ?? '—'}</TableCell>
-                  <TableCell>{brandName ?? '—'}</TableCell>
-                  <TableCell>{modeloName ?? '—'}</TableCell>
-                  <TableCell>{colorName ?? '—'}</TableCell>
-                  <TableCell>{v.anio}</TableCell>
-                  <TableCell>
-                    <IconButton
-                      size="small"
-                      onClick={() => toggleActivo(v)}
-                      color={v.activo ? 'success' : 'warning'}
-                    >
-                      {v.activo ? (
-                        <VisibilityIcon fontSize="small" />
-                      ) : (
-                        <VisibilityOffIcon fontSize="small" />
-                      )}
-                    </IconButton>
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton size="small" onClick={() => openEdit(v)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" color="error" onClick={() => askDelete(v)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-
-        <TablePagination
-          component="div"
-          count={filtered.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRows}
-          rowsPerPageOptions={[5, 10, 25]}
-          labelRowsPerPage="Ver"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
-          sx={{ '& .MuiTablePagination-toolbar': { py: 0, minHeight: 36 } }}
-        />
-      </Paper>
+    <>
+      <ModernTable
+        title="Gestión de Vehículos"
+        subtitle="Administra la información de todos los vehículos registrados"
+        titleIcon="🚗"
+        columns={columns}
+        data={paginatedData}
+        searchTerm={searchQuery}
+        onSearchChange={onSearchChange}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={onPageChange}
+        onRowsPerPageChange={onRowsPerPageChange}
+        onCreateNew={openNew}
+        createButtonText="Registrar Vehículo"
+        emptyMessage="No hay vehículos registrados"
+        emptySubMessage="Comienza registrando el primer vehículo"
+        searchPlaceholder="Buscar por chasis..."
+        height={700}
+      />
 
       <VehiculoModal
         open={openForm}
@@ -258,18 +377,6 @@ export default function VehiculoDatosPage(): JSX.Element {
         onClose={closeForm}
         onSubmit={onSubmit}
       />
-
-      <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningAmberIcon color="warning" /> ¿Eliminar este vehículo?
-        </DialogTitle>
-        <DialogActions>
-          <Button onClick={() => setConfirmDel(false)}>Cancelar</Button>
-          <Button color="error" variant="contained" onClick={confirmDelete}>
-            Eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+    </>
   );
 }

@@ -48,12 +48,24 @@ export default function PiezaBuscador({
     fetchPiezas();
   }, []);
 
+  // Encontrar la pieza seleccionada
+  const selectedPieza = piezas.find(p => p._id === value) || null;
+
+  // Sincronizar inputValue con la pieza seleccionada
+  useEffect(() => {
+    if (value && selectedPieza) {
+      setInputValue(selectedPieza.nombre_pieza || '');
+    } else if (!value) {
+      setInputValue('');
+    }
+  }, [value, selectedPieza]);
+
   const fetchPiezas = async () => {
     setLoading(true);
     try {
       const data = await piezaInventarioService.fetchAll();
-      // Filtrar solo piezas que tienen nombre y están disponibles
-      const piezasValidas = data.filter(p => p.nombre_pieza && p.cantidad_disponible > 0);
+      // Filtrar solo piezas que tienen nombre (permitir 0 stock para edición)
+      const piezasValidas = data.filter(p => p.nombre_pieza);
       setPiezas(piezasValidas);
     } catch (error) {
       console.error('Error loading piezas:', error);
@@ -62,7 +74,7 @@ export default function PiezaBuscador({
     }
   };
 
-  const selectedPieza = piezas.find(p => p._id === value) || null;
+  // Eliminar la declaración duplicada de selectedPieza
 
   return (
     <Autocomplete
@@ -82,14 +94,32 @@ export default function PiezaBuscador({
       noOptionsText="No se encontraron piezas"
       loadingText="Cargando piezas..."
       filterOptions={(options, { inputValue }) => {
-        if (!inputValue) return options.slice(0, 10); // Mostrar las primeras 10 si no hay texto
-        
+        if (!inputValue) {
+          // Mostrar piezas con stock disponible + la pieza seleccionada si existe
+          const piezasConStock = options.filter(p => p.cantidad_disponible > 0);
+          if (selectedPieza && !piezasConStock.find(p => p._id === selectedPieza._id)) {
+            return [selectedPieza, ...piezasConStock.slice(0, 9)];
+          }
+          return piezasConStock.slice(0, 10);
+        }
+
         const filtro = inputValue.toLowerCase();
-        return options.filter(option => {
+        const piezasFiltradas = options.filter(option => {
           const nombre = option.nombre_pieza?.toLowerCase() ?? '';
           const categoria = option.categoria?.toLowerCase() ?? '';
           return nombre.includes(filtro) || categoria.includes(filtro);
         });
+
+        // Asegurar que la pieza seleccionada esté en las opciones si coincide con el filtro
+        if (selectedPieza && !piezasFiltradas.find(p => p._id === selectedPieza._id)) {
+          const nombreSeleccionada = selectedPieza.nombre_pieza?.toLowerCase() ?? '';
+          const categoriaSeleccionada = selectedPieza.categoria?.toLowerCase() ?? '';
+          if (nombreSeleccionada.includes(filtro) || categoriaSeleccionada.includes(filtro)) {
+            return [selectedPieza, ...piezasFiltradas];
+          }
+        }
+
+        return piezasFiltradas;
       }}
       renderInput={(params) => (
         <TextField
@@ -112,7 +142,7 @@ export default function PiezaBuscador({
         const { key, ...rest } = props;
         // Usar costo_promedio si existe, sino precio
         const precioMostrar = option.costo_promedio ?? option.precio ?? 0;
-        
+
         return (
           <Box component="li" key={key} {...rest} sx={{ p: 1 }}>
             <Box sx={{ width: '100%' }}>
@@ -128,12 +158,12 @@ export default function PiezaBuscador({
                 <Typography variant="caption" color="text.secondary">
                   {option.categoria ? `Categoría: ${option.categoria}` : 'Sin categoría'}
                 </Typography>
-                <Chip 
+                <Chip
                   label={`Stock: ${option.cantidad_disponible}`}
                   size="small"
                   variant="outlined"
-                  color={option.cantidad_disponible > 10 ? 'success' : 
-                         option.cantidad_disponible > 0 ? 'warning' : 'error'}
+                  color={option.cantidad_disponible > 10 ? 'success' :
+                    option.cantidad_disponible > 0 ? 'warning' : 'error'}
                 />
               </Box>
             </Box>

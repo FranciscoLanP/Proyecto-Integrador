@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Box, Button, Typography, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, IconButton, CircularProgress
+  Box, IconButton, CircularProgress, Chip
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -11,6 +10,9 @@ import AddIcon from '@mui/icons-material/Add';
 import PrintIcon from '@mui/icons-material/Print';
 import FacturaModal from './FacturaModal';
 import { facturaService, Factura } from '@/services/facturaService';
+import ModernTable from '@/components/ModernTable/ModernTable';
+import { useHydration } from '@/hooks/useHydration';
+import { useClientTheme } from '@/hooks/useClientTheme';
 
 export default function FacturaPage() {
   const [facturas, setFacturas] = useState<Factura[]>([]);
@@ -19,11 +21,14 @@ export default function FacturaPage() {
   const [editData, setEditData] = useState<Factura | undefined>(undefined);
   const [printHtml, setPrintHtml] = useState<string | null>(null);
 
+  const { currentTheme, isHydrated } = useClientTheme();
+  const isHydratedCustom = useHydration();
+
   const fetchFacturas = async () => {
     setLoading(true);
     try {
       const data = await facturaService.fetchAll();
-      console.log('💰 Facturas desde el backend:', data); 
+      console.log('💰 Facturas desde el backend:', data);
       setFacturas(data);
     } catch (err) {
       alert('Error al cargar facturas');
@@ -69,7 +74,7 @@ export default function FacturaPage() {
         await facturaService.create(data);
       }
       setModalOpen(false);
-      setEditData(undefined); 
+      setEditData(undefined);
       fetchFacturas();
     } catch {
       alert('Error al guardar');
@@ -135,10 +140,24 @@ export default function FacturaPage() {
         ? `${vehiculo.id_modelo?.id_marca?.nombre_marca || ''} ${vehiculo.id_modelo?.nombre_modelo || ''} ${vehiculo.anio || ''} (${vehiculo.id_color?.nombre_color || ''})`.trim()
         : 'Vehículo no especificado';
 
-      // Información completa del empleado
-      const empleadoInfo = empleadoReparacion
-        ? `${empleadoReparacion.nombre || ''} ${empleadoReparacion.apellido || ''}`.trim()
-        : empleadoReparacion?.nombre || '—';
+      // Información de métodos de pago
+      const metodosPagoInfo = (() => {
+        if (factura.metodos_pago && factura.metodos_pago.length > 0) {
+          return factura.metodos_pago.map((mp: any) => ({
+            tipo: mp.tipo,
+            monto: mp.monto,
+            referencia: mp.referencia
+          }));
+        }
+        // Fallback al método anterior
+        return [{
+          tipo: factura.metodo_pago || 'Efectivo',
+          monto: totalConItbis,
+          referencia: null
+        }];
+      })();
+
+      const tipoFactura = factura.tipo_factura || 'Contado';
 
       const html = `
         <style>
@@ -169,7 +188,7 @@ export default function FacturaPage() {
           <header>
             <div>
               <div class="brand">JHS AutoServicios</div>
-              <div class="subtitle">FACTURA</div>
+              <div class="subtitle">FACTURA ${tipoFactura.toUpperCase()}</div>
               <div style="font-size:0.95em;color:#888;">N° ${factura._id}</div>
               <span class="status-badge ${factura.emitida ? 'status-emitida' : 'status-pendiente'}">
                 ${factura.emitida ? 'EMITIDA' : 'PENDIENTE'}
@@ -238,12 +257,43 @@ export default function FacturaPage() {
           </table>
           
           <div style="clear:both"></div>
+          
+          <!-- Métodos de Pago -->
+          <div class="section-title">Métodos de Pago</div>
+          <table style="width: 350px; float: right;">
+            ${metodosPagoInfo.map(mp => `
+              <tr>
+                <td class="label">${mp.tipo}:</td>
+                <td style="text-align: right;">$${mp.monto.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+              </tr>
+              ${mp.referencia ? `
+                <tr>
+                  <td style="font-size: 0.9em; color: #666;">Ref: ${mp.referencia}</td>
+                  <td></td>
+                </tr>
+              ` : ''}
+            `).join('')}
+            <tr style="border-top: 1px solid #eee;">
+              <td class="label" style="font-weight: bold;">TOTAL PAGADO:</td>
+              <td style="text-align: right; font-weight: bold;">$${metodosPagoInfo.reduce((sum, mp) => sum + mp.monto, 0).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            </tr>
+          </table>
+          
+          <div style="clear:both"></div>
           <hr />
           
           <div class="footer">
             <strong>¡Gracias por confiar en JHS AutoServicios!</strong><br>
             * Esta factura es válida como comprobante de pago.<br>
             * Garantizamos nuestros servicios por 90 días.<br>
+            ${tipoFactura === 'Credito' ?
+          `<div style="color: #f57c00; font-weight: bold; margin-top: 10px;">
+                ⚠️ FACTURA A CRÉDITO - Pendiente de pago completo
+              </div>` :
+          `<div style="color: #4caf50; font-weight: bold; margin-top: 10px;">
+                ✅ FACTURA AL CONTADO - Pago completo recibido
+              </div>`
+        }
             Para consultas: info@jhsautoservicios.com
           </div>
         </div>
@@ -265,108 +315,285 @@ export default function FacturaPage() {
     }
   }, [printHtml]);
 
-  return (
-    <Box p={3}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">Facturas</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
-          Nueva Factura
-        </Button>
-      </Box>
-      {loading ? (
-        <Box display="flex" justifyContent="center" mt={4}><CircularProgress /></Box>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                {/* <TableCell>ID</TableCell> */}
-                <TableCell>Cliente | Vehículo</TableCell>
-                <TableCell>Fecha emisión</TableCell>
-                <TableCell>Total</TableCell>
-                <TableCell>Descuento (%)</TableCell>
-                <TableCell>Método de pago</TableCell>
-                <TableCell>Detalles</TableCell>
-                <TableCell>Emitida</TableCell>
-                <TableCell>Acciones</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {facturas.map(fac => (
-                <TableRow key={fac._id}>
-                  {/* <TableCell>{fac._id}</TableCell> */}
-                  <TableCell>
-                    {(() => {
-                      try {
-                        const reparacion = (fac as any).id_reparacion;
-                        if (reparacion && typeof reparacion === 'object') {
-                          const inspeccion = reparacion.id_inspeccion;
-                          if (inspeccion && typeof inspeccion === 'object') {
-                            const cliente = inspeccion.id_recibo?.id_recepcion?.id_vehiculo?.id_cliente;
-                            const vehiculo = inspeccion.id_recibo?.id_recepcion?.id_vehiculo;
+  const getClienteVehiculoInfo = (factura: Factura): { cliente: string; vehiculo: string } => {
+    try {
+      const reparacion = (factura as any).id_reparacion;
+      if (reparacion && typeof reparacion === 'object') {
+        const inspeccion = reparacion.id_inspeccion;
+        if (inspeccion && typeof inspeccion === 'object') {
+          const cliente = inspeccion.id_recibo?.id_recepcion?.id_vehiculo?.id_cliente;
+          const vehiculo = inspeccion.id_recibo?.id_recepcion?.id_vehiculo;
 
-                            if (cliente && vehiculo) {
-                              const clienteNombre = cliente.nombre || 'Cliente';
-                              const vehiculoInfo = vehiculo.id_modelo?.nombre_modelo || 'Vehículo';
-                              return `${clienteNombre} | ${vehiculoInfo}`;
-                            }
-                          }
-                        }
-                        return `Reparación ${fac.id_reparacion}`;
-                      } catch (error) {
-                        return `Reparación ${fac.id_reparacion}`;
-                      }
-                    })()}
-                  </TableCell>
-                  <TableCell>{fac.fecha_emision?.toString().slice(0, 10)}</TableCell>
-                  <TableCell>{fac.total}</TableCell>
-                  <TableCell>{fac.descuento_porcentaje || 0}%</TableCell>
-                  <TableCell>{fac.metodo_pago}</TableCell>
-                  <TableCell>{fac.detalles}</TableCell>
-                  <TableCell>{fac.emitida ? 'Sí' : 'No'}</TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => handleEdit(fac)} disabled={fac.emitida}><EditIcon /></IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(fac._id!)} disabled={fac.emitida}><DeleteIcon /></IconButton>
-                    <IconButton color="primary" onClick={() => handlePrint(fac)} title="Imprimir factura">
-                      <PrintIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {facturas.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={8} align="center">No hay facturas registradas.</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-      <FacturaModal
-        open={modalOpen}
-        defaultData={editData}
-        onClose={() => {
-          setModalOpen(false);
-          setEditData(undefined); // Resetear editData al cerrar
-        }}
-        onSubmit={handleModalSubmit}
-      />
-      {printHtml && (
-        <div
-          id="print-area"
-          dangerouslySetInnerHTML={{ __html: printHtml }}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'white',
-            zIndex: 9999,
-            overflow: 'auto'
+          if (cliente && vehiculo) {
+            const clienteNombre = cliente.nombre || 'Cliente';
+            const vehiculoInfo = vehiculo.id_modelo?.nombre_modelo || 'Vehículo';
+            return { cliente: clienteNombre, vehiculo: vehiculoInfo };
+          }
+        }
+      }
+      return { cliente: 'Cliente desconocido', vehiculo: `Reparación ${factura.id_reparacion}` };
+    } catch (error) {
+      return { cliente: 'Cliente desconocido', vehiculo: `Reparación ${factura.id_reparacion}` };
+    }
+  };
+
+  const getMetodosPagoInfo = (factura: Factura) => {
+    if (factura.metodos_pago && factura.metodos_pago.length > 0) {
+      return factura.metodos_pago.map((mp: any, idx: number) => (
+        <div key={idx} style={{ fontSize: '0.875rem', marginBottom: '2px' }}>
+          <strong>{mp.tipo}:</strong> ${mp.monto}
+          {mp.referencia && <small> ({mp.referencia})</small>}
+        </div>
+      ));
+    }
+    return factura.metodo_pago || '—';
+  };
+
+  // Datos para la tabla moderna
+  const tableData = facturas.map(factura => {
+    const clienteVehiculo = getClienteVehiculoInfo(factura);
+    const fechaEmision = factura.fecha_emision?.toString().slice(0, 10) || '—';
+    const total = factura.total || 0;
+    const descuento = factura.descuento_porcentaje || 0;
+    const tipoFactura = factura.tipo_factura || 'Contado';
+    const metodosPago = getMetodosPagoInfo(factura);
+
+    return {
+      id: factura._id || '',
+      clienteVehiculo: (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 45,
+              height: 45,
+              borderRadius: '12px',
+              background: currentTheme.buttonGradient,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: '1.1rem',
+              boxShadow: `0 4px 12px ${currentTheme.colors.primary}30`
+            }}
+          >
+            📄
+          </Box>
+          <Box>
+            <div className="font-medium" style={{ color: '#374151' }}>
+              {clienteVehiculo.cliente}
+            </div>
+            <div className="text-sm text-gray-500">{clienteVehiculo.vehiculo}</div>
+          </Box>
+        </Box>
+      ),
+      fechaEmision: fechaEmision,
+      total: `$${total.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`,
+      descuento: `${descuento}%`,
+      tipo: (
+        <Chip
+          label={tipoFactura}
+          sx={{
+            background: tipoFactura === 'Credito'
+              ? 'linear-gradient(45deg, #F59E0B, #FBBF24)'
+              : 'linear-gradient(45deg, #10B981, #34D399)',
+            color: 'white',
+            fontWeight: 'medium'
           }}
+          size="small"
         />
-      )}
-    </Box>
+      ),
+      metodosPago: metodosPago,
+      detalles: factura.detalles || '—',
+      estado: (
+        <Chip
+          label={factura.emitida ? 'Emitida' : 'Pendiente'}
+          sx={{
+            background: factura.emitida
+              ? 'linear-gradient(45deg, #10B981, #34D399)'
+              : 'linear-gradient(45deg, #F59E0B, #FBBF24)',
+            color: 'white',
+            fontWeight: 'medium'
+          }}
+          size="small"
+        />
+      ),
+      acciones: (
+        <Box display="flex" gap={0.5}>
+          <IconButton
+            size="small"
+            onClick={() => handleEdit(factura)}
+            disabled={factura.emitida}
+            title="Editar"
+            sx={{
+              background: factura.emitida
+                ? 'linear-gradient(45deg, #9CA3AF, #D1D5DB)'
+                : 'linear-gradient(45deg, #3B82F6, #60A5FA)',
+              color: 'white',
+              '&:hover': factura.emitida ? {} : {
+                background: 'linear-gradient(45deg, #2563EB, #3B82F6)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+              },
+              '&:disabled': {
+                background: 'linear-gradient(45deg, #9CA3AF, #D1D5DB)',
+                color: 'white',
+                opacity: 0.6
+              },
+              transition: 'all 0.3s ease',
+              width: 32,
+              height: 32
+            }}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => handleDelete(factura._id!)}
+            disabled={factura.emitida}
+            title="Eliminar"
+            sx={{
+              background: factura.emitida
+                ? 'linear-gradient(45deg, #9CA3AF, #D1D5DB)'
+                : 'linear-gradient(45deg, #EF4444, #F87171)',
+              color: 'white',
+              '&:hover': factura.emitida ? {} : {
+                background: 'linear-gradient(45deg, #DC2626, #EF4444)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+              },
+              '&:disabled': {
+                background: 'linear-gradient(45deg, #9CA3AF, #D1D5DB)',
+                color: 'white',
+                opacity: 0.6
+              },
+              transition: 'all 0.3s ease',
+              width: 32,
+              height: 32
+            }}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => handlePrint(factura)}
+            title="Imprimir factura"
+            sx={{
+              background: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
+              color: 'white',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #7C3AED, #8B5CF6)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(139, 92, 246, 0.4)'
+              },
+              transition: 'all 0.3s ease',
+              width: 32,
+              height: 32
+            }}
+          >
+            <PrintIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      ),
+      originalData: factura
+    };
+  });
+
+  const columns = [
+    { id: 'clienteVehiculo', label: 'Cliente | Vehículo' },
+    { id: 'fechaEmision', label: 'Fecha Emisión' },
+    { id: 'total', label: 'Total' },
+    { id: 'descuento', label: 'Descuento' },
+    { id: 'tipo', label: 'Tipo' },
+    { id: 'metodosPago', label: 'Métodos de Pago' },
+    { id: 'detalles', label: 'Detalles' },
+    { id: 'estado', label: 'Estado' },
+    { id: 'acciones', label: 'Acciones' }
+  ];
+
+  if (!isHydrated || !isHydratedCustom) {
+    return (
+      <div className="min-h-screen p-6" style={{ backgroundColor: '#f8fafc' }}>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Facturas</h1>
+          </div>
+          <div className="flex justify-center items-center h-64">
+            <CircularProgress size={40} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Calcular estadísticas
+  const emitidas = facturas.filter(f => f.emitida).length;
+  const pendientes = facturas.filter(f => !f.emitida).length;
+  const totalIngresos = facturas.filter(f => f.emitida).reduce((sum, f) => sum + (f.total || 0), 0);
+  const credito = facturas.filter(f => f.tipo_factura === 'Credito').length;
+
+  return (
+    <div
+      className="min-h-screen p-6 transition-colors duration-300"
+      style={{
+        background: currentTheme.colors.background
+      }}
+    >
+      <div className="max-w-7xl mx-auto">
+
+
+        {/* Tabla Moderna */}
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <CircularProgress size={40} />
+          </div>
+        ) : (
+          <ModernTable
+            title="Facturas del Taller"
+            subtitle="Administra las facturas del taller y controla los pagos"
+            data={tableData}
+            columns={columns}
+            searchTerm=""
+            onSearchChange={() => { }}
+            page={0}
+            rowsPerPage={10}
+            onPageChange={() => { }}
+            onRowsPerPageChange={() => { }}
+            onCreateNew={handleCreate}
+            createButtonText="Nueva Factura"
+            emptyMessage="No se encontraron facturas"
+          />
+        )}
+
+        {/* Modales */}
+        <FacturaModal
+          open={modalOpen}
+          defaultData={editData}
+          onClose={() => {
+            setModalOpen(false);
+            setEditData(undefined);
+          }}
+          onSubmit={handleModalSubmit}
+        />
+
+        {/* Área de impresión */}
+        {printHtml && (
+          <div
+            id="print-area"
+            dangerouslySetInnerHTML={{ __html: printHtml }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'white',
+              zIndex: 9999,
+              overflow: 'auto'
+            }}
+          />
+        )}
+      </div>
+    </div>
   );
 }

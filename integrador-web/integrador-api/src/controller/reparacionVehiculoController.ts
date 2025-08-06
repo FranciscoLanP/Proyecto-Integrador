@@ -59,6 +59,12 @@ export const getAllReparacionVehiculo = async (req: Request, res: Response, next
           }
         }
       })
+      // Poblar los empleados en el nuevo campo empleados_trabajos
+      .populate({
+        path: 'empleados_trabajos.id_empleado',
+        select: 'nombre telefono tipo_empleado'
+      })
+      // Mantener compatibilidad con el campo anterior
       .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado')
     res.status(200).json(items)
   } catch (error) {
@@ -196,28 +202,47 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
   try {
     const {
       id_inspeccion,
-      id_empleadoInformacion,
+      empleados_trabajos, // [{ id_empleado, descripcion_trabajo }]
       fecha_inicio,
       fecha_fin,
       descripcion,
       costo_total,
-      piezas_usadas // [{ id_pieza, cantidad }]
+      piezas_usadas, // [{ id_pieza, cantidad }]
+      // Compatibilidad con campo anterior
+      id_empleadoInformacion
     } = req.body;
 
-    if (!id_inspeccion || !id_empleadoInformacion || !descripcion) {
-      res.status(400).json({ message: 'id_inspeccion, id_empleadoInformacion y descripcion son requeridos' });
+    if (!id_inspeccion || !descripcion) {
+      res.status(400).json({ message: 'id_inspeccion y descripcion son requeridos' });
       return;
+    }
+
+    // Verificar que hay al menos un empleado (nuevo campo o campo anterior)
+    if ((!empleados_trabajos || empleados_trabajos.length === 0) && !id_empleadoInformacion) {
+      res.status(400).json({ message: 'Se requiere al menos un empleado' });
+      return;
+    }
+
+    // Si viene el campo anterior, convertirlo al nuevo formato
+    let empleadosFinales = empleados_trabajos || [];
+    if (id_empleadoInformacion && empleadosFinales.length === 0) {
+      empleadosFinales = [{
+        id_empleado: id_empleadoInformacion,
+        descripcion_trabajo: 'Trabajo general de reparación'
+      }];
     }
 
     // 1. Crear la reparación SIN piezas_usadas
     const reparacion = new ReparacionVehiculo({
       id_inspeccion,
-      id_empleadoInformacion,
+      empleados_trabajos: empleadosFinales,
       fecha_inicio,
       fecha_fin,
       descripcion,
       costo_total,
-      piezas_usadas: []
+      piezas_usadas: [],
+      // Mantener compatibilidad
+      id_empleadoInformacion: id_empleadoInformacion || empleadosFinales[0]?.id_empleado
     });
     const savedReparacion = await reparacion.save();
 
@@ -255,12 +280,14 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
   try {
     const {
       id_inspeccion,
-      id_empleadoInformacion,
+      empleados_trabajos, // [{ id_empleado, descripcion_trabajo }]
       fecha_inicio,
       fecha_fin,
       descripcion,
       costo_total,
-      piezas_usadas // [{ id_pieza, cantidad }]
+      piezas_usadas, // [{ id_pieza, cantidad }]
+      // Compatibilidad con campo anterior
+      id_empleadoInformacion
     } = req.body;
 
     // 1. Obtener la reparación actual para restaurar inventario de piezas anteriores
@@ -275,10 +302,26 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
           }
         }
       })
-      .populate('id_empleadoInformacion');
+      .populate('id_empleadoInformacion')
+      .populate('empleados_trabajos.id_empleado');
     if (!reparacionActual) {
       res.status(404).json({ message: 'Reparación no encontrada' });
       return;
+    }
+
+    // Verificar que hay al menos un empleado (nuevo campo o campo anterior)
+    if ((!empleados_trabajos || empleados_trabajos.length === 0) && !id_empleadoInformacion) {
+      res.status(400).json({ message: 'Se requiere al menos un empleado' });
+      return;
+    }
+
+    // Si viene el campo anterior, convertirlo al nuevo formato
+    let empleadosFinales = empleados_trabajos || [];
+    if (id_empleadoInformacion && empleadosFinales.length === 0) {
+      empleadosFinales = [{
+        id_empleado: id_empleadoInformacion,
+        descripcion_trabajo: 'Trabajo general de reparación'
+      }];
     }
 
     // 2. Restaurar inventario de las piezas usadas anteriores
@@ -322,12 +365,14 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
       req.params.id,
       {
         id_inspeccion,
-        id_empleadoInformacion,
+        empleados_trabajos: empleadosFinales,
         fecha_inicio,
         fecha_fin,
         descripcion,
         costo_total,
-        piezas_usadas: piezasUsadasIds
+        piezas_usadas: piezasUsadasIds,
+        // Mantener compatibilidad
+        id_empleadoInformacion: id_empleadoInformacion || empleadosFinales[0]?.id_empleado
       },
       { new: true }
     ).populate('piezas_usadas')
@@ -367,7 +412,15 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
           }
         }
       })
-      .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado'); res.status(200).json(updated);
+      // Poblar los empleados en el nuevo campo empleados_trabajos
+      .populate({
+        path: 'empleados_trabajos.id_empleado',
+        select: 'nombre telefono tipo_empleado'
+      })
+      // Mantener compatibilidad con el campo anterior
+      .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado');
+
+    res.status(200).json(updated);
   } catch (error) {
     next(error);
   }

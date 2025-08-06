@@ -2,13 +2,77 @@ import axios from 'axios';
 
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
-  headers: { 'Content-Type': 'application/json' }
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  withCredentials: true,
+  timeout: 10000 // 10 segundos de timeout
 });
 
+// Interceptor para requests - agregar token automáticamente
+apiClient.interceptors.request.use(
+  (config) => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('auth');
+      if (stored) {
+        try {
+          const { token } = JSON.parse(stored);
+          if (token && token !== 'null' && token !== 'undefined') {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
+        } catch (error) {
+          console.error('Error parsing auth token:', error);
+          localStorage.removeItem('auth');
+        }
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor para responses - manejar errores de autenticación
+apiClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expirado o inválido
+      if (typeof window !== 'undefined') {
+        console.warn('Token de autenticación inválido, redirigiendo al login...');
+        localStorage.removeItem('auth');
+        delete apiClient.defaults.headers.common['Authorization'];
+
+        // Solo redirigir si no estamos ya en la página de login
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }
+    } else if (error.code === 'NETWORK_ERROR' || error.message.includes('CORS')) {
+      console.error('Error de red o CORS:', error.message);
+      error.message = 'Error de conexión con el servidor. Verifique que el backend esté ejecutándose.';
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+// Inicializar token al cargar si existe
 if (typeof window !== 'undefined') {
   const stored = localStorage.getItem('auth');
   if (stored) {
-    const { token } = JSON.parse(stored);
-    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    try {
+      const { token } = JSON.parse(stored);
+      if (token && token !== 'null' && token !== 'undefined') {
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error('Error initializing auth token:', error);
+      localStorage.removeItem('auth');
+    }
   }
 }

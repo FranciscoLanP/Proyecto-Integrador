@@ -16,41 +16,99 @@ import {
   TablePagination,
   Dialog,
   DialogTitle,
-  DialogActions
+  DialogActions,
+  Chip
 } from '@mui/material'
-import EditIcon from '@mui/icons-material/Edit'
-import DeleteIcon from '@mui/icons-material/Delete'
-import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  WarningAmber as WarningAmberIcon,
+  Business as BusinessIcon,
+  Phone as PhoneIcon,
+  Email as EmailIcon,
+  ContactPhone as ContactPhoneIcon
+} from '@mui/icons-material'
 import { useCrud } from '@/hooks/useCrud'
 import { useNotification } from '@/components/utils/NotificationProvider'
+import { useHydration, defaultTheme } from '@/hooks/useHydration'
+import { useTheme } from '../context/ThemeContext'
+import {
+  ModernTable,
+  useModernTable,
+  ClientCell,
+  ContactCell,
+  StatusChip,
+  ActionButtons,
+  type TableColumn
+} from '@/components/ModernTable'
 import type { ISuplidor } from '../types'
 import SuplidorModal from './SuplidorModal'
 
 export default function SuplidorPage(): JSX.Element {
   const { notify } = useNotification()
+  const isHydrated = useHydration()
+  const { currentTheme } = useTheme()
   const { allQuery, createM, updateM, deleteM } =
     useCrud<ISuplidor>('suplidorpiezas')
   const { data: suplidores = [], isLoading, error } = allQuery
 
-  const [searchTerm, setSearchTerm] = useState('')
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(5)
   const [modalOpen, setModalOpen] = useState(false)
   const [editData, setEditData] = useState<ISuplidor>()
   const [confirmDel, setConfirmDel] = useState(false)
   const [toDelete, setToDelete] = useState<ISuplidor>()
 
-  if (isLoading) return <Typography>Cargando…</Typography>
-  if (error) return <Typography color="error">{error.message}</Typography>
+  // Hook para manejar la tabla
+  const {
+    filteredData,
+    paginatedData,
+    searchQuery,
+    page,
+    rowsPerPage,
+    handleSearchChange,
+    handlePageChange,
+    handleRowsPerPageChange
+  } = useModernTable({
+    data: suplidores,
+    searchFields: ['nombre', 'rnc', 'numero_telefono', 'correo'],
+    initialRowsPerPage: 10
+  });
 
-  const filtered = suplidores.filter(s =>
-    s.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.rnc?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-  const paginated = filtered.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  )
+  // Funciones adaptadoras
+  const onSearchChange = (value: string) => {
+    const mockEvent = { target: { value } } as React.ChangeEvent<HTMLInputElement>;
+    handleSearchChange(mockEvent);
+  };
+
+  const onPageChange = (page: number) => {
+    handlePageChange(null, page);
+  };
+
+  const onRowsPerPageChange = (rowsPerPage: number) => {
+    const mockEvent = { target: { value: rowsPerPage.toString() } } as React.ChangeEvent<HTMLInputElement>;
+    handleRowsPerPageChange(mockEvent);
+  };
+
+  if (isLoading) return <Typography>Cargando suplidores...</Typography>
+  if (error) return <Typography color="error">Error: {error.message}</Typography>
+
+  // Mostrar un loader básico durante la hidratación
+  if (!isHydrated) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '50vh'
+      }}>
+        <Typography variant="h6" sx={{ color: '#6b7280' }}>
+          Cargando tema...
+        </Typography>
+      </Box>
+    )
+  }
+
+  // Usar tema por defecto durante la hidratación para evitar cambios visuales
+  const safeTheme = isHydrated ? currentTheme : defaultTheme;
 
   const openNew = (): void => {
     setEditData(undefined)
@@ -106,86 +164,139 @@ export default function SuplidorPage(): JSX.Element {
     setToDelete(undefined)
   }
 
+  // Definir las columnas de la tabla
+  const columns: TableColumn[] = [
+    {
+      id: 'suplidor',
+      label: 'Suplidor',
+      minWidth: 280,
+      render: (value, row, index) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 45,
+              height: 45,
+              borderRadius: '12px',
+              background: safeTheme.gradient,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: '1.1rem',
+              boxShadow: `0 4px 12px ${safeTheme.colors.primary}30`
+            }}
+          >
+            <BusinessIcon />
+          </Box>
+          <Box>
+            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#374151' }}>
+              {row.nombre}
+            </Typography>
+            <Chip
+              size="small"
+              label={row.rnc ? `RNC: ${row.rnc}` : 'Sin RNC'}
+              sx={{
+                background: row.rnc
+                  ? 'linear-gradient(45deg, #10B981, #34D399)'
+                  : 'linear-gradient(45deg, #6B7280, #9CA3AF)',
+                color: 'white',
+                fontSize: '0.7rem',
+                mt: 0.5
+              }}
+            />
+          </Box>
+        </Box>
+      )
+    },
+    {
+      id: 'contacto',
+      label: 'Información de Contacto',
+      minWidth: 250,
+      render: (value, row) => (
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <PhoneIcon sx={{ fontSize: 16, color: safeTheme.colors.primary }} />
+            <Typography variant="body2" sx={{ color: '#4b5563' }}>
+              {row.numero_telefono || 'Sin teléfono'}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <EmailIcon sx={{ fontSize: 16, color: safeTheme.colors.secondary }} />
+            <Typography variant="body2" sx={{ color: '#4b5563' }}>
+              {row.correo || 'Sin email'}
+            </Typography>
+          </Box>
+        </Box>
+      )
+    },
+    {
+      id: 'ubicacion',
+      label: 'Ubicación',
+      minWidth: 200,
+      render: (value, row) => (
+        <Typography variant="body2" sx={{ color: '#6b7280' }}>
+          {row.direccion || row.ubicacionLabel || 'Sin dirección especificada'}
+        </Typography>
+      )
+    },
+    {
+      id: 'estado',
+      label: 'Estado',
+      minWidth: 120,
+      render: (value, row) => (
+        <StatusChip
+          status="Activo"
+          colorMap={{
+            'Activo': safeTheme.gradient,
+            'Inactivo': 'linear-gradient(45deg, #6B7280, #9CA3AF)'
+          }}
+        />
+      )
+    },
+    {
+      id: 'acciones',
+      label: 'Acciones',
+      align: 'center',
+      minWidth: 150,
+      render: (value, row) => (
+        <ActionButtons
+          onEdit={() => openEdit(row)}
+          onDelete={() => askDelete(row)}
+          customActions={[
+            {
+              icon: <ContactPhoneIcon fontSize="small" />,
+              onClick: () => notify('Ver historial de pedidos', 'info'),
+              color: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
+              tooltip: 'Historial de Pedidos'
+            }
+          ]}
+        />
+      )
+    }
+  ];
+
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" sx={{ fontWeight: 500, mb: 1 }}>
-        Suplidores Registrados
-      </Typography>
-
-      <Box
-        sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 1,
-          justifyContent: 'space-between',
-          mb: 2
-        }}
-      >
-        <TextField
-          label="Buscar por nombre, cédula o RNC"
-          size="small"
-          value={searchTerm}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => {
-            setSearchTerm(e.target.value)
-            setPage(0)
-          }}
-          sx={{ flex: '1 1 300px' }}
-        />
-        <Button variant="contained" onClick={openNew}>
-          + Nuevo Suplidor
-        </Button>
-      </Box>
-
-      <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <Table size="small">
-          <TableHead sx={{ backgroundColor: 'action.hover' }}>
-            <TableRow>
-              <TableCell>#</TableCell>
-              <TableCell>Nombre</TableCell>
-              <TableCell>RNC</TableCell>
-              <TableCell>Teléfono</TableCell>
-              <TableCell>Correo</TableCell>
-              <TableCell align="right">Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginated.map((s, i) => (
-              <TableRow key={s._id} hover>
-                <TableCell>{page * rowsPerPage + i + 1}</TableCell>
-                <TableCell>{s.nombre}</TableCell>
-                <TableCell>{s.rnc}</TableCell>
-                <TableCell>{s.numero_telefono}</TableCell>
-                <TableCell>{s.correo}</TableCell>
-                <TableCell align="right">
-                  <IconButton size="small" onClick={() => openEdit(s)}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => askDelete(s)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        <TablePagination
-          component="div"
-          count={filtered.length}
-          page={page}
-          onPageChange={(_, newPage) => setPage(newPage)}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10))
-            setPage(0)
-          }}
-          rowsPerPageOptions={[5, 10, 25]}
-        />
-      </Paper>
+    <>
+      <ModernTable
+        title="Gestión de Suplidores"
+        subtitle="Administra la información de proveedores y suplidores de piezas"
+        titleIcon="🏢"
+        columns={columns}
+        data={paginatedData}
+        searchTerm={searchQuery}
+        onSearchChange={onSearchChange}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={onPageChange}
+        onRowsPerPageChange={onRowsPerPageChange}
+        onCreateNew={openNew}
+        createButtonText="Nuevo Suplidor"
+        emptyMessage="No hay suplidores registrados"
+        emptySubMessage="Comienza agregando el primer suplidor"
+        searchPlaceholder="Buscar por nombre, RNC, teléfono o email..."
+        height={700}
+      />
 
       <SuplidorModal
         open={modalOpen}
@@ -194,27 +305,63 @@ export default function SuplidorPage(): JSX.Element {
         onSubmit={handleSubmit}
       />
 
-      <Dialog open={confirmDel} onClose={() => setConfirmDel(false)}>
+      <Dialog
+        open={confirmDel}
+        onClose={() => setConfirmDel(false)}
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: '16px',
+            background: safeTheme.colors.surface,
+            backdropFilter: 'blur(10px)',
+            boxShadow: `0 20px 40px ${safeTheme.colors.primary}20`
+          }
+        }}
+      >
         <DialogTitle
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9rem' }}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            fontSize: '1.1rem',
+            color: safeTheme.colors.text,
+            background: `linear-gradient(135deg, ${safeTheme.colors.primary}10, ${safeTheme.colors.secondary}10)`,
+            borderRadius: '16px 16px 0 0'
+          }}
         >
-          <WarningAmberIcon color="warning" />
+          <WarningAmberIcon sx={{ color: safeTheme.colors.warning }} />
           ¿Confirmas eliminar este suplidor?
         </DialogTitle>
-        <DialogActions sx={{ p: 1 }}>
-          <Button size="small" onClick={() => setConfirmDel(false)}>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            onClick={() => setConfirmDel(false)}
+            sx={{
+              borderRadius: '8px',
+              color: safeTheme.colors.text,
+              '&:hover': {
+                background: `${safeTheme.colors.primary}10`
+              }
+            }}
+          >
             Cancelar
           </Button>
           <Button
-            size="small"
-            color="error"
             variant="contained"
             onClick={confirmDelete}
+            sx={{
+              borderRadius: '8px',
+              background: 'linear-gradient(45deg, #EF4444, #F87171)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #DC2626, #EF4444)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+              },
+              transition: 'all 0.3s ease'
+            }}
           >
             Eliminar
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   )
 }

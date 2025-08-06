@@ -7,8 +7,9 @@ export const authorizeAdmin = (
   res: Response,
   next: NextFunction
 ): void => {
-  const role = req.header('x-user-role');
-  if (role !== 'administrador') {
+  // Obtener el rol del usuario desde el JWT decodificado por checkJwt
+  const user = (req as any).user;
+  if (!user || user.role !== 'administrador') {
     res.status(403).json({
       message: 'Forbidden: sólo administrador puede ejecutar esta acción'
     });
