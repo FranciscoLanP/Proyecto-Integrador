@@ -88,7 +88,7 @@ export const themes: AppTheme[] = [
     },
     {
         id: 'lavender',
-        name: '💜 Lavanda',
+        name: '💜 Purpura',
         colors: {
             primary: '#8b5cf6',
             secondary: '#7c3aed',

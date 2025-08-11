@@ -156,18 +156,25 @@ export default function ClientesPage(): JSX.Element {
           color: 'white',
           boxShadow: `0 8px 32px ${currentTheme.colors.primary}37`,
           position: 'relative',
-          zIndex: 1
+          zIndex: 10,
+          isolation: 'isolate'
         }}
           className={`${styles.fadeIn} ${styles.pulseGlow}`}>
           <Typography variant="h4" sx={{
             fontWeight: 'bold',
             mb: 1,
-            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-          }}
-            className={styles.gradientText}>
+            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+            color: 'white',
+            zIndex: 11,
+            position: 'relative'
+          }}>
             🎯 Gestión de Clientes
           </Typography>
-          <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
+          <Typography variant="subtitle1" sx={{
+            opacity: 0.9,
+            color: 'white',
+            textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+          }}>
             Administra tu base de clientes de forma eficiente
           </Typography>
         </Box>
@@ -247,7 +254,7 @@ export default function ClientesPage(): JSX.Element {
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: currentTheme.headerGradient,
                       color: 'white',
                       fontWeight: 'bold',
                       fontSize: '0.95rem',
@@ -256,7 +263,7 @@ export default function ClientesPage(): JSX.Element {
                       👤 Cliente
                     </TableCell>
                     <TableCell sx={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: currentTheme.headerGradient,
                       color: 'white',
                       fontWeight: 'bold',
                       fontSize: '0.95rem'
@@ -264,7 +271,7 @@ export default function ClientesPage(): JSX.Element {
                       📄 Identificación
                     </TableCell>
                     <TableCell sx={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: currentTheme.headerGradient,
                       color: 'white',
                       fontWeight: 'bold',
                       fontSize: '0.95rem'
@@ -272,7 +279,7 @@ export default function ClientesPage(): JSX.Element {
                       📞 Contacto
                     </TableCell>
                     <TableCell sx={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: currentTheme.headerGradient,
                       color: 'white',
                       fontWeight: 'bold',
                       fontSize: '0.95rem'
@@ -280,7 +287,7 @@ export default function ClientesPage(): JSX.Element {
                       ✉️ Correo
                     </TableCell>
                     <TableCell align="right" sx={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: currentTheme.headerGradient,
                       color: 'white',
                       fontWeight: 'bold',
                       fontSize: '0.95rem'
@@ -295,12 +302,12 @@ export default function ClientesPage(): JSX.Element {
                       key={c._id}
                       sx={{
                         '&:hover': {
-                          background: 'linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                          background: `${currentTheme.colors.primary}15`,
                           transform: 'scale(1.01)',
                           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
                         },
                         '&:nth-of-type(even)': {
-                          backgroundColor: 'rgba(248, 250, 252, 0.8)',
+                          backgroundColor: currentTheme.colors.background === '#ffffff' ? 'rgba(248, 250, 252, 0.8)' : 'rgba(255, 255, 255, 0.05)',
                         },
                         transition: 'all 0.2s ease-in-out',
                         cursor: 'pointer'
@@ -309,11 +316,7 @@ export default function ClientesPage(): JSX.Element {
                       <TableCell sx={{ py: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                           <Avatar sx={{
-                            background: `linear-gradient(135deg, ${index % 4 === 0 ? '#FF6B6B, #4ECDC4' :
-                              index % 4 === 1 ? '#4ECDC4, #45B7D1' :
-                                index % 4 === 2 ? '#FFA07A, #FFE4B5' :
-                                  '#DDA0DD, #98FB98'
-                              })`,
+                            background: currentTheme.gradient,
                             width: 40,
                             height: 40,
                             fontSize: '1.2rem'
@@ -321,16 +324,14 @@ export default function ClientesPage(): JSX.Element {
                             {['Individual', 'Gobierno'].includes(c.tipo_cliente) ? <PersonIcon /> : <BusinessIcon />}
                           </Avatar>
                           <Box>
-                            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#2d3748' }}>
+                            <Typography variant="body1" sx={{ fontWeight: 'bold', color: currentTheme.colors.text }}>
                               {c.nombre}
                             </Typography>
                             <Chip
                               size="small"
                               label={c.tipo_cliente}
                               sx={{
-                                background: ['Individual', 'Gobierno'].includes(c.tipo_cliente)
-                                  ? 'linear-gradient(45deg, #4CAF50, #8BC34A)'
-                                  : 'linear-gradient(45deg, #2196F3, #03DAC6)',
+                                background: currentTheme.gradient,
                                 color: 'white',
                                 fontSize: '0.75rem',
                                 fontWeight: 'bold'
@@ -341,11 +342,11 @@ export default function ClientesPage(): JSX.Element {
                       </TableCell>
                       <TableCell>
                         <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4a5568' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold', color: currentTheme.colors.text }}>
                             {c.cedula}
                           </Typography>
                           {c.rnc && (
-                            <Typography variant="caption" sx={{ color: '#718096' }}>
+                            <Typography variant="caption" sx={{ color: currentTheme.colors.text, opacity: 0.7 }}>
                               RNC: {c.rnc}
                             </Typography>
                           )}
@@ -353,14 +354,14 @@ export default function ClientesPage(): JSX.Element {
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <PhoneIcon sx={{ color: '#4CAF50', fontSize: '1rem' }} />
-                          <Typography variant="body2" sx={{ color: '#4a5568' }}>
+                          <PhoneIcon sx={{ color: currentTheme.colors.primary, fontSize: '1rem' }} />
+                          <Typography variant="body2" sx={{ color: currentTheme.colors.text }}>
                             {c.numero_telefono}
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ color: '#4a5568' }}>
+                        <Typography variant="body2" sx={{ color: currentTheme.colors.text }}>
                           {c.correo}
                         </Typography>
                       </TableCell>
@@ -370,11 +371,12 @@ export default function ClientesPage(): JSX.Element {
                             size="small"
                             onClick={() => openVehModal(c)}
                             sx={{
-                              background: 'linear-gradient(45deg, #FF9800, #FFC107)',
+                              background: currentTheme.buttonGradient,
                               color: 'white',
                               '&:hover': {
-                                background: 'linear-gradient(45deg, #F57C00, #FF9800)',
+                                background: currentTheme.buttonGradient,
                                 transform: 'rotate(10deg) scale(1.1)',
+                                filter: 'brightness(1.1)'
                               },
                               transition: 'all 0.2s ease-in-out',
                               width: 36,
@@ -387,11 +389,12 @@ export default function ClientesPage(): JSX.Element {
                             size="small"
                             onClick={() => openEdit(c)}
                             sx={{
-                              background: 'linear-gradient(45deg, #2196F3, #21CBF3)',
+                              background: currentTheme.gradient,
                               color: 'white',
                               '&:hover': {
-                                background: 'linear-gradient(45deg, #1976D2, #2196F3)',
+                                background: currentTheme.gradient,
                                 transform: 'rotate(-10deg) scale(1.1)',
+                                filter: 'brightness(1.1)'
                               },
                               transition: 'all 0.2s ease-in-out',
                               width: 36,
@@ -413,10 +416,10 @@ export default function ClientesPage(): JSX.Element {
                           alignItems: 'center',
                           opacity: 0.6
                         }}>
-                          <Typography variant="h6" sx={{ mb: 1, color: '#718096' }}>
+                          <Typography variant="h6" sx={{ mb: 1, color: currentTheme.colors.text, opacity: 0.8 }}>
                             🔍 No hay clientes para mostrar
                           </Typography>
-                          <Typography variant="body2" sx={{ color: '#a0aec0' }}>
+                          <Typography variant="body2" sx={{ color: currentTheme.colors.text, opacity: 0.6 }}>
                             {searchTerm ? 'Intenta con otro término de búsqueda' : 'Comienza agregando tu primer cliente'}
                           </Typography>
                         </Box>
@@ -430,8 +433,8 @@ export default function ClientesPage(): JSX.Element {
 
           {/* Paginación moderna */}
           <Box sx={{
-            borderTop: '1px solid rgba(0, 0, 0, 0.1)',
-            background: 'rgba(248, 250, 252, 0.8)',
+            borderTop: `1px solid ${currentTheme.colors.primary}30`,
+            background: currentTheme.colors.background === '#ffffff' ? 'rgba(248, 250, 252, 0.8)' : 'rgba(255, 255, 255, 0.05)',
             px: 2
           }}>
             <TablePagination

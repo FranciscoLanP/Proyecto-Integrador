@@ -36,13 +36,10 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
     }
   }, [open]);
 
-  // Procesar defaultData después de cargar las reparaciones
   useEffect(() => {
     if (defaultData && reparaciones.length > 0) {
-      // Procesar los datos para manejar compatibilidad
       let metodosPago = defaultData.metodos_pago || [];
 
-      // Si viene del formato anterior, convertir
       if ((!metodosPago || metodosPago.length === 0) && defaultData.metodo_pago) {
         metodosPago = [{
           tipo: defaultData.metodo_pago as any,
@@ -50,7 +47,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
         }];
       }
 
-      // Procesar id_reparacion correctamente
       let reparacionId = '';
       if (typeof defaultData.id_reparacion === 'object' && defaultData.id_reparacion) {
         reparacionId = (defaultData.id_reparacion as any)?._id || '';
@@ -109,7 +105,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  // Funciones para manejar métodos de pago
   const handleAddMetodoPago = () => {
     setForm(f => ({
       ...f,
@@ -136,7 +131,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
     }));
   };
 
-  // Calcular total de métodos de pago
   const totalMetodosPago = form.metodos_pago.reduce((sum, mp) => sum + (mp.monto || 0), 0);
 
   const handleReparacionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,7 +143,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
       ...f,
       id_reparacion: reparacionId,
       total: nuevoTotal,
-      // Actualizar el primer método de pago con el total
       metodos_pago: f.metodos_pago.map((mp, idx) =>
         idx === 0 ? { ...mp, monto: nuevoTotal } : mp
       )
@@ -157,19 +150,42 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
   };
 
   const handleSave = () => {
-    // Validación: total de métodos de pago debe coincidir con el total
+    if (!form.id_reparacion) {
+      alert('Debe seleccionar una reparación');
+      return;
+    }
+
+    if (!form.fecha_emision) {
+      alert('Debe especificar la fecha de emisión');
+      return;
+    }
+
+    if (!form.total || form.total <= 0) {
+      alert('El total debe ser mayor que 0');
+      return;
+    }
+
     if (Math.abs(totalMetodosPago - form.total) > 0.01) {
       alert('El total de métodos de pago debe coincidir con el total de la factura');
       return;
     }
 
-    // Validación: debe haber al menos un método de pago
     if (form.metodos_pago.length === 0) {
       alert('Debe agregar al menos un método de pago');
       return;
     }
 
-    onSubmit(form);
+    const dataToSubmit = {
+      ...form,
+      metodo_pago: form.metodos_pago[0]?.tipo || 'Efectivo',
+      id_reparacion: form.id_reparacion || '',
+      fecha_emision: form.fecha_emision || new Date().toISOString().slice(0, 10),
+      total: Number(form.total) || 0,
+      tipo_factura: form.tipo_factura || 'Contado'
+    };
+
+    console.log('🧾 Datos enviados al backend:', dataToSubmit);
+    onSubmit(dataToSubmit);
   };
 
   return (
@@ -272,7 +288,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
             helperText="Porcentaje de descuento (0-100%)"
           />
 
-          {/* Métodos de pago */}
           <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
               <strong>Métodos de Pago</strong>
