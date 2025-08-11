@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 
 /**
  * Hook que maneja el estado de hidratación de manera segura
@@ -8,8 +9,13 @@ import { useState, useEffect } from 'react';
 export function useHydration() {
     const [isHydrated, setIsHydrated] = useState(false);
 
-    useEffect(() => {
-        setIsHydrated(true);
+    useIsomorphicLayoutEffect(() => {
+        // Usar un timer para asegurar que la hidratación se complete
+        const timer = setTimeout(() => {
+            setIsHydrated(true);
+        }, 0);
+
+        return () => clearTimeout(timer);
     }, []);
 
     return isHydrated;

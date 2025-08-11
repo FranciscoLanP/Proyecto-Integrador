@@ -14,12 +14,18 @@ export default function HydrationWrapper({
     const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
-        setIsHydrated(true);
+        // Marcar como hidratado después de que el componente se monte
+        const timer = setTimeout(() => {
+            setIsHydrated(true);
+        }, 0);
+
+        return () => clearTimeout(timer);
     }, []);
 
+    // Durante SSR y antes de la hidratación, mostrar fallback
     if (!isHydrated) {
         return (
-            <div>
+            <>
                 {fallback || (
                     <div
                         style={{
@@ -45,9 +51,15 @@ export default function HydrationWrapper({
                                 animation: 'spin 1s linear infinite'
                             }}
                         />
+                        <style>{`
+                            @keyframes spin {
+                                0% { transform: rotate(0deg); }
+                                100% { transform: rotate(360deg); }
+                            }
+                        `}</style>
                     </div>
                 )}
-            </div>
+            </>
         );
     }
 
