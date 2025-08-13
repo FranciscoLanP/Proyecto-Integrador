@@ -1,4 +1,3 @@
-// 📁 src/app/vehiculodatos/page.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -49,7 +48,6 @@ export default function VehiculoDatosPage() {
   const [openForm, setOpenForm] = useState<boolean>(false);
   const [editData, setEditData] = useState<IVehiculoDatos | null>(null);
 
-  // Hook para manejar la tabla
   const {
     filteredData,
     paginatedData,
@@ -65,7 +63,6 @@ export default function VehiculoDatosPage() {
     initialRowsPerPage: 10
   });
 
-  // Funciones adaptadoras
   const onSearchChange = (value: string) => {
     const mockEvent = { target: { value } } as React.ChangeEvent<HTMLInputElement>;
     handleSearchChange(mockEvent);
@@ -80,7 +77,6 @@ export default function VehiculoDatosPage() {
     handleRowsPerPageChange(mockEvent);
   };
 
-  // Verificar errores de carga
   const loadError =
     vehCrud.allQuery.error ||
     cliCrud.allQuery.error ||
@@ -102,7 +98,6 @@ export default function VehiculoDatosPage() {
     return <Typography color="error">Error: {loadError.message}</Typography>;
   }
 
-  // Mostrar loader durante la hidratación
   if (!isHydrated) {
     return (
       <Box sx={{
@@ -118,7 +113,6 @@ export default function VehiculoDatosPage() {
     )
   }
 
-  // Usar tema por defecto durante la hidratación para evitar cambios visuales
   const safeTheme = isHydrated ? currentTheme : defaultTheme;
 
   const openNew = (): void => {
@@ -177,34 +171,29 @@ export default function VehiculoDatosPage() {
     );
   };
 
-  // Función para obtener nombre del cliente
   const getClienteName = (clienteId: string | ICliente) => {
     if (typeof clienteId === 'object') return clienteId.nombre;
     const cliente = clientes.find(c => c._id === clienteId);
     return cliente?.nombre || 'Cliente no encontrado';
   };
 
-  // Función para obtener datos de modelo
   const getModeloInfo = (modeloId: string | IModelosDatos) => {
     if (typeof modeloId === 'object') return modeloId;
     return modelos.find(m => m._id === modeloId);
   };
 
-  // Función para obtener color
   const getColorName = (colorId: string | IColoresDatos) => {
     if (typeof colorId === 'object') return colorId.nombre_color;
     const color = colores.find(c => c._id === colorId);
     return color?.nombre_color || 'Color no encontrado';
   };
 
-  // Función para obtener marca
   const getMarcaName = (marcaId: string | IMarcaVehiculo) => {
     if (typeof marcaId === 'object') return marcaId.nombre_marca;
     const marca = marcas.find(m => m._id === marcaId);
     return marca?.nombre_marca || 'Marca no encontrada';
   };
 
-  // Definir las columnas
   const columns: TableColumn[] = [
     {
       id: 'vehiculo',
@@ -364,7 +353,6 @@ export default function VehiculoDatosPage() {
         emptyMessage="No hay vehículos registrados"
         emptySubMessage="Comienza registrando el primer vehículo"
         searchPlaceholder="Buscar por chasis..."
-        height={700}
       />
 
       <VehiculoModal

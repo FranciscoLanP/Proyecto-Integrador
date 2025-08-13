@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress, IconButton, Chip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import ModernTable from '@/components/ModernTable/ModernTable';
 import { useHydration } from '@/hooks/useHydration';
@@ -177,7 +176,6 @@ export default function ReparacionVehiculoPage() {
     });
   };
 
-  // Datos para la tabla moderna
   const tableData = reparaciones.map(reparacion => {
     const statusInfo = getRepairStatus(reparacion.fecha_inicio || '', reparacion.fecha_fin);
     const clienteVehiculo = getClienteVehiculoInfo(reparacion);
@@ -457,8 +455,6 @@ export default function ReparacionVehiculoPage() {
       </div>
     );
   }
-
-  // Calcular estadísticas
   const completadas = reparaciones.filter(r => r.fecha_fin).length;
   const enProceso = reparaciones.filter(r => !r.fecha_fin && r.fecha_inicio).length;
   const totalCostos = reparaciones.reduce((sum, r) => sum + (r.costo_total || 0), 0);
@@ -474,7 +470,6 @@ export default function ReparacionVehiculoPage() {
 
 
 
-        {/* Tabla Moderna */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <CircularProgress size={40} />
@@ -497,7 +492,6 @@ export default function ReparacionVehiculoPage() {
           />
         )}
 
-        {/* Modales */}
         <ReparacionVehiculoModal
           open={modalOpen}
           defaultData={editData}

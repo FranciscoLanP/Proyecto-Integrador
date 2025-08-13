@@ -88,7 +88,6 @@ export default function ReciboVehiculoModal({
             fullWidth
           >
             {recepciones.map(r => {
-              // buscamos vehículo y cliente
               const veh = vehiculos.find(v => {
                 const vid = typeof r.id_vehiculo === 'string'
                   ? r.id_vehiculo

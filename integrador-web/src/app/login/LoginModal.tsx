@@ -125,7 +125,6 @@ const SecretQuestionSetupScreen: React.FC<SecretQuestionSetupScreenProps> = ({ o
         overflow: 'hidden',
       }}
     >
-      {/* Efectos decorativos */}
       <Box
         sx={{
           position: 'absolute',
@@ -151,7 +150,6 @@ const SecretQuestionSetupScreen: React.FC<SecretQuestionSetupScreenProps> = ({ o
         }}
       />
 
-      {/* Pantalla de configuración */}
       <Fade in={true} timeout={800}>
         <Paper
           elevation={24}
@@ -197,7 +195,6 @@ const SecretQuestionSetupScreen: React.FC<SecretQuestionSetupScreenProps> = ({ o
             </Box>
           ) : (
             <>
-              {/* Header */}
               <Box sx={{ textAlign: 'center', mb: 4 }}>
                 <Box
                   sx={{
@@ -302,7 +299,6 @@ const SecretQuestionSetupScreen: React.FC<SecretQuestionSetupScreenProps> = ({ o
         </Paper>
       </Fade>
 
-      {/* Estilos de animación */}
       <style jsx global>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
@@ -317,18 +313,15 @@ export default function LoginPage(): JSX.Element {
   const { login } = useAuth();
   const { notify } = useNotification();
 
-  // Estados del login
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Estados del modal de configuración de pregunta secreta
   const [setupQuestionModalOpen, setSetupQuestionModalOpen] = useState<boolean>(false);
   const [showSecretQuestionSetup, setShowSecretQuestionSetup] = useState<boolean>(false);
 
-  // Estados del modal de recuperación
   const [resetModalOpen, setResetModalOpen] = useState<boolean>(false);
   const [resetStep, setResetStep] = useState<number>(0);
   const [resetData, setResetData] = useState({
@@ -355,14 +348,11 @@ export default function LoginPage(): JSX.Element {
       const response = await loginRequest({ username, password });
       const { token, usuario, hasSecretQuestion } = response;
 
-      // Si el usuario no tiene pregunta secreta configurada, no hacer login completo
       if (!hasSecretQuestion) {
-        // Guardamos temporalmente los datos del usuario
         localStorage.setItem('tempToken', token);
         localStorage.setItem('tempUser', JSON.stringify(usuario));
         setShowSecretQuestionSetup(true);
       } else {
-        // Login normal si ya tiene pregunta secreta
         login(usuario.username, usuario.role, token);
         notify('¡Bienvenido! Sesión iniciada correctamente', 'success');
       }
@@ -445,16 +435,13 @@ export default function LoginPage(): JSX.Element {
   };
 
   const handleSetupQuestionSuccess = () => {
-    // Recuperar los datos temporales del usuario
     const tempToken = localStorage.getItem('tempToken');
     const tempUser = localStorage.getItem('tempUser');
 
     if (tempToken && tempUser) {
       const usuario = JSON.parse(tempUser);
-      // Completar el login ahora que ya tiene pregunta secreta
       login(usuario.username, usuario.role, tempToken);
 
-      // Limpiar datos temporales
       localStorage.removeItem('tempToken');
       localStorage.removeItem('tempUser');
 
@@ -467,7 +454,6 @@ export default function LoginPage(): JSX.Element {
   };
 
   const handleSetupQuestionClose = () => {
-    // Limpiar datos temporales si el usuario cancela
     localStorage.removeItem('tempToken');
     localStorage.removeItem('tempUser');
     setShowSecretQuestionSetup(false);
@@ -476,7 +462,6 @@ export default function LoginPage(): JSX.Element {
 
   const resetSteps = ['Verificar Usuario', 'Pregunta Secreta', 'Nueva Contraseña'];
 
-  // Si debe mostrar la configuración de pregunta secreta, mostrar esa pantalla
   if (showSecretQuestionSetup) {
     return <SecretQuestionSetupScreen onClose={handleSetupQuestionClose} onSuccess={handleSetupQuestionSuccess} />;
   }
@@ -493,7 +478,6 @@ export default function LoginPage(): JSX.Element {
         overflow: 'hidden',
       }}
     >
-      {/* Efectos decorativos mejorados */}
       <Box
         sx={{
           position: 'absolute',
@@ -519,7 +503,6 @@ export default function LoginPage(): JSX.Element {
         }}
       />
 
-      {/* Formulario principal */}
       <Fade in={true} timeout={800}>
         <Paper
           elevation={24}
@@ -535,7 +518,6 @@ export default function LoginPage(): JSX.Element {
             boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
           }}
         >
-          {/* Header */}
           <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Box
               sx={{
@@ -676,7 +658,6 @@ export default function LoginPage(): JSX.Element {
         </Paper>
       </Fade>
 
-      {/* Modal de recuperación de contraseña */}
       <Dialog
         open={resetModalOpen}
         onClose={() => setResetModalOpen(false)}
@@ -826,7 +807,6 @@ export default function LoginPage(): JSX.Element {
         </DialogActions>
       </Dialog>
 
-      {/* Estilos de animación */}
       <style jsx global>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }

@@ -45,7 +45,6 @@ export default function PiezasPage(): JSX.Element {
   const [confirmDel, setConfirmDel] = useState(false);
   const [toDelete, setToDelete] = useState<IPiezaInventario | null>(null);
 
-  // Hook para manejar la tabla
   const {
     filteredData,
     paginatedData,
@@ -61,7 +60,6 @@ export default function PiezasPage(): JSX.Element {
     initialRowsPerPage: 10
   });
 
-  // Funciones adaptadoras
   const onSearchChange = (value: string) => {
     const mockEvent = { target: { value } } as React.ChangeEvent<HTMLInputElement>;
     handleSearchChange(mockEvent);
@@ -79,7 +77,6 @@ export default function PiezasPage(): JSX.Element {
   if (isLoading) return <Typography>Cargando inventario...</Typography>;
   if (error) return <Typography color="error">Error: {error.message}</Typography>;
 
-  // Mostrar loader durante la hidratación
   if (!isHydrated) {
     return (
       <Box sx={{
@@ -95,7 +92,6 @@ export default function PiezasPage(): JSX.Element {
     )
   }
 
-  // Usar tema por defecto durante la hidratación para evitar cambios visuales
   const safeTheme = isHydrated ? currentTheme : defaultTheme;
 
   const openNew = () => {
@@ -133,7 +129,6 @@ export default function PiezasPage(): JSX.Element {
     setToDelete(null);
   };
 
-  // Función para determinar el estado del stock
   const getStockStatus = (cantidad: number) => {
     if (cantidad === 0) return 'Sin Stock';
     if (cantidad <= 5) return 'Stock Bajo';
@@ -141,7 +136,6 @@ export default function PiezasPage(): JSX.Element {
     return 'Stock Alto';
   };
 
-  // Función para obtener el color del chip de stock
   const getStockColor = (cantidad: number) => {
     if (cantidad === 0) return 'linear-gradient(45deg, #EF4444, #F87171)';
     if (cantidad <= 5) return 'linear-gradient(45deg, #F59E0B, #FBBF24)';
@@ -149,7 +143,6 @@ export default function PiezasPage(): JSX.Element {
     return 'linear-gradient(45deg, #10B981, #34D399)';
   };
 
-  // Definir las columnas de la tabla
   const columns: TableColumn[] = [
     {
       id: 'pieza',
@@ -286,7 +279,6 @@ export default function PiezasPage(): JSX.Element {
         emptyMessage="No hay piezas en inventario"
         emptySubMessage="Comienza agregando la primera pieza al inventario"
         searchPlaceholder="Buscar por nombre o serial..."
-        height={700}
       />
 
       <RegistroCompraModal

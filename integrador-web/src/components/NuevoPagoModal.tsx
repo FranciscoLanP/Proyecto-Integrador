@@ -54,7 +54,7 @@ export const NuevoPagoModal: React.FC<NuevoPagoModalProps> = ({
         metodoPago: '',
         referenciaMetodo: '',
         observaciones: '',
-        fechaPago: new Date().toISOString().slice(0, 10) // Fecha actual en formato YYYY-MM-DD
+        fechaPago: new Date().toISOString().slice(0, 10) 
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -74,7 +74,6 @@ export const NuevoPagoModal: React.FC<NuevoPagoModalProps> = ({
             newErrors.metodoPago = 'El método de pago es requerido';
         }
 
-        // Validar referencia para ciertos métodos de pago
         if (['tarjeta', 'transferencia', 'cheque'].includes(formData.metodoPago) && !formData.referenciaMetodo) {
             newErrors.referenciaMetodo = 'La referencia es requerida para este método de pago';
         }
@@ -89,7 +88,6 @@ export const NuevoPagoModal: React.FC<NuevoPagoModalProps> = ({
         if (!validateForm()) return;
 
         try {
-            // Usar la fecha del formulario y convertirla a ISO
             const fechaPago = new Date(formData.fechaPago).toISOString();
 
             await onSubmit({
@@ -101,13 +99,12 @@ export const NuevoPagoModal: React.FC<NuevoPagoModalProps> = ({
                 observaciones: formData.observaciones || undefined
             });
 
-            // Limpiar formulario
             setFormData({
                 monto: '',
                 metodoPago: '',
                 referenciaMetodo: '',
                 observaciones: '',
-                fechaPago: new Date().toISOString().slice(0, 10) // Resetear a fecha actual
+                fechaPago: new Date().toISOString().slice(0, 10) 
             });
             setErrors({});
             onClose();

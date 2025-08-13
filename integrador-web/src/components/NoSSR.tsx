@@ -7,10 +7,7 @@ interface NoSSRProps {
     fallback?: React.ReactNode;
 }
 
-/**
- * Componente que evita el renderizado en el servidor (SSR) para prevenir
- * problemas de hidratación cuando el contenido depende del estado del cliente
- */
+
 export default function NoSSR({ children, fallback = null }: NoSSRProps) {
     const [isMounted, setIsMounted] = useState(false);
 

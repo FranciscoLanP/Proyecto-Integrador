@@ -9,10 +9,7 @@ interface ThemeSafePageProps {
     title?: string;
 }
 
-/**
- * Wrapper para páginas que previene errores de hidratación
- * mostrando un loader mientras se completa la hidratación
- */
+
 export default function ThemeSafePage({ children, title }: ThemeSafePageProps) {
     const isHydrated = useHydration();
 

@@ -119,14 +119,12 @@ export interface ISuplidor {
   ubicacionLabel?: string;
 }
 
-// Evento histórico de stock en PiezaInventario
 export interface IEventoHistorico {
   cantidad: number;
   costo_unitario: number;
   fecha: string;
 }
 
-// PiezaInventario unificado con stock e historial
 export interface IPiezaInventario {
   _id: string;
   serial: string;
@@ -136,7 +134,6 @@ export interface IPiezaInventario {
   historial: IEventoHistorico[];
 }
 
-// Relación suplidor-pieza (para validaciones y dropdowns)
 export interface ISuplidorPiezaRelacion {
   _id: string;
   id_suplidor: string;

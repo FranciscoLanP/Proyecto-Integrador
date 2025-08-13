@@ -30,7 +30,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
   const [piezasCatalogo, setPiezasCatalogo] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // 🔥 RESETEAR formulario cuando el modal se cierra
   useEffect(() => {
     if (!open) {
       setForm({
@@ -43,13 +42,11 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
     }
   }, [open]);
 
-  // Cargar datos para los dropdowns
   useEffect(() => {
     if (open) {
       fetchDropdownData();
       piezaInventarioService.fetchAll().then(setPiezasCatalogo).catch(() => setPiezasCatalogo([]));
 
-      // 🔥 RESETEAR formulario cuando es nueva reparación
       if (!defaultData) {
         setForm({
           id_inspeccion: '',
@@ -64,14 +61,12 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
 
   useEffect(() => {
     if (defaultData) {
-      // Procesar piezas usadas según su formato
       const cargarPiezasUsadas = async () => {
         let piezasUsadas = defaultData.piezas_usadas || [];
 
         console.log('🔧 Procesando piezas usadas:', piezasUsadas);
 
         if (Array.isArray(piezasUsadas) && piezasUsadas.length > 0) {
-          // Si las piezas tienen formato completo con id_pieza
           if (piezasUsadas[0]?.id_pieza) {
             piezasUsadas = piezasUsadas.map((p: any) => ({
               id_pieza: typeof p.id_pieza === 'object' && p.id_pieza._id
@@ -80,7 +75,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
               cantidad: p.cantidad || 1
             }));
           }
-          // Si son objetos pero sin id_pieza directa (fallback)
           else if (typeof piezasUsadas[0] === 'object') {
             piezasUsadas = piezasUsadas.map((p: any) => ({
               id_pieza: p._id || p.id || '',
@@ -91,10 +85,8 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
 
         console.log('🔧 Piezas procesadas:', piezasUsadas);
 
-        // Procesar empleados trabajos
         let empleadosTrabajos = defaultData.empleados_trabajos || [];
 
-        // Compatibilidad con campo anterior
         if ((!empleadosTrabajos || empleadosTrabajos.length === 0) && defaultData.id_empleadoInformacion) {
           const empleadoId = typeof defaultData.id_empleadoInformacion === 'object'
             ? (defaultData.id_empleadoInformacion as any)?._id || defaultData.id_empleadoInformacion
@@ -106,7 +98,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
           }];
         }
 
-        // Procesar empleados poblados
         if (empleadosTrabajos.length > 0) {
           empleadosTrabajos = empleadosTrabajos.map((emp: any) => ({
             id_empleado: typeof emp.id_empleado === 'object'
@@ -118,7 +109,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
 
         const processedForm = {
           ...defaultData,
-          // 🔥 EXTRAER solo los IDs de los objetos poblados
           id_inspeccion: typeof defaultData.id_inspeccion === 'object'
             ? (defaultData.id_inspeccion as any)?._id || defaultData.id_inspeccion
             : defaultData.id_inspeccion || '',
@@ -137,14 +127,8 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
     }
   }, [defaultData]);
 
-  // 🔥 NUEVO useEffect: Cargar piezas cuando cambie la inspección en el form
   useEffect(() => {
-    // Solo ejecutar si:
-    // 1. Hay una inspección seleccionada
-    // 2. Las inspecciones están cargadas
-    // 3. El modal está abierto
-    // 4. NO es una edición (defaultData está undefined/null)
-    // 5. NO hay piezas usadas ya en el formulario
+  
     if (
       form.id_inspeccion &&
       inspecciones.length > 0 &&
@@ -180,7 +164,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
     setLoading(false);
   };
 
-  // Manejo de empleados trabajos
   const handleAddEmpleado = () => {
     setForm(f => ({
       ...f,
@@ -207,7 +190,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
     }));
   };
 
-  // Manejo de piezas usadas
   const handleAddPieza = () => {
     setForm(f => ({
       ...f,
@@ -241,16 +223,14 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  // 🔥 NUEVA FUNCIÓN: Manejar cambio de inspección
   const handleInspeccionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inspeccionId = e.target.value;
     const inspeccionSeleccionada = inspecciones.find(i => i._id === inspeccionId);
     setForm(f => ({
       ...f,
       id_inspeccion: inspeccionId,
-      // Solo autollenar piezas si no es edición
       piezas_usadas: defaultData
-        ? f.piezas_usadas // Si es edición, no tocar piezas
+        ? f.piezas_usadas 
         : (inspeccionSeleccionada?.piezas_sugeridas?.map((pieza: any) => ({
           id_pieza: pieza.id_pieza,
           cantidad: pieza.cantidad
@@ -277,13 +257,12 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
             label="Inspección"
             name="id_inspeccion"
             value={form.id_inspeccion}
-            onChange={handleInspeccionChange} // 🔥 Usar la nueva función
+            onChange={handleInspeccionChange} 
             required
             fullWidth
             disabled={loading}
           >
             {inspecciones.map(inspeccion => {
-              // Construir descripción rica de la inspección
               const cliente = inspeccion.id_recibo?.id_recepcion?.id_vehiculo?.id_cliente;
               const vehiculo = inspeccion.id_recibo?.id_recepcion?.id_vehiculo;
               const recepcion = inspeccion.id_recibo?.id_recepcion;
@@ -302,7 +281,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
             })}
           </TextField>
 
-          {/* Empleados trabajos */}
           <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
               <strong>Empleados y trabajos realizados</strong>
@@ -390,7 +368,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
             fullWidth
           />
 
-          {/* Piezas usadas */}
           <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
               <Box>
@@ -402,7 +379,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
               <Button onClick={handleAddPieza} size="small" variant="outlined">Agregar pieza</Button>
             </Box>
             {(form.piezas_usadas ?? []).map((pieza, idx) => {
-              // Buscar el nombre de la pieza por id
               const piezaInfo = piezasCatalogo.find(p => p._id === pieza.id_pieza);
               return (
                 <Box key={idx} display="flex" gap={1} mb={1} alignItems="center">

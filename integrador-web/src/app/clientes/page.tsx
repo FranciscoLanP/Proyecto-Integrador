@@ -1,4 +1,3 @@
-// 📁 src/app/clientes/page.tsx
 'use client';
 
 import React, { useState, ChangeEvent, JSX } from 'react';
@@ -36,7 +35,6 @@ import type {
 
 } from '../types';
 
-// Cargamos el modal de cliente sin SSR para evitar errores de Leaflet en el servidor
 const ClientModal = dynamic(() => import('./ClientModal'), { ssr: false });
 import ClienteVehiculosModal from './ClienteVehiculosModal';
 
@@ -132,7 +130,6 @@ export default function ClientesPage(): JSX.Element {
         position: 'relative'
       }}
         className={styles.fadeIn}>
-        {/* Efecto glassmorphism de fondo */}
         <Box sx={{
           position: 'absolute',
           top: 0,
@@ -146,7 +143,6 @@ export default function ClientesPage(): JSX.Element {
           pointerEvents: 'none',
           zIndex: 0
         }} />
-        {/* Header moderno */}
         <Box sx={{
           mb: 4,
           textAlign: 'center',
@@ -178,8 +174,6 @@ export default function ClientesPage(): JSX.Element {
             Administra tu base de clientes de forma eficiente
           </Typography>
         </Box>
-
-        {/* Barra de búsqueda moderna */}
         <Paper sx={{
           p: 2,
           mb: 3,
@@ -233,7 +227,6 @@ export default function ClientesPage(): JSX.Element {
           </Box>
         </Paper>
 
-        {/* Tabla con diseño moderno */}
         <Paper sx={{
           borderRadius: '20px',
           overflow: 'hidden',
@@ -431,7 +424,6 @@ export default function ClientesPage(): JSX.Element {
             </Box>
           </Box>
 
-          {/* Paginación moderna */}
           <Box sx={{
             borderTop: `1px solid ${currentTheme.colors.primary}30`,
             background: currentTheme.colors.background === '#ffffff' ? 'rgba(248, 250, 252, 0.8)' : 'rgba(255, 255, 255, 0.05)',

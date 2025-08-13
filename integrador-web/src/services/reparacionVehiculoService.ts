@@ -17,13 +17,11 @@ export interface ReparacionVehiculo {
     id_pieza: string;
     cantidad: number;
   }>;
-  // Compatibilidad con campo anterior
   id_empleadoInformacion?: string;
 }
 
 export const reparacionVehiculoService = createCrudService<ReparacionVehiculo>('reparacionvehiculos');
 
-// Servicios adicionales para los dropdowns
 export const inspeccionVehiculoService = createCrudService<any>('inspeccionvehiculos');
 export const empleadoInformacionService = createCrudService<any>('empleadoinformaciones');
 export const piezaInventarioService = createCrudService<any>('piezasinventario');

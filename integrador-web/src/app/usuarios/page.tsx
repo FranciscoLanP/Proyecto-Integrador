@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, ChangeEvent, JSX } from 'react';
+import React, { useState,JSX } from 'react';
 import {
   Box, IconButton, CircularProgress, Chip, Dialog, DialogTitle, DialogActions, Button
 } from '@mui/material';
@@ -9,7 +9,6 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 
 import { useCrud } from '../../hooks/useCrud';
 import { useNotification } from '../../components/utils/NotificationProvider';
@@ -140,7 +139,6 @@ function UsuariosPageContent(): JSX.Element {
     }
   };
 
-  // Datos para la tabla moderna
   const tableData = usuarios.map(usuario => ({
     id: usuario._id,
     usuario: (
@@ -306,7 +304,6 @@ function UsuariosPageContent(): JSX.Element {
     );
   }
 
-  // Calcular estadísticas
   const totalUsuarios = usuarios.length;
   const usuariosActivos = usuarios.filter(u => u.activo).length;
   const administradores = usuarios.filter(u => u.role?.toLowerCase() === 'administrador').length;
@@ -322,7 +319,6 @@ function UsuariosPageContent(): JSX.Element {
       <div className="max-w-7xl mx-auto">
 
 
-        {/* Tabla Moderna */}
         <ModernTable
           title="Usuarios del Sistema"
           subtitle="Administra los usuarios y permisos del sistema"
@@ -339,7 +335,6 @@ function UsuariosPageContent(): JSX.Element {
           emptyMessage="No se encontraron usuarios"
         />
 
-        {/* Modales */}
         <UsuarioModal
           open={openForm}
           defaultData={editData ?? undefined}

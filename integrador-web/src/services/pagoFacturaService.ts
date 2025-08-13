@@ -2,14 +2,14 @@ import { createCrudService } from './crudService';
 
 export interface PagoFactura {
     _id?: string;
-    factura: string; // Cambiar de id_factura a factura para coincidir con backend
-    fechaPago: string; // Cambiar de fecha_pago a fechaPago para coincidir con backend
-    monto: number; // Cambiar de monto_pagado a monto para coincidir con backend
-    metodoPago: 'efectivo' | 'tarjeta' | 'transferencia' | 'cheque'; // Cambiar de metodo_pago a metodoPago
-    referenciaMetodo?: string; // Cambiar de referencia a referenciaMetodo
+    factura: string; 
+    fechaPago: string; 
+    monto: number; 
+    metodoPago: 'efectivo' | 'tarjeta' | 'transferencia' | 'cheque'; 
+    referenciaMetodo?: string; 
     observaciones?: string;
-    createdAt?: string; // Cambiar de created_at a createdAt para coincidir con backend
-    updatedAt?: string; // Cambiar de updated_at a updatedAt para coincidir con backend
+    createdAt?: string; 
+    updatedAt?: string; 
 }
 
 export interface PagoFacturaResponse {
@@ -28,12 +28,9 @@ export interface CreatePagoResponse {
     data: PagoFactura;
 }
 
-// Crear servicio CRUD básico
 export const pagoFacturaService = createCrudService<PagoFactura>('pagos-facturas');
 
-// Servicios específicos para pagos
 export const pagoFacturaCustomService = {
-    // Obtener pagos por factura
     getPagosByFactura: async (facturaId: string): Promise<PagoFacturaResponse> => {
         const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
         const response = await fetch(`${API_BASE}/pagos-facturas/factura/${facturaId}`);
@@ -44,7 +41,6 @@ export const pagoFacturaCustomService = {
         return response.json();
     },
 
-    // Crear nuevo pago con respuesta extendida
     createPago: async (pagoData: {
         facturaId: string;
         monto: number;
@@ -55,12 +51,10 @@ export const pagoFacturaCustomService = {
     }): Promise<CreatePagoResponse> => {
         const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-        // Convertir fechaPago a fecha_pago para el backend
         const backendData = {
             ...pagoData,
             fecha_pago: pagoData.fechaPago
         };
-        // Eliminar fechaPago del objeto que se envía al backend
         delete (backendData as any).fechaPago;
 
         const response = await fetch(`${API_BASE}/pagos-facturas`, {
@@ -79,7 +73,6 @@ export const pagoFacturaCustomService = {
         return response.json();
     },
 
-    // Obtener resumen de pagos con filtros
     getPagosWithFilters: async (filters: {
         factura?: string;
         metodoPago?: string;

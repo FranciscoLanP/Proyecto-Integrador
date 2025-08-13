@@ -7,10 +7,9 @@ export const apiClient = axios.create({
     'Accept': 'application/json'
   },
   withCredentials: true,
-  timeout: 10000 // 10 segundos de timeout
+  timeout: 10000 
 });
 
-// Interceptor para requests - agregar token automáticamente
 apiClient.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {

@@ -199,7 +199,6 @@ export default function RecibosVehiculosPage() {
     w.print();
   };
 
-  // Funciones helper para obtener datos relacionados
   const getRecepcionData = (recepcionId: string | IRecepcionVehiculo) => {
     if (typeof recepcionId === 'object') return recepcionId;
     return recepciones.find(r => r._id === recepcionId);
@@ -456,7 +455,6 @@ export default function RecibosVehiculosPage() {
         emptyMessage="No hay recibos registrados"
         emptySubMessage="Comienza generando el primer recibo"
         searchPlaceholder="Buscar por observaciones..."
-        height={700}
       />
 
       <ReciboVehiculoModal

@@ -1,4 +1,3 @@
-// src/hooks/useUbicacion.ts
 'use client'
 
 import { useState } from 'react'

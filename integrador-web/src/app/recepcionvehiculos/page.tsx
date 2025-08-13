@@ -42,7 +42,6 @@ export default function RecepcionVehiculosPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<IRecepcionVehiculo | null>(null);
 
-  // Hook para manejar la tabla
   const {
     filteredData,
     paginatedData,
@@ -58,7 +57,6 @@ export default function RecepcionVehiculosPage() {
     initialRowsPerPage: 10
   });
 
-  // Funciones adaptadoras
   const onSearchChange = (value: string) => {
     const mockEvent = { target: { value } } as React.ChangeEvent<HTMLInputElement>;
     handleSearchChange(mockEvent);
@@ -117,7 +115,6 @@ export default function RecepcionVehiculosPage() {
     }
   };
 
-  // Funciones helper para obtener datos relacionados
   const getEmpleadoName = (empId: string | IEmpleadoInformacion) => {
     if (typeof empId === 'object') return empId.nombre;
     const empleado = empleados.find(e => e._id === empId);
@@ -135,7 +132,6 @@ export default function RecepcionVehiculosPage() {
     return cliente?.nombre || 'Cliente no encontrado';
   };
 
-  // Definir las columnas
   const columns: TableColumn[] = [
     {
       id: 'fecha',
@@ -343,7 +339,6 @@ export default function RecepcionVehiculosPage() {
         emptyMessage="No hay recepciones registradas"
         emptySubMessage="Comienza registrando la primera recepción"
         searchPlaceholder="Buscar por problema, comentario o fecha..."
-        height={700}
       />
 
       <RecepcionVehiculoModal

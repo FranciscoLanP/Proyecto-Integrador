@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import { Typography, Box } from '@mui/material'
-import EditIcon from '@mui/icons-material/Edit'
 import WorkIcon from '@mui/icons-material/Work'
 import { useCrud } from '@/hooks/useCrud'
 import { useNotification } from '@/components/utils/NotificationProvider'
@@ -40,7 +39,6 @@ function EmpleadoInformacionPageContent() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editData, setEditData] = useState<EmpleadoConUbicacion>()
 
-  // Hook para manejar la lógica de la tabla
   const {
     filteredData,
     paginatedData,
@@ -57,7 +55,6 @@ function EmpleadoInformacionPageContent() {
     initialRowsPerPage: 10
   });
 
-  // Funciones adaptadoras para el componente ModernTable
   const onSearchChange = (value: string) => {
     const mockEvent = {
       target: { value }
@@ -79,7 +76,6 @@ function EmpleadoInformacionPageContent() {
   if (isLoading) return <Typography>Cargando empleados...</Typography>
   if (error) return <Typography color="error">Error: {error.message}</Typography>
 
-  // Mostrar loader durante la hidratación
   if (!isHydrated) {
     return (
       <Box sx={{
@@ -95,7 +91,6 @@ function EmpleadoInformacionPageContent() {
     )
   }
 
-  // Usar tema por defecto durante la hidratación para evitar cambios visuales
   const safeTheme = isHydrated ? currentTheme : defaultTheme;
 
   const openNew = () => {
@@ -139,7 +134,6 @@ function EmpleadoInformacionPageContent() {
     setModalOpen(false)
   }
 
-  // Definir las columnas de la tabla
   const columns: TableColumn[] = [
     {
       id: 'empleado',
@@ -180,7 +174,7 @@ function EmpleadoInformacionPageContent() {
       minWidth: 120,
       render: (value, row) => (
         <StatusChip
-          status="Activo" // Siempre activo por defecto
+          status="Activo" 
           colorMap={{
             'Activo': 'linear-gradient(45deg, #4CAF50, #8BC34A)',
             'Inactivo': 'linear-gradient(45deg, #f44336, #ff5722)'
@@ -228,7 +222,6 @@ function EmpleadoInformacionPageContent() {
         emptyMessage="No hay empleados registrados"
         emptySubMessage="Comienza agregando el primer empleado"
         searchPlaceholder="Buscar por nombre, tipo o teléfono..."
-        height={650}
       />
 
       <EmpleadoInformacionModal

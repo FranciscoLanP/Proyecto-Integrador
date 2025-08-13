@@ -25,7 +25,6 @@ export default function ProtectedApp({ children }: { children: ReactNode }) {
     }
   }, [auth, pathname, router, isLoading, transitionLoading, isHydrated]);
 
-  // Mostrar loader mientras se cargan auth y tema
   if (isLoading || transitionLoading || !isHydrated) {
     return (
       <HydrationWrapper>

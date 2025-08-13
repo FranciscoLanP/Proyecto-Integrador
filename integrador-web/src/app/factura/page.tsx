@@ -17,13 +17,11 @@ import ModernTable from '@/components/ModernTable/ModernTable';
 import { useHydration } from '@/hooks/useHydration';
 import { useClientTheme } from '@/hooks/useClientTheme';
 
-// Interfaz extendida para facturas con información de pagos
 interface FacturaConPagos extends Factura {
   totalPagado?: number;
   estadoPago?: 'Pendiente' | 'Pago Parcial' | 'Saldado' | 'Pagado';
 }
 
-// Función para calcular el estado de pago de una factura
 const calcularEstadoPago = (factura: Factura, totalPagado: number): 'Pendiente' | 'Pago Parcial' | 'Saldado' | 'Pagado' => {
   const total = factura.total || 0;
 
@@ -35,11 +33,8 @@ const calcularEstadoPago = (factura: Factura, totalPagado: number): 'Pendiente' 
   });
 
   if (factura.tipo_factura === 'Contado') {
-    // Para facturas al contado:
-    // Si es al contado, significa que se pagó completo en el momento de la venta
     return 'Pagado';
   } else {
-    // Para facturas a crédito, verificar los pagos registrados
     if (totalPagado === 0) {
       return 'Pendiente';
     } else if (totalPagado >= total) {
@@ -50,18 +45,17 @@ const calcularEstadoPago = (factura: Factura, totalPagado: number): 'Pendiente' 
   }
 };
 
-// Función para obtener el color del estado
 const getColorEstado = (estado: string) => {
   switch (estado) {
     case 'Pagado':
     case 'Saldado':
-      return 'linear-gradient(45deg, #10B981, #34D399)'; // Verde
+      return 'linear-gradient(45deg, #10B981, #34D399)'; 
     case 'Pago Parcial':
-      return 'linear-gradient(45deg, #F59E0B, #FBBF24)'; // Amarillo/Naranja
+      return 'linear-gradient(45deg, #F59E0B, #FBBF24)'; 
     case 'Pendiente':
-      return 'linear-gradient(45deg, #EF4444, #F87171)'; // Rojo
+      return 'linear-gradient(45deg, #EF4444, #F87171)';
     default:
-      return 'linear-gradient(45deg, #6B7280, #9CA3AF)'; // Gris
+      return 'linear-gradient(45deg, #6B7280, #9CA3AF)'; 
   }
 };
 
@@ -82,11 +76,9 @@ export default function FacturaPage() {
       const data = await facturaService.fetchAll();
       console.log('💰 Facturas desde el backend:', data);
 
-      // Obtener información de pagos para cada factura
       const facturasConPagos: FacturaConPagos[] = await Promise.all(
         data.map(async (factura) => {
           try {
-            // Obtener pagos de la factura
             console.log(`🔍 Obteniendo pagos para factura ${factura._id}:`, {
               id: factura._id,
               tipo: factura.tipo_factura,
@@ -113,7 +105,6 @@ export default function FacturaPage() {
               estadoPago
             };
           } catch (error) {
-            // Si hay error obteniendo pagos, asumimos 0 pagado
             console.warn(`⚠️ Error obteniendo pagos para factura ${factura._id}:`, error);
             const estadoPago = calcularEstadoPago(factura, 0);
             return {
@@ -214,10 +205,8 @@ export default function FacturaPage() {
       const now = new Date().toLocaleString();
       const fechaEmision = new Date(factura.fecha_emision).toLocaleDateString('es-DO');
 
-      // Piezas usadas en la reparación
       const piezasUsadas = reparacion.piezas_usadas || [];
 
-      // Calcular totales correctamente
       const costoManoObra = inspeccion.costo_mano_obra || 0;
       const totalPiezas = piezasUsadas.reduce((sum: number, p: any) => {
         const precio = p.precio_unitario || p.id_pieza?.costo_promedio || 0;
@@ -231,12 +220,10 @@ export default function FacturaPage() {
       const itbis = subtotalConDescuento * 0.18;
       const totalConItbis = subtotalConDescuento + itbis;
 
-      // Información del vehículo
       const vehiculoInfo = vehiculo
         ? `${vehiculo.id_modelo?.id_marca?.nombre_marca || ''} ${vehiculo.id_modelo?.nombre_modelo || ''} ${vehiculo.anio || ''} (${vehiculo.id_color?.nombre_color || ''})`.trim()
         : 'Vehículo no especificado';
 
-      // Información de métodos de pago
       const metodosPagoInfo = (() => {
         if (factura.metodos_pago && factura.metodos_pago.length > 0) {
           return factura.metodos_pago.map((mp: any) => ({
@@ -245,7 +232,6 @@ export default function FacturaPage() {
             referencia: mp.referencia
           }));
         }
-        // Fallback al método anterior
         return [{
           tipo: factura.metodo_pago || 'Efectivo',
           monto: totalConItbis,
@@ -449,7 +435,6 @@ export default function FacturaPage() {
     return factura.metodo_pago || '—';
   };
 
-  // Datos para la tabla moderna
   const tableData = facturas.map(factura => {
     const clienteVehiculo = getClienteVehiculoInfo(factura);
     const fechaEmision = factura.fecha_emision?.toString().slice(0, 10) || '—';
@@ -592,7 +577,6 @@ export default function FacturaPage() {
             <PrintIcon fontSize="small" />
           </IconButton>
 
-          {/* Botón de gestión de pagos solo para facturas a crédito */}
           {factura.tipo_factura === 'Credito' && (
             <IconButton
               size="small"
@@ -647,7 +631,6 @@ export default function FacturaPage() {
     );
   }
 
-  // Calcular estadísticas
   const emitidas = facturas.filter(f => f.emitida).length;
   const pendientes = facturas.filter(f => !f.emitida).length;
   const totalIngresos = facturas.filter(f => f.emitida).reduce((sum, f) => sum + (f.total || 0), 0);
@@ -663,7 +646,6 @@ export default function FacturaPage() {
       <div className="max-w-7xl mx-auto">
 
 
-        {/* Tabla Moderna */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <CircularProgress size={40} />
@@ -686,7 +668,6 @@ export default function FacturaPage() {
           />
         )}
 
-        {/* Modales */}
         <FacturaModal
           open={modalOpen}
           defaultData={editData}
@@ -697,7 +678,6 @@ export default function FacturaPage() {
           onSubmit={handleModalSubmit}
         />
 
-        {/* Área de impresión */}
         {printHtml && (
           <div
             id="print-area"

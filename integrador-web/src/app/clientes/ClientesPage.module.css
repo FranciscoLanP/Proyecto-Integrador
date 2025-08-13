@@ -1,4 +1,3 @@
-/* Animaciones personalizadas para la página de clientes */
 
 .fadeIn {
     animation: fadeIn 0.6s ease-in-out;
@@ -56,7 +55,6 @@
 }
 
 .gradientText {
-    /* Removemos el gradient text problemático y usamos color sólido */
     color: white !important;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     font-weight: bold;
@@ -85,7 +83,6 @@
     left: 100%;
 }
 
-/* Scrollbar personalizado más elegante */
 .customScrollbar::-webkit-scrollbar {
     width: 12px;
     height: 12px;

@@ -17,7 +17,6 @@ export const usePagosFactura = ({ facturaId }: UsePagosFacturaProps = {}) => {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Cargar pagos por factura
     const loadPagosByFactura = useCallback(async (idFactura: string) => {
         try {
             setLoading(true);
@@ -35,7 +34,6 @@ export const usePagosFactura = ({ facturaId }: UsePagosFacturaProps = {}) => {
         }
     }, []);
 
-    // Crear nuevo pago
     const createPago = useCallback(async (pagoData: {
         facturaId: string;
         monto: number;
@@ -50,7 +48,6 @@ export const usePagosFactura = ({ facturaId }: UsePagosFacturaProps = {}) => {
 
             const response = await pagoFacturaCustomService.createPago(pagoData);
 
-            // Recargar pagos si estamos viendo una factura específica
             if (facturaId === pagoData.facturaId) {
                 await loadPagosByFactura(facturaId);
             }
@@ -64,7 +61,6 @@ export const usePagosFactura = ({ facturaId }: UsePagosFacturaProps = {}) => {
         }
     }, [facturaId, loadPagosByFactura]);
 
-    // Cargar pagos con filtros
     const loadPagosWithFilters = useCallback(async (filters: {
         factura?: string;
         metodoPago?: string;
@@ -78,7 +74,6 @@ export const usePagosFactura = ({ facturaId }: UsePagosFacturaProps = {}) => {
             const response = await pagoFacturaCustomService.getPagosWithFilters(filters);
             setPagos(response);
 
-            // Calcular totales localmente
             const total = response.reduce((sum, pago) => sum + pago.monto, 0);
             setTotalPagado(total);
             setCantidadPagos(response.length);
@@ -89,7 +84,6 @@ export const usePagosFactura = ({ facturaId }: UsePagosFacturaProps = {}) => {
         }
     }, []);
 
-    // Efecto para cargar pagos automáticamente cuando se proporciona facturaId
     useEffect(() => {
         if (facturaId) {
             loadPagosByFactura(facturaId);
@@ -97,19 +91,16 @@ export const usePagosFactura = ({ facturaId }: UsePagosFacturaProps = {}) => {
     }, [facturaId, loadPagosByFactura]);
 
     return {
-        // Estado
         pagos,
         totalPagado,
         cantidadPagos,
         loading,
         error,
 
-        // Acciones
         loadPagosByFactura,
         createPago,
         loadPagosWithFilters,
 
-        // Utilidades
         clearError: () => setError(null),
         refreshPagos: facturaId ? () => loadPagosByFactura(facturaId) : () => { }
     };

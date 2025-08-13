@@ -8,10 +8,8 @@ export function useClientTheme() {
     const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
-        // Marcar como hidratado
         setIsHydrated(true);
 
-        // Cargar tema del localStorage
         try {
             const savedThemeId = localStorage.getItem('app-theme');
             if (savedThemeId) {

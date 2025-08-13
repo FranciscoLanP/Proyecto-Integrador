@@ -64,7 +64,6 @@ export const ReciboPagoModal: React.FC<ReciboPagoModalProps> = ({
     if (!pago) return null;
 
     const handlePrint = () => {
-        // Crear el contenido HTML para impresión
         const reciboHTML = `
             <!DOCTYPE html>
             <html lang="es">
@@ -473,7 +472,6 @@ export const ReciboPagoModal: React.FC<ReciboPagoModalProps> = ({
             </html>
         `;
 
-        // Abrir nueva ventana y escribir el contenido
         const printWindow = window.open('', '_blank', 'width=800,height=600');
         if (printWindow) {
             printWindow.document.write(reciboHTML);
@@ -512,14 +510,12 @@ export const ReciboPagoModal: React.FC<ReciboPagoModalProps> = ({
             </DialogTitle>
 
             <DialogContent sx={{ p: 4 }}>
-                {/* Vista previa del recibo en el modal */}
                 <Box sx={{
                     border: '1px solid #ddd',
                     borderRadius: 2,
                     p: 3,
                     backgroundColor: '#fafafa'
                 }}>
-                    {/* Header */}
                     <Box sx={{
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -556,7 +552,6 @@ export const ReciboPagoModal: React.FC<ReciboPagoModalProps> = ({
                         </Box>
                     </Box>
 
-                    {/* Información General */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3, mb: 3 }}>
                         <Box>
                             <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
@@ -578,7 +573,6 @@ export const ReciboPagoModal: React.FC<ReciboPagoModalProps> = ({
                         </Box>
                     </Box>
 
-                    {/* Pago Destacado */}
                     <Paper sx={{
                         p: 1.5,
                         textAlign: 'center',
@@ -604,7 +598,6 @@ export const ReciboPagoModal: React.FC<ReciboPagoModalProps> = ({
                         </Typography>
                     </Paper>
 
-                    {/* Totales */}
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                         <Paper sx={{ p: 1.5, minWidth: 350 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
@@ -649,7 +642,6 @@ export const ReciboPagoModal: React.FC<ReciboPagoModalProps> = ({
                         </Paper>
                     </Box>
 
-                    {/* Observaciones */}
                     {pago.observaciones && (
                         <Box sx={{ mb: 3 }}>
                             <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
@@ -661,7 +653,6 @@ export const ReciboPagoModal: React.FC<ReciboPagoModalProps> = ({
                         </Box>
                     )}
 
-                    {/* Sección de Firmas */}
                     <Box sx={{
                         mb: 2,
                         p: 1.5,
@@ -713,7 +704,6 @@ export const ReciboPagoModal: React.FC<ReciboPagoModalProps> = ({
                         </Box>
                     </Box>
 
-                    {/* Footer */}
                     <Box sx={{ textAlign: 'center', color: 'text.secondary', borderTop: '1px solid #ddd', pt: 1.5 }}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 0.5, color: 'primary.main' }}>
                             ¡Gracias por su pago!

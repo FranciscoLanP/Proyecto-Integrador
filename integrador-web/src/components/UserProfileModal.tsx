@@ -114,7 +114,6 @@ export default function UserProfileModal({ open, onClose }: UserProfileModalProp
                 currentPassword: formData.currentPassword
             };
 
-            // Solo incluir campos que han cambiado
             if (formData.username !== auth?.username) {
                 payload.username = formData.username;
             }
@@ -123,14 +122,12 @@ export default function UserProfileModal({ open, onClose }: UserProfileModalProp
                 payload.password = formData.newPassword;
             }
 
-            // Usar la función real de actualización
             const { updateProfileRequest } = await import('../services/authService');
             const response = await updateProfileRequest(payload);
 
             notify('Perfil actualizado correctamente', 'success');
             setEditMode(false);
 
-            // Reset password fields
             setFormData(prev => ({
                 ...prev,
                 currentPassword: '',
@@ -138,7 +135,6 @@ export default function UserProfileModal({ open, onClose }: UserProfileModalProp
                 confirmPassword: ''
             }));
 
-            // Si se cambió el username, actualizar el contexto
             if (payload.username) {
                 updateAuth(payload.username);
             }
@@ -203,7 +199,6 @@ export default function UserProfileModal({ open, onClose }: UserProfileModalProp
 
             <DialogContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Avatar y info básica */}
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 2 }}>
                         <Avatar
                             sx={{
@@ -227,7 +222,6 @@ export default function UserProfileModal({ open, onClose }: UserProfileModalProp
 
                     <Divider />
 
-                    {/* Campos de edición */}
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <EditIcon fontSize="small" />
@@ -297,7 +291,6 @@ export default function UserProfileModal({ open, onClose }: UserProfileModalProp
                             </>
                         )}
 
-                        {/* Sección de Temas */}
                         <Divider sx={{ my: 3 }} />
                         <Box sx={{ mb: 2 }}>
                             <Typography
@@ -341,7 +334,6 @@ export default function UserProfileModal({ open, onClose }: UserProfileModalProp
                                 </Select>
                             </FormControl>
 
-                            {/* Vista previa del tema actual */}
                             <Box sx={{
                                 p: 2,
                                 borderRadius: '12px',

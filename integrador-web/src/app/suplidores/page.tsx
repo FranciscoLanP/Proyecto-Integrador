@@ -1,19 +1,10 @@
 'use client'
 
-import React, { useState, ChangeEvent, JSX } from 'react'
+import React, { useState, JSX } from 'react'
 import {
   Box,
   Typography,
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  IconButton,
   Button,
-  TextField,
-  TablePagination,
   Dialog,
   DialogTitle,
   DialogActions,
@@ -35,8 +26,6 @@ import { useTheme } from '../context/ThemeContext'
 import {
   ModernTable,
   useModernTable,
-  ClientCell,
-  ContactCell,
   StatusChip,
   ActionButtons,
   type TableColumn
@@ -57,7 +46,6 @@ export default function SuplidorPage(): JSX.Element {
   const [confirmDel, setConfirmDel] = useState(false)
   const [toDelete, setToDelete] = useState<ISuplidor>()
 
-  // Hook para manejar la tabla
   const {
     filteredData,
     paginatedData,
@@ -73,7 +61,6 @@ export default function SuplidorPage(): JSX.Element {
     initialRowsPerPage: 10
   });
 
-  // Funciones adaptadoras
   const onSearchChange = (value: string) => {
     const mockEvent = { target: { value } } as React.ChangeEvent<HTMLInputElement>;
     handleSearchChange(mockEvent);
@@ -91,7 +78,6 @@ export default function SuplidorPage(): JSX.Element {
   if (isLoading) return <Typography>Cargando suplidores...</Typography>
   if (error) return <Typography color="error">Error: {error.message}</Typography>
 
-  // Mostrar un loader básico durante la hidratación
   if (!isHydrated) {
     return (
       <Box sx={{
@@ -107,7 +93,6 @@ export default function SuplidorPage(): JSX.Element {
     )
   }
 
-  // Usar tema por defecto durante la hidratación para evitar cambios visuales
   const safeTheme = isHydrated ? currentTheme : defaultTheme;
 
   const openNew = (): void => {
@@ -164,7 +149,6 @@ export default function SuplidorPage(): JSX.Element {
     setToDelete(undefined)
   }
 
-  // Definir las columnas de la tabla
   const columns: TableColumn[] = [
     {
       id: 'suplidor',
@@ -295,7 +279,6 @@ export default function SuplidorPage(): JSX.Element {
         emptyMessage="No hay suplidores registrados"
         emptySubMessage="Comienza agregando el primer suplidor"
         searchPlaceholder="Buscar por nombre, RNC, teléfono o email..."
-        height={700}
       />
 
       <SuplidorModal

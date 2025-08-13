@@ -71,7 +71,6 @@ export default function ModelosDatosPage(): JSX.Element {
     setModalOpen(false);
   };
 
-  // Datos para la tabla moderna
   const tableData = modelos.map(modelo => {
     const marca = marcas.find(mk => mk._id === modelo.id_marca);
 
@@ -208,7 +207,6 @@ export default function ModelosDatosPage(): JSX.Element {
         background: currentTheme.colors.background
       }}
     >
-      {/* Tabla Moderna */}
       {loadingMarcas || loadingModelos ? (
         <div className="flex justify-center items-center h-64">
           <CircularProgress size={40} />
@@ -231,7 +229,6 @@ export default function ModelosDatosPage(): JSX.Element {
         />
       )}
 
-      {/* Modal */}
       <ModelosDatosModal
         open={modalOpen}
         defaultData={editData ?? undefined}

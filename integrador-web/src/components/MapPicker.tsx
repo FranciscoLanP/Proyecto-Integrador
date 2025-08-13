@@ -65,7 +65,6 @@ export function MapPicker({
       : []
   )
 
-  // Sólo si skipInitial===false
   useEffect(() => {
     if (skipInitial) return
 

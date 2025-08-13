@@ -2,25 +2,18 @@
 
 import { useState, useEffect } from 'react';
 
-/**
- * Hook que maneja el estado de hidratación de manera segura
- * Evita problemas de hidratación al usar dynamic imports o 
- * renderizado condicional basado en estado del cliente
- */
+
 export function useHydration() {
     const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
-        // Marcar como hidratado cuando el componente se monta en el cliente
         setIsHydrated(true);
     }, []);
 
     return isHydrated;
 }
 
-/**
- * Hook para verificar si estamos en el cliente de manera segura
- */
+
 export function useIsClient() {
     const [isClient, setIsClient] = useState(false);
 
@@ -31,9 +24,7 @@ export function useIsClient() {
     return isClient;
 }
 
-/**
- * Tema por defecto para usar durante SSR o cuando no hay contexto disponible
- */
+
 export const defaultTheme = {
     id: 'ocean',
     name: '🌊 Océano',

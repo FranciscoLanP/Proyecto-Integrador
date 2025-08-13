@@ -30,7 +30,6 @@ export default function RoleGuard({
         }
     }, [auth, isLoading, allowedRoles, redirectTo, router]);
 
-    // Mostrar loading mientras se verifica la autenticación
     if (isLoading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="400px">
@@ -39,12 +38,10 @@ export default function RoleGuard({
         );
     }
 
-    // Si no hay autenticación, no mostrar nada (el AuthContext redirigirá al login)
     if (!auth) {
         return null;
     }
 
-    // Si el rol no está permitido, mostrar error o no mostrar nada (ya se redirigió)
     if (!allowedRoles.includes(auth.role)) {
         if (showError) {
             return (
@@ -67,6 +64,5 @@ export default function RoleGuard({
         return null;
     }
 
-    // Si el rol está permitido, mostrar el contenido
     return <>{children}</>;
 }

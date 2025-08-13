@@ -56,42 +56,49 @@ interface NavItem {
 
 const allNavItems: NavItem[] = [
   { text: 'Dashboard', icon: <DashboardIcon />, href: '/', emoji: '📊' },
-  { text: 'Clientes', icon: <PeopleIcon />, href: '/clientes', emoji: '👥' },
-  { text: 'Vehículos', icon: <DirectionsCarIcon />, href: '/vehiculodatos', emoji: '🚗' },
-  { text: 'Empleados', icon: <WorkIcon />, href: '/empleadoinformacion', emoji: '👨‍💼' },
-  { text: 'Recepciones', icon: <CarRepairIcon />, href: '/recepcionvehiculos', emoji: '🔧' },
-  { text: 'Recibos', icon: <ReceiptIcon />, href: '/recibosvehiculos', emoji: '🧾' },
-  { text: 'Suplidores', icon: <LocalShippingIcon />, href: '/suplidores', emoji: '🚛' },
-  { text: 'Almacén', icon: <InventoryIcon />, href: '/inventorio', emoji: '📦' },
-  { text: 'Inspecciones', icon: <SearchIcon />, href: '/inspeccionvehiculo', emoji: '🔍' },
-  { text: 'Reparaciones', icon: <ConstructionIcon />, href: '/reparacionvehiculo', emoji: '🔨' },
-  { text: 'Facturas', icon: <ReceiptIcon />, href: '/factura', emoji: '💰' },
   {
-    text: 'Mantenimiento',
-    icon: <BuildIcon />,
-    emoji: '⚙️',
+    text: 'Clientes',
+    icon: <PeopleIcon />,
+    href: '/clientes',
+    emoji: '👥',
     children: [
+      { text: 'Clientes', href: '/clientes', emoji: '👥' },
+      { text: 'Vehículos', href: '/vehiculodatos', emoji: '🚗' },
       { text: 'Marcas', href: '/marcasvehiculos', emoji: '🏷️' },
-      { text: 'Modelos', href: '/modelosdatos', emoji: '🚙' },
+      { text: 'Modelos', href: '/modelosdatos', emoji: '�' },
       { text: 'Colores', href: '/coloresVehiculos', emoji: '🎨' },
     ]
   },
+  { text: 'Empleados', icon: <WorkIcon />, href: '/empleadoinformacion', emoji: '👨‍💼' },
+  {
+    text: 'Almacén',
+    icon: <InventoryIcon />,
+    emoji: '📦',
+    children: [
+      { text: 'Suplidores', href: '/suplidores', emoji: '🚛' },
+      { text: 'Inventario', href: '/inventorio', emoji: '📦' },
+    ]
+  },
+  { text: 'Recepciones', icon: <CarRepairIcon />, href: '/recepcionvehiculos', emoji: '🔧' },
+  { text: 'Recibos', icon: <ReceiptIcon />, href: '/recibosvehiculos', emoji: '🧾' },
+  { text: 'Inspecciones', icon: <SearchIcon />, href: '/inspeccionvehiculo', emoji: '🔍' },
+  { text: 'Reparaciones', icon: <ConstructionIcon />, href: '/reparacionvehiculo', emoji: '🔨' },
+  { text: 'Facturas', icon: <ReceiptIcon />, href: '/factura', emoji: '💰' },
   { text: 'Usuarios', icon: <PersonIcon />, href: '/usuarios', emoji: '👤' },
 ]
 
-// Elementos que pueden ver los empleados
 const empleadoNavItems: NavItem[] = [
   { text: 'Facturas', icon: <ReceiptIcon />, href: '/factura', emoji: '💰' },
 ]
 
 export default function Sidebar(): JSX.Element {
   const pathname = usePathname()
-  const [openMaint, setOpenMaint] = useState(false)
+  const [openClientes, setOpenClientes] = useState(false)
+  const [openAlmacen, setOpenAlmacen] = useState(false)
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false)
   const { auth, logout } = useAuth()
   const { currentTheme } = useTheme()
 
-  // Determinar qué elementos mostrar según el rol del usuario
   const navItems = auth?.role === 'empleado' ? empleadoNavItems : allNavItems
 
   const handleLogoutClick = () => setOpenLogoutDialog(true)
@@ -125,7 +132,6 @@ export default function Sidebar(): JSX.Element {
       >
         <Toolbar />
 
-        {/* Profile Section */}
         <Box sx={{
           p: 2,
           mb: 2,
@@ -168,7 +174,13 @@ export default function Sidebar(): JSX.Element {
               <Box key={item.text} sx={{ mb: 0.5 }}>
                 <ListItem disablePadding>
                   <ListItemButton
-                    onClick={() => setOpenMaint(o => !o)}
+                    onClick={() => {
+                      if (item.text === 'Clientes') {
+                        setOpenClientes(o => !o)
+                      } else if (item.text === 'Almacén') {
+                        setOpenAlmacen(o => !o)
+                      }
+                    }}
                     selected={
                       pathname === item.href ||
                       item.children.some(c => c.href === pathname)
@@ -207,10 +219,10 @@ export default function Sidebar(): JSX.Element {
                         fontSize: '0.9rem'
                       }}
                     />
-                    {openMaint ? <ExpandLess /> : <ExpandMore />}
+                    {(item.text === 'Clientes' ? openClientes : openAlmacen) ? <ExpandLess /> : <ExpandMore />}
                   </ListItemButton>
                 </ListItem>
-                <Collapse in={openMaint} timeout="auto" unmountOnExit>
+                <Collapse in={item.text === 'Clientes' ? openClientes : openAlmacen} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding>
                     {item.children.map(child => (
                       <ListItem key={child.text} disablePadding>

@@ -10,9 +10,6 @@ import {
   IconButton,
   Tooltip
 } from '@mui/material';
-import {
-  Person as PersonIcon
-} from '@mui/icons-material';
 import { useAuth } from '../app/context/AuthContext';
 import { useTheme } from '../app/context/ThemeContext';
 import UserProfileModal from './UserProfileModal';
@@ -62,7 +59,6 @@ export default function Header() {
           </Typography>
 
           <Box display="flex" alignItems="center" gap={2}>
-            {/* Avatar del usuario */}
             <Tooltip title="Ver perfil">
               <IconButton
                 onClick={handleAvatarClick}
@@ -93,7 +89,6 @@ export default function Header() {
               </IconButton>
             </Tooltip>
 
-            {/* Información del usuario (opcional, se puede quitar si quieres solo las iniciales) */}
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Typography
                 variant="body2"
@@ -110,7 +105,6 @@ export default function Header() {
         </Toolbar>
       </AppBar>
 
-      {/* Modal de perfil de usuario */}
       <UserProfileModal
         open={profileModalOpen}
         onClose={() => setProfileModalOpen(false)}

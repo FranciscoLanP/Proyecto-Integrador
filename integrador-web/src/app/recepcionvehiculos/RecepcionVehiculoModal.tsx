@@ -90,7 +90,6 @@ export default function RecepcionVehiculoModal({
     setErrors({ cliente: false, vehiculo: false, empleado: false, fecha: false });
   }, [open, defaultData, vehiculos]);
 
-  // Filtrar vehículos del cliente
   const availableVehiculos = vehiculos.filter(v => {
     const vCli = typeof v.id_cliente === 'string'
       ? v.id_cliente

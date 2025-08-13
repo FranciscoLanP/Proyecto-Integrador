@@ -69,7 +69,6 @@ export default function MarcasVehiculoPage(): JSX.Element {
     setModalOpen(false);
   };
 
-  // Datos para la tabla moderna
   const tableData = marcas.map(marca => ({
     id: marca._id || '',
     marca: (
@@ -180,7 +179,6 @@ export default function MarcasVehiculoPage(): JSX.Element {
         background: currentTheme.colors.background
       }}
     >
-      {/* Tabla Moderna */}
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
           <CircularProgress size={40} />
@@ -203,7 +201,6 @@ export default function MarcasVehiculoPage(): JSX.Element {
         />
       )}
 
-      {/* Modal */}
       <MarcasVehiculoModal
         open={modalOpen}
         defaultData={editData ?? undefined}

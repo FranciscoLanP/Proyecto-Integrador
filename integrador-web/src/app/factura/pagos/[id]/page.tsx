@@ -41,7 +41,6 @@ interface Factura {
     detalles?: string;
     emitida?: boolean;
     descuento_porcentaje?: number;
-    // Campos populados o computados
     numero_factura?: string;
     fecha_factura?: string;
     monto_total?: number;
@@ -75,7 +74,6 @@ export default function PagosFacturaPage() {
         refreshPagos
     } = usePagosFactura({ facturaId });
 
-    // Cargar información de la factura
     useEffect(() => {
         const loadFactura = async () => {
             if (!facturaId) return;
@@ -144,7 +142,6 @@ export default function PagosFacturaPage() {
         );
     }
 
-    // Solo mostrar si es factura a crédito
     if (factura.tipo_factura !== 'Credito') {
         return (
             <Container sx={{ mt: 4 }}>
@@ -165,7 +162,6 @@ export default function PagosFacturaPage() {
 
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
-            {/* Breadcrumbs */}
             <Breadcrumbs sx={{ mb: 3 }}>
                 <Link
                     component="button"
@@ -180,7 +176,6 @@ export default function PagosFacturaPage() {
                 </Typography>
             </Breadcrumbs>
 
-            {/* Header */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Box>
                     <Typography variant="h4" component="h1" gutterBottom>
@@ -201,7 +196,6 @@ export default function PagosFacturaPage() {
                 </Button>
             </Box>
 
-            {/* Información de la factura */}
             <Card sx={{ mb: 3 }}>
                 <CardContent>
                     <Typography variant="h6" gutterBottom>
@@ -230,7 +224,6 @@ export default function PagosFacturaPage() {
                 </CardContent>
             </Card>
 
-            {/* Resumen del estado de pago */}
             <Box sx={{ mb: 3 }}>
                 <EstadoPagoResumen
                     montoTotal={factura.total || factura.monto_total || 0}
@@ -242,7 +235,6 @@ export default function PagosFacturaPage() {
 
             <Divider sx={{ my: 3 }} />
 
-            {/* Historial de pagos */}
             <Card>
                 <CardContent>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -274,7 +266,6 @@ export default function PagosFacturaPage() {
                 </CardContent>
             </Card>
 
-            {/* Floating Action Button para móviles */}
             <Fab
                 color="primary"
                 aria-label="registrar pago"
@@ -290,7 +281,6 @@ export default function PagosFacturaPage() {
                 <AddIcon />
             </Fab>
 
-            {/* Modal para nuevo pago */}
             <NuevoPagoModal
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
@@ -301,7 +291,6 @@ export default function PagosFacturaPage() {
                 loading={loading}
             />
 
-            {/* Snackbar para notificaciones */}
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={6000}
@@ -316,7 +305,6 @@ export default function PagosFacturaPage() {
                 </Alert>
             </Snackbar>
 
-            {/* Modal de recibo de pago */}
             <ReciboPagoModal
                 open={reciboModalOpen}
                 pago={selectedPago}

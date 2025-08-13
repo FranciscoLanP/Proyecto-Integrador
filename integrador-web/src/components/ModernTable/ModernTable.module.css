@@ -32,6 +32,8 @@
     }
 }
 
+/* Efecto de brillo pulsante - DESHABILITADO */
+/*
 .pulseGlow {
     animation: pulseGlow 2s ease-in-out infinite alternate;
 }
@@ -45,7 +47,10 @@
         box-shadow: 0 8px 32px rgba(102, 126, 234, 0.6);
     }
 }
+*/
 
+/* Efecto de flotación al hover - DESHABILITADO */
+/*
 .hoverFloat {
     transition: all 0.3s ease;
 }
@@ -54,7 +59,10 @@
     transform: translateY(-5px);
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
 }
+*/
 
+/* Efecto shimmer/brillo deslizante - DESHABILITADO */
+/*
 .shimmer {
     position: relative;
     overflow: hidden;
@@ -77,6 +85,7 @@
 .shimmer:hover::before {
     left: 100%;
 }
+*/
 
 /* Scrollbar personalizado más elegante */
 .customScrollbar::-webkit-scrollbar {

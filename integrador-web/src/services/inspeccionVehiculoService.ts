@@ -22,6 +22,5 @@ export interface InspeccionVehiculo {
 
 export const inspeccionVehiculoService = createCrudService<InspeccionVehiculo>('inspeccionvehiculos');
 
-// Servicios adicionales para los dropdowns
 export const reciboVehiculoService = createCrudService<any>('recibosvehiculos');
 export const empleadoInformacionService = createCrudService<any>('empleadoinformaciones');

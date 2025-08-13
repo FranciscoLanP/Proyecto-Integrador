@@ -13,6 +13,29 @@ import { useTheme } from './context/ThemeContext'
 import { useHydration } from '@/hooks/useHydration'
 import RoleGuard from '@/components/RoleGuard'
 import { facturaService, type Factura } from '@/services/facturaService'
+import { pagoFacturaCustomService } from '@/services/pagoFacturaService'
+
+interface FacturaConPagos extends Factura {
+  totalPagado?: number;
+  estadoPago?: 'Pendiente' | 'Pago Parcial' | 'Saldado' | 'Pagado';
+}
+
+const calcularEstadoPago = (factura: Factura, totalPagado: number): 'Pendiente' | 'Pago Parcial' | 'Saldado' | 'Pagado' => {
+  const total = factura.total || 0;
+
+  if (factura.tipo_factura === 'Contado') {
+
+    return 'Pagado';
+  } else {
+    if (totalPagado === 0) {
+      return 'Pendiente';
+    } else if (totalPagado >= total) {
+      return 'Saldado';
+    } else {
+      return 'Pago Parcial';
+    }
+  }
+};
 
 interface DashboardStats {
   totalFacturas: number;
@@ -47,7 +70,7 @@ export default function DashboardPage() {
 function DashboardContent() {
   const { currentTheme, isHydrated } = useTheme()
   const isHydratedCustom = useHydration()
-  const [facturas, setFacturas] = useState<Factura[]>([])
+  const [facturas, setFacturas] = useState<FacturaConPagos[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<DashboardStats>({
     totalFacturas: 0,
@@ -64,13 +87,48 @@ function DashboardContent() {
     try {
       setLoading(true)
       const facturasData = await facturaService.fetchAll()
-      setFacturas(facturasData)
 
-      // Calcular estadísticas
-      const facturasPagadas = facturasData.filter(f => f.tipo_factura === 'Contado')
-      const facturasPendientes = facturasData.filter(f => f.tipo_factura === 'Credito')
+      const facturasConPagos: FacturaConPagos[] = await Promise.all(
+        facturasData.map(async (factura) => {
+          try {
+            const pagosInfo = await pagoFacturaCustomService.getPagosByFactura(factura._id!);
+            const totalPagado = pagosInfo.resumen?.totalPagado || 0;
+            const estadoPago = calcularEstadoPago(factura, totalPagado);
 
-      const ingresosTotales = facturasPagadas.reduce((sum, f) => sum + (f.total || 0), 0)
+            return {
+              ...factura,
+              totalPagado,
+              estadoPago
+            };
+          } catch (error) {
+            console.warn(`⚠️ Error obteniendo pagos para factura ${factura._id}:`, error);
+            const estadoPago = calcularEstadoPago(factura, 0);
+            return {
+              ...factura,
+              totalPagado: 0,
+              estadoPago
+            };
+          }
+        })
+      );
+
+      setFacturas(facturasConPagos)
+
+      const facturasPagadas = facturasConPagos.filter(f =>
+        f.estadoPago === 'Pagado' || f.estadoPago === 'Saldado'
+      )
+      const facturasPendientes = facturasConPagos.filter(f =>
+        f.estadoPago === 'Pendiente' || f.estadoPago === 'Pago Parcial'
+      )
+
+      const ingresosTotales = facturasPagadas.reduce((sum, f) => {
+        if (f.tipo_factura === 'Contado') {
+          return sum + (f.total || 0)
+        } else {
+          return sum + (f.totalPagado || 0)
+        }
+      }, 0)
+
       const mesActual = new Date().getMonth()
       const añoActual = new Date().getFullYear()
 
@@ -79,10 +137,16 @@ function DashboardContent() {
         return fechaFactura.getMonth() === mesActual && fechaFactura.getFullYear() === añoActual
       })
 
-      const ingresosMesActual = facturasMesActual.reduce((sum, f) => sum + (f.total || 0), 0)
+      const ingresosMesActual = facturasMesActual.reduce((sum, f) => {
+        if (f.tipo_factura === 'Contado') {
+          return sum + (f.total || 0)
+        } else {
+          return sum + (f.totalPagado || 0)
+        }
+      }, 0)
 
       setStats({
-        totalFacturas: facturasData.length,
+        totalFacturas: facturasConPagos.length,
         facturasPagadas: facturasPagadas.length,
         facturasPendientes: facturasPendientes.length,
         ingresosMensuales: ingresosMesActual,
@@ -90,7 +154,6 @@ function DashboardContent() {
         promedioFactura: facturasPagadas.length > 0 ? ingresosTotales / facturasPagadas.length : 0
       })
 
-      // Calcular ingresos por mes (últimos 6 meses)
       const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dec']
       const ingresosPorMes: IngresoMensual[] = []
 
@@ -104,7 +167,13 @@ function DashboardContent() {
           return fechaFactura.getMonth() === mesIndex && fechaFactura.getFullYear() === añoMes
         })
 
-        const ingresos = facturasDelMes.reduce((sum, f) => sum + (f.total || 0), 0)
+        const ingresos = facturasDelMes.reduce((sum, f) => {
+          if (f.tipo_factura === 'Contado') {
+            return sum + (f.total || 0)
+          } else {
+            return sum + (f.totalPagado || 0)
+          }
+        }, 0)
 
         ingresosPorMes.push({
           mes: meses[mesIndex],
@@ -115,7 +184,6 @@ function DashboardContent() {
 
       setIngresosMensuales(ingresosPorMes)
 
-      // Calcular estadísticas de métodos de pago
       const metodosPagoMap = new Map<string, number>()
 
       facturasPagadas.forEach(factura => {
@@ -125,7 +193,6 @@ function DashboardContent() {
             metodosPagoMap.set(tipo, (metodosPagoMap.get(tipo) || 0) + metodo.monto)
           })
         } else if (factura.metodo_pago) {
-          // Compatibilidad con sistema antiguo
           metodosPagoMap.set(factura.metodo_pago, (metodosPagoMap.get(factura.metodo_pago) || 0) + (factura.total || 0))
         }
       })
@@ -213,7 +280,6 @@ function DashboardContent() {
         </Typography>
       </Box>
 
-      {/* Tarjetas de Estadísticas */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {statsCards.map((card, index) => (
           <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
@@ -268,7 +334,6 @@ function DashboardContent() {
       </Grid>
 
       <Grid container spacing={3}>
-        {/* Gráfico de Ingresos Mensuales */}
         <Grid size={{ xs: 12, lg: 8 }}>
           <Paper
             sx={{
@@ -317,7 +382,6 @@ function DashboardContent() {
           </Paper>
         </Grid>
 
-        {/* Gráfico de Métodos de Pago */}
         <Grid size={{ xs: 12, lg: 4 }}>
           <Paper
             sx={{
@@ -389,7 +453,6 @@ function DashboardContent() {
           </Paper>
         </Grid>
 
-        {/* Resumen Financiero */}
         <Grid size={{ xs: 12 }}>
           <Paper
             sx={{

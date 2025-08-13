@@ -204,7 +204,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
                 position: 'relative',
                 zIndex: 1
             }}
-                className={`${styles.fadeIn} ${styles.pulseGlow}`}>
+                className={styles.fadeIn}>
                 <Typography variant="h4" sx={{
                     fontWeight: 'bold',
                     mb: 1,
@@ -230,7 +230,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
                 position: 'relative',
                 zIndex: 1
             }}
-                className={`${styles.slideIn} ${styles.hoverFloat}`}>
+                className={styles.slideIn}>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     <TextField
                         label={`🔍 ${searchPlaceholder}`}
@@ -290,7 +290,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
                 position: 'relative',
                 zIndex: 1
             }}
-                className={`${styles.fadeIn} ${styles.shimmer}`}>
+                className={styles.fadeIn}>
                 <Box sx={{
                     height: height,
                     overflow: 'auto'

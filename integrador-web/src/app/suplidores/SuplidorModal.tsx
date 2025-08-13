@@ -79,7 +79,6 @@ export default function SuplidorModal({
       longitude: markerLng
     };
 
-    // Solo agregar _id si existe
     if (defaultData?._id) {
       payload._id = defaultData._id;
     }

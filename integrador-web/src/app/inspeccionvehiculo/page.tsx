@@ -597,7 +597,6 @@ export default function InspeccionVehiculoPage() {
     >
 
 
-      {/* Tabla Moderna */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <CircularProgress size={40} />
@@ -620,7 +619,6 @@ export default function InspeccionVehiculoPage() {
         />
       )}
 
-      {/* Modales */}
       <InspeccionVehiculoModal
         open={modalOpen}
         defaultData={editData}
@@ -635,7 +633,6 @@ export default function InspeccionVehiculoPage() {
         onSubmit={handleReparacionModalSubmit}
       />
 
-      {/* Área de impresión */}
       {printHtml && (
         <div
           id="print-area"

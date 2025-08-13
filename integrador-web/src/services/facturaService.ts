@@ -16,11 +16,9 @@ export interface Factura {
   detalles?: string;
   emitida?: boolean;
   descuento_porcentaje?: number;
-  // Campo de compatibilidad
   metodo_pago?: string;
 }
 
 export const facturaService = createCrudService<Factura>('facturas');
 
-// Servicios adicionales para los dropdowns
 export const reparacionVehiculoService = createCrudService<any>('reparacionvehiculos');

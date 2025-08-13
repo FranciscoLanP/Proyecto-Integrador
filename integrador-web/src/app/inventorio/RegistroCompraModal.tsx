@@ -34,7 +34,6 @@ export default function RegistroCompraModal({
 }: Props): JSX.Element {
   const { notify } = useNotification();
 
-  // Hooks CRUD
   const { allQuery: suplQ } = useCrud<ISuplidor>('suplidorpiezas');
   const { allQuery: relQ } = useCrud<ISuplidorPiezaRelacion>('suplidorpiezasrelaciones');
   const { createM, updateM } = useCrud<IPiezaInventario>('piezasinventario');
@@ -43,7 +42,6 @@ export default function RegistroCompraModal({
   const suplidores = suplQ.data ?? [];
   const relaciones = relQ.data ?? [];
 
-  // Form state
   const [nombre, setNombre] = useState('');
   const [cantidad, setCantidad] = useState(0);
   const [costo, setCosto] = useState(0);
@@ -53,22 +51,19 @@ export default function RegistroCompraModal({
     if (!open) return;
     
     if (piezaToEdit) {
-      // MODO EDITAR: Cargar todos los datos de la pieza
       setNombre(piezaToEdit.nombre_pieza);
       setCantidad(piezaToEdit.cantidad_disponible);
       setCosto(piezaToEdit.costo_promedio);
       
-      // Buscar el suplidor asociado a esta pieza
       const relacion = relaciones.find(r => r.id_pieza === piezaToEdit._id);
       setSupl(relacion?.id_suplidor || '');
     } else {
-      // MODO CREAR: Limpiar campos
       setNombre('');
       setCantidad(0);
       setCosto(0);
       setSupl('');
     }
-  }, [open, piezaToEdit?._id, relaciones.length]); // ✅ Usar solo el ID y la longitud
+  }, [open, piezaToEdit?._id, relaciones.length]); 
 
   const validSup = piezaToEdit
     ? relaciones
@@ -92,7 +87,6 @@ export default function RegistroCompraModal({
     }
 
     if (!piezaToEdit) {
-      // CREAR NUEVA PIEZA
       const historial: IEventoHistorico[] = [{
         cantidad,
         costo_unitario: costo,
@@ -123,7 +117,6 @@ export default function RegistroCompraModal({
         }
       );
     } else {
-      // EDITAR PIEZA EXISTENTE
       updateM.mutate(
         {
           id: piezaToEdit._id,
@@ -131,7 +124,6 @@ export default function RegistroCompraModal({
             nombre_pieza: nombre.trim(),
             cantidad_disponible: cantidad,
             costo_promedio: costo,
-            // Mantener el historial existente
             historial: piezaToEdit.historial
           }
         },

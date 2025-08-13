@@ -26,7 +26,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
     }
   );
 
-  // Estados para los datos de los dropdowns
   const [recibos, setRecibos] = useState<any[]>([]);
   const [empleados, setEmpleados] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -39,7 +38,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
     })) ?? []
   );
 
-  // Cargar datos para los dropdowns
   useEffect(() => {
     if (open) {
       fetchDropdownData();
@@ -48,7 +46,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
 
   useEffect(() => {
     if (defaultData) {
-      // En modo edición, extraer solo los IDs para el formulario
       const extractedForm = {
         ...defaultData,
         id_recibo: typeof defaultData.id_recibo === 'string' ? defaultData.id_recibo : (defaultData.id_recibo as any)?._id || '',
@@ -64,7 +61,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
         })) ?? []
       );
     } else {
-      // Resetear formulario cuando no hay defaultData
       setForm({
         id_recibo: '',
         id_empleadoInformacion: '',
@@ -149,7 +145,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
       </DialogTitle>
       <DialogContent dividers>
         <Box display="flex" flexDirection="column" gap={2}>
-          {/* Campos básicos */}
           <TextField
             select
             label="Recibo"
@@ -161,7 +156,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
             disabled={loading}
           >
             {recibos.map(recibo => {
-              // Extraer información del recibo para mostrar info descriptiva
               const infoText = (() => {
                 if (recibo.id_recepcion?.id_vehiculo?.id_cliente) {
                   const cliente = recibo.id_recepcion.id_vehiculo.id_cliente;
@@ -208,7 +202,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
             InputLabelProps={{ shrink: true }}
           />
 
-          {/* Más campos... */}
           <TextField
             label="Comentario"
             name="comentario"
@@ -246,7 +239,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
             fullWidth
           />
 
-          {/* Piezas sugeridas */}
           <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <Box>
@@ -283,18 +275,17 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
                   <PiezaBuscador
                     value={pieza.piezaId}
                     onChange={(id, data) => {
-                      console.log('🔍 Pieza seleccionada:', data); // Debug
-                      console.log('🏷️ Campos disponibles:', Object.keys(data || {})); // Ver qué campos tiene
+                      console.log('🔍 Pieza seleccionada:', data); 
+                      console.log('🏷️ Campos disponibles:', Object.keys(data || {})); 
 
                       setPiezasSugeridas(prev => {
                         const arr = [...prev];
 
-                        // Probar diferentes campos de precio
                         const precioUsar = data?.costo_promedio ??
                           data?.precio ??
                           data?.costo_promedio ?? 0;
 
-                        console.log('💰 Precio que se va a asignar:', precioUsar); // Debug
+                        console.log('💰 Precio que se va a asignar:', precioUsar); 
 
                         arr[i] = {
                           ...arr[i],
@@ -303,7 +294,7 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
                           precio_unitario: precioUsar
                         };
 
-                        console.log('✅ Estado actualizado:', arr[i]); // Debug
+                        console.log('✅ Estado actualizado:', arr[i]); 
                         return arr;
                       });
                     }}

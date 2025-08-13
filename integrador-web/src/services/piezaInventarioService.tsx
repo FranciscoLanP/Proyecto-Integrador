@@ -14,8 +14,8 @@ import { createCrudService } from '@/services/crudService';
 interface Pieza {
   _id: string;
   nombre_pieza: string;
-  precio?: number;          // Mantener por compatibilidad
-  costo_promedio?: number;  // ← Agregar este campo
+  precio?: number;          
+  costo_promedio?: number; 
   cantidad_disponible: number;
   categoria?: string;
 }
@@ -43,15 +43,12 @@ export default function PiezaBuscador({
   const [loading, setLoading] = useState(false);
   const [inputValue, setInputValue] = useState('');
 
-  // Carga inicial de piezas
   useEffect(() => {
     fetchPiezas();
   }, []);
 
-  // Encontrar la pieza seleccionada
   const selectedPieza = piezas.find(p => p._id === value) || null;
 
-  // Sincronizar inputValue con la pieza seleccionada
   useEffect(() => {
     if (value && selectedPieza) {
       setInputValue(selectedPieza.nombre_pieza || '');
@@ -64,7 +61,6 @@ export default function PiezaBuscador({
     setLoading(true);
     try {
       const data = await piezaInventarioService.fetchAll();
-      // Filtrar solo piezas que tienen nombre (permitir 0 stock para edición)
       const piezasValidas = data.filter(p => p.nombre_pieza);
       setPiezas(piezasValidas);
     } catch (error) {
@@ -74,7 +70,6 @@ export default function PiezaBuscador({
     }
   };
 
-  // Eliminar la declaración duplicada de selectedPieza
 
   return (
     <Autocomplete
@@ -95,7 +90,6 @@ export default function PiezaBuscador({
       loadingText="Cargando piezas..."
       filterOptions={(options, { inputValue }) => {
         if (!inputValue) {
-          // Mostrar piezas con stock disponible + la pieza seleccionada si existe
           const piezasConStock = options.filter(p => p.cantidad_disponible > 0);
           if (selectedPieza && !piezasConStock.find(p => p._id === selectedPieza._id)) {
             return [selectedPieza, ...piezasConStock.slice(0, 9)];
@@ -110,7 +104,6 @@ export default function PiezaBuscador({
           return nombre.includes(filtro) || categoria.includes(filtro);
         });
 
-        // Asegurar que la pieza seleccionada esté en las opciones si coincide con el filtro
         if (selectedPieza && !piezasFiltradas.find(p => p._id === selectedPieza._id)) {
           const nombreSeleccionada = selectedPieza.nombre_pieza?.toLowerCase() ?? '';
           const categoriaSeleccionada = selectedPieza.categoria?.toLowerCase() ?? '';
@@ -140,7 +133,6 @@ export default function PiezaBuscador({
       )}
       renderOption={(props, option) => {
         const { key, ...rest } = props;
-        // Usar costo_promedio si existe, sino precio
         const precioMostrar = option.costo_promedio ?? option.precio ?? 0;
 
         return (

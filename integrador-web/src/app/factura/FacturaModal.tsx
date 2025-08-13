@@ -29,33 +29,26 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
 
   const [reparaciones, setReparaciones] = useState<any[]>([]);
 
-  // Función para calcular el total real de una reparación
   const calcularTotalReparacion = (reparacion: any, descuentoPorcentaje: number = 0): number => {
     if (!reparacion) return 0;
 
-    // 1. Obtener costo de mano de obra desde la inspección (como en el template)
     const inspeccion = reparacion.id_inspeccion;
     const costoManoObra = inspeccion?.costo_mano_obra || 0;
 
-    // 2. Calcular costo de piezas desde piezas_usadas
     let totalPiezas = 0;
     if (reparacion.piezas_usadas?.length > 0) {
       totalPiezas = reparacion.piezas_usadas.reduce((sum: number, pieza: any) => {
-        // Usar la misma lógica que el template: precio_unitario o costo_promedio
         const precio = pieza.precio_unitario || pieza.id_pieza?.costo_promedio || 0;
         const cantidad = pieza.cantidad || 1;
         return sum + (precio * cantidad);
       }, 0);
     }
 
-    // 3. Calcular subtotal sin impuestos
     const subtotalSinImpuestos = costoManoObra + totalPiezas;
 
-    // 4. Aplicar descuento
     const montoDescuento = subtotalSinImpuestos * (descuentoPorcentaje / 100);
     const subtotalConDescuento = subtotalSinImpuestos - montoDescuento;
 
-    // 5. Aplicar ITBIS (18%)
     const itbis = subtotalConDescuento * 0.18;
     const totalConItbis = subtotalConDescuento + itbis;
 
@@ -101,7 +94,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
         reparacionId = defaultData.id_reparacion || '';
       }
 
-      // Buscar la reparación seleccionada para recalcular el total correcto
       const reparacionSeleccionada = reparaciones.find(r => r._id === reparacionId);
       const totalCorrecto = reparacionSeleccionada ?
         calcularTotalReparacion(reparacionSeleccionada, defaultData.descuento_porcentaje || 0) :
