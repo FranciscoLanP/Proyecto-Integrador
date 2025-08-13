@@ -662,33 +662,33 @@ export const ReciboPagoModal: React.FC<ReciboPagoModalProps> = ({
                     )}
 
                     {/* Sección de Firmas */}
-                    <Box sx={{ 
-                        mb: 2, 
-                        p: 1.5, 
-                        border: '1px solid #ddd', 
-                        borderRadius: 2, 
-                        bgcolor: '#fafafa' 
+                    <Box sx={{
+                        mb: 2,
+                        p: 1.5,
+                        border: '1px solid #ddd',
+                        borderRadius: 2,
+                        bgcolor: '#fafafa'
                     }}>
-                        <Typography variant="subtitle1" sx={{ 
-                            fontWeight: 'bold', 
-                            color: 'primary.main', 
-                            mb: 1, 
+                        <Typography variant="subtitle1" sx={{
+                            fontWeight: 'bold',
+                            color: 'primary.main',
+                            mb: 1,
                             textAlign: 'center',
                             borderBottom: '1px solid #eee',
                             pb: 0.5
                         }}>
                             FIRMAS
                         </Typography>
-                        <Box sx={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            gap: 3 
+                        <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            gap: 3
                         }}>
                             <Box sx={{ flex: 1, textAlign: 'center' }}>
-                                <Box sx={{ 
-                                    borderBottom: '2px solid #333', 
-                                    height: '35px', 
-                                    mb: 0.5 
+                                <Box sx={{
+                                    borderBottom: '2px solid #333',
+                                    height: '35px',
+                                    mb: 0.5
                                 }} />
                                 <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
                                     FIRMA DEL CLIENTE
@@ -698,10 +698,10 @@ export const ReciboPagoModal: React.FC<ReciboPagoModalProps> = ({
                                 </Typography>
                             </Box>
                             <Box sx={{ flex: 1, textAlign: 'center' }}>
-                                <Box sx={{ 
-                                    borderBottom: '2px solid #333', 
-                                    height: '35px', 
-                                    mb: 0.5 
+                                <Box sx={{
+                                    borderBottom: '2px solid #333',
+                                    height: '35px',
+                                    mb: 0.5
                                 }} />
                                 <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
                                     FIRMA DEL EMPLEADO
