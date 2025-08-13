@@ -1,24 +1,34 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 
 /**
  * Hook que maneja el estado de hidratación de manera segura
+ * Evita problemas de hidratación al usar dynamic imports o 
+ * renderizado condicional basado en estado del cliente
  */
 export function useHydration() {
     const [isHydrated, setIsHydrated] = useState(false);
 
-    useIsomorphicLayoutEffect(() => {
-        // Usar un timer para asegurar que la hidratación se complete
-        const timer = setTimeout(() => {
-            setIsHydrated(true);
-        }, 0);
-
-        return () => clearTimeout(timer);
+    useEffect(() => {
+        // Marcar como hidratado cuando el componente se monta en el cliente
+        setIsHydrated(true);
     }, []);
 
     return isHydrated;
+}
+
+/**
+ * Hook para verificar si estamos en el cliente de manera segura
+ */
+export function useIsClient() {
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    return isClient;
 }
 
 /**

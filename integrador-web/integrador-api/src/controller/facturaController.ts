@@ -225,7 +225,27 @@ export const getFacturaById = async (req: Request, res: Response, next: NextFunc
       res.status(404).json({ message: 'Factura no encontrada' })
       return
     }
-    res.status(200).json(item)
+
+    // Enriquecer la factura con información adicional si está poblada
+    const enrichedItem: any = item.toObject()
+
+    // Extraer información del cliente si está disponible
+    try {
+      const reparacion = enrichedItem.id_reparacion as any
+      if (reparacion && typeof reparacion === 'object') {
+        const inspeccion = reparacion.id_inspeccion
+        if (inspeccion && typeof inspeccion === 'object') {
+          const cliente = inspeccion.id_recibo?.id_recepcion?.id_vehiculo?.id_cliente
+          if (cliente && typeof cliente === 'object') {
+            enrichedItem.nombre_cliente = cliente.nombre || cliente.primer_nombre || 'Cliente N/A'
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('No se pudo extraer información del cliente:', error)
+    }
+
+    res.status(200).json(enrichedItem)
   } catch (error) {
     next(error)
   }
@@ -233,7 +253,7 @@ export const getFacturaById = async (req: Request, res: Response, next: NextFunc
 
 export const createFactura = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id_reparacion, fecha_emision, total, metodo_pago, detalles, emitida, descuento_porcentaje } = req.body
+    const { id_reparacion, fecha_emision, total, metodo_pago, tipo_factura, detalles, emitida, descuento_porcentaje } = req.body
 
     if (!id_reparacion || !fecha_emision || !total || !metodo_pago) {
       res.status(400).json({ message: 'Campos requeridos: id_reparacion, fecha_emision, total, metodo_pago' })
@@ -245,6 +265,7 @@ export const createFactura = async (req: Request, res: Response, next: NextFunct
       fecha_emision,
       total,
       metodo_pago,
+      tipo_factura: tipo_factura || 'Contado',
       detalles: detalles || '',
       emitida: emitida || false,
       descuento_porcentaje: descuento_porcentaje || 0

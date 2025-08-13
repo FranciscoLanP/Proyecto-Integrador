@@ -1,0 +1,130 @@
+/* Estilos específicos para impresión */
+@media print {
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    body {
+        font-size: 12px !important;
+        line-height: 1.3 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Ocultar TODOS los elementos de la interfaz excepto el modal del recibo */
+    body>*:not(.MuiDialog-root) {
+        display: none !important;
+    }
+
+    /* Asegurar que solo el contenido del recibo sea visible */
+    * {
+        visibility: hidden !important;
+    }
+
+    .MuiDialog-root,
+    .MuiDialog-root *,
+    .recibo-content,
+    .recibo-content *,
+    .recibo-document,
+    .recibo-document * {
+        visibility: visible !important;
+    }
+
+    /* Ocultar elementos específicos de la interfaz */
+    .no-print,
+    button,
+    .MuiButton-root,
+    .MuiIconButton-root,
+    .MuiDialogTitle-root,
+    .MuiDialogActions-root,
+    nav,
+    .sidebar,
+    .header,
+    .navigation,
+    .menu,
+    .MuiAppBar-root,
+    .MuiDrawer-root,
+    .MuiToolbar-root,
+    header,
+    footer,
+    aside {
+        display: none !important;
+    }
+
+    /* Mostrar solo el contenido del modal */
+    .MuiDialog-root {
+        position: static !important;
+        transform: none !important;
+    }
+
+    .MuiDialog-container {
+        position: static !important;
+        transform: none !important;
+    }
+
+    .MuiDialog-paper {
+        box-shadow: none !important;
+        margin: 0 !important;
+        max-width: none !important;
+        width: 100% !important;
+        max-height: none !important;
+        height: auto !important;
+        position: static !important;
+        transform: none !important;
+    }
+
+    .MuiDialogContent-root {
+        padding: 0 !important;
+    }
+
+    /* Asegurar que solo el contenido del recibo sea visible */
+    .MuiBackdrop-root {
+        display: none !important;
+    }
+
+    /* Evitar saltos de página en elementos importantes */
+    .recibo-header,
+    .recibo-pago-destacado,
+    .recibo-totales {
+        page-break-inside: avoid;
+    }
+
+    /* Reducir espaciado en elementos específicos */
+    .MuiTypography-h3 {
+        font-size: 24px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .MuiTypography-h5 {
+        font-size: 18px !important;
+        margin-top: 4px !important;
+    }
+
+    .MuiTypography-h6 {
+        font-size: 14px !important;
+    }
+
+    .MuiTypography-body2 {
+        font-size: 10px !important;
+    }
+
+    .MuiChip-root {
+        font-size: 10px !important;
+        height: 20px !important;
+    }
+
+    .MuiPaper-root {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+
+    .MuiDivider-root {
+        margin: 8px 0 !important;
+    }
+}

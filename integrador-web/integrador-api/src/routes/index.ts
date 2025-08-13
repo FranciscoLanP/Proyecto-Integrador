@@ -21,6 +21,7 @@ import authRoutes from "./authRoutes";
 import ubicacionesRoutes from "./ubicacionesRoutes";
 import historialCompraRoutes from "./historialCompraRoutes";
 import piezaUsadaRoutes from "./piezaUsadaRoutes";
+import pagoFacturaRoutes from "./pagoFacturaRoutes";
 
 const router = Router();
 
@@ -43,8 +44,9 @@ router.use(tipoPagosRoutes);
 router.use(usuariosRoutes);
 router.use(vehiculoDatosRoutes);
 router.use('/auth', authRoutes);
-router.use( ubicacionesRoutes);
-router.use( historialCompraRoutes);
-router.use( piezaUsadaRoutes);
+router.use(ubicacionesRoutes);
+router.use(historialCompraRoutes);
+router.use(piezaUsadaRoutes);
+router.use(pagoFacturaRoutes);
 
 export default router;

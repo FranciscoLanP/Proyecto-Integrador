@@ -28,6 +28,53 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
   });
 
   const [reparaciones, setReparaciones] = useState<any[]>([]);
+
+  // Función para calcular el total real de una reparación
+  const calcularTotalReparacion = (reparacion: any, descuentoPorcentaje: number = 0): number => {
+    if (!reparacion) return 0;
+
+    // 1. Obtener costo de mano de obra desde la inspección (como en el template)
+    const inspeccion = reparacion.id_inspeccion;
+    const costoManoObra = inspeccion?.costo_mano_obra || 0;
+
+    // 2. Calcular costo de piezas desde piezas_usadas
+    let totalPiezas = 0;
+    if (reparacion.piezas_usadas?.length > 0) {
+      totalPiezas = reparacion.piezas_usadas.reduce((sum: number, pieza: any) => {
+        // Usar la misma lógica que el template: precio_unitario o costo_promedio
+        const precio = pieza.precio_unitario || pieza.id_pieza?.costo_promedio || 0;
+        const cantidad = pieza.cantidad || 1;
+        return sum + (precio * cantidad);
+      }, 0);
+    }
+
+    // 3. Calcular subtotal sin impuestos
+    const subtotalSinImpuestos = costoManoObra + totalPiezas;
+
+    // 4. Aplicar descuento
+    const montoDescuento = subtotalSinImpuestos * (descuentoPorcentaje / 100);
+    const subtotalConDescuento = subtotalSinImpuestos - montoDescuento;
+
+    // 5. Aplicar ITBIS (18%)
+    const itbis = subtotalConDescuento * 0.18;
+    const totalConItbis = subtotalConDescuento + itbis;
+
+    console.log(`💰 Cálculo de total para reparación:`, {
+      reparacionId: reparacion._id,
+      inspeccionId: inspeccion?._id,
+      costoManoObra,
+      totalPiezas,
+      subtotalSinImpuestos,
+      descuentoPorcentaje,
+      montoDescuento,
+      subtotalConDescuento,
+      itbis,
+      totalConItbis,
+      piezasUsadas: reparacion.piezas_usadas?.length || 0
+    });
+
+    return totalConItbis;
+  };
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -54,14 +101,30 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
         reparacionId = defaultData.id_reparacion || '';
       }
 
+      // Buscar la reparación seleccionada para recalcular el total correcto
+      const reparacionSeleccionada = reparaciones.find(r => r._id === reparacionId);
+      const totalCorrecto = reparacionSeleccionada ?
+        calcularTotalReparacion(reparacionSeleccionada, defaultData.descuento_porcentaje || 0) :
+        defaultData.total || 0;
+
+      console.log('🔧 Recalculando total para edición:', {
+        reparacionId,
+        costoReparacionBD: reparacionSeleccionada?.costo_total,
+        totalCalculado: totalCorrecto,
+        totalAnterior: defaultData.total,
+        descuento: defaultData.descuento_porcentaje
+      });
+
       const processedData = {
         ...defaultData,
-        metodos_pago: metodosPago,
+        metodos_pago: metodosPago.map((mp, idx) =>
+          idx === 0 ? { ...mp, monto: totalCorrecto } : mp
+        ),
         tipo_factura: defaultData.tipo_factura || 'Contado',
         id_reparacion: reparacionId,
         detalles: defaultData.detalles || '',
         fecha_emision: defaultData.fecha_emision?.split('T')[0] || new Date().toISOString().slice(0, 10),
-        total: defaultData.total || 0,
+        total: totalCorrecto,
         descuento_porcentaje: defaultData.descuento_porcentaje || 0,
         emitida: defaultData.emitida || false
       };
@@ -137,7 +200,9 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
     const reparacionId = e.target.value;
     const reparacionSeleccionada = reparaciones.find(r => r._id === reparacionId);
 
-    const nuevoTotal = reparacionSeleccionada?.costo_total || form.total;
+    const nuevoTotal = reparacionSeleccionada ?
+      calcularTotalReparacion(reparacionSeleccionada, form.descuento_porcentaje || 0) :
+      form.total;
 
     setForm(f => ({
       ...f,
@@ -175,6 +240,12 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
       return;
     }
 
+    console.log('🔍 Estado del formulario antes de enviar:', {
+      formCompleto: form,
+      tipo_factura_form: form.tipo_factura,
+      tipo_factura_typeof: typeof form.tipo_factura
+    });
+
     const dataToSubmit = {
       ...form,
       metodo_pago: form.metodos_pago[0]?.tipo || 'Efectivo',
@@ -184,7 +255,10 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
       tipo_factura: form.tipo_factura || 'Contado'
     };
 
-    console.log('🧾 Datos enviados al backend:', dataToSubmit);
+    console.log('🧾 Datos enviados al backend:', {
+      dataToSubmit,
+      tipo_factura_final: dataToSubmit.tipo_factura
+    });
     onSubmit(dataToSubmit);
   };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Box, IconButton, CircularProgress, Chip
 } from '@mui/material';
@@ -8,14 +9,65 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import PrintIcon from '@mui/icons-material/Print';
+import PaymentIcon from '@mui/icons-material/Payment';
 import FacturaModal from './FacturaModal';
 import { facturaService, Factura } from '@/services/facturaService';
+import { pagoFacturaCustomService } from '@/services/pagoFacturaService';
 import ModernTable from '@/components/ModernTable/ModernTable';
 import { useHydration } from '@/hooks/useHydration';
 import { useClientTheme } from '@/hooks/useClientTheme';
 
+// Interfaz extendida para facturas con información de pagos
+interface FacturaConPagos extends Factura {
+  totalPagado?: number;
+  estadoPago?: 'Pendiente' | 'Pago Parcial' | 'Saldado' | 'Pagado';
+}
+
+// Función para calcular el estado de pago de una factura
+const calcularEstadoPago = (factura: Factura, totalPagado: number): 'Pendiente' | 'Pago Parcial' | 'Saldado' | 'Pagado' => {
+  const total = factura.total || 0;
+
+  console.log(`🧮 Calculando estado para factura ${factura._id}:`, {
+    tipo: factura.tipo_factura,
+    total,
+    totalPagado,
+    emitida: factura.emitida
+  });
+
+  if (factura.tipo_factura === 'Contado') {
+    // Para facturas al contado:
+    // Si es al contado, significa que se pagó completo en el momento de la venta
+    return 'Pagado';
+  } else {
+    // Para facturas a crédito, verificar los pagos registrados
+    if (totalPagado === 0) {
+      return 'Pendiente';
+    } else if (totalPagado >= total) {
+      return 'Saldado';
+    } else {
+      return 'Pago Parcial';
+    }
+  }
+};
+
+// Función para obtener el color del estado
+const getColorEstado = (estado: string) => {
+  switch (estado) {
+    case 'Pagado':
+    case 'Saldado':
+      return 'linear-gradient(45deg, #10B981, #34D399)'; // Verde
+    case 'Pago Parcial':
+      return 'linear-gradient(45deg, #F59E0B, #FBBF24)'; // Amarillo/Naranja
+    case 'Pendiente':
+      return 'linear-gradient(45deg, #EF4444, #F87171)'; // Rojo
+    default:
+      return 'linear-gradient(45deg, #6B7280, #9CA3AF)'; // Gris
+  }
+};
+
 export default function FacturaPage() {
-  const [facturas, setFacturas] = useState<Factura[]>([]);
+  const router = useRouter();
+  const [facturas, setFacturas] = useState<FacturaConPagos[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<Factura | undefined>(undefined);
@@ -29,7 +81,51 @@ export default function FacturaPage() {
     try {
       const data = await facturaService.fetchAll();
       console.log('💰 Facturas desde el backend:', data);
-      setFacturas(data);
+
+      // Obtener información de pagos para cada factura
+      const facturasConPagos: FacturaConPagos[] = await Promise.all(
+        data.map(async (factura) => {
+          try {
+            // Obtener pagos de la factura
+            console.log(`🔍 Obteniendo pagos para factura ${factura._id}:`, {
+              id: factura._id,
+              tipo: factura.tipo_factura,
+              total: factura.total,
+              emitida: factura.emitida
+            });
+
+            const pagosInfo = await pagoFacturaCustomService.getPagosByFactura(factura._id!);
+            const totalPagado = pagosInfo.resumen?.totalPagado || 0;
+            const estadoPago = calcularEstadoPago(factura, totalPagado);
+
+            console.log(`💰 Factura ${factura._id}:`, {
+              tipo: factura.tipo_factura,
+              total: factura.total,
+              emitida: factura.emitida,
+              totalPagado,
+              resumenCompleto: pagosInfo.resumen,
+              estadoCalculado: estadoPago
+            });
+
+            return {
+              ...factura,
+              totalPagado,
+              estadoPago
+            };
+          } catch (error) {
+            // Si hay error obteniendo pagos, asumimos 0 pagado
+            console.warn(`⚠️ Error obteniendo pagos para factura ${factura._id}:`, error);
+            const estadoPago = calcularEstadoPago(factura, 0);
+            return {
+              ...factura,
+              totalPagado: 0,
+              estadoPago
+            };
+          }
+        })
+      );
+
+      setFacturas(facturasConPagos);
     } catch (err) {
       alert('Error al cargar facturas');
     }
@@ -337,6 +433,10 @@ export default function FacturaPage() {
     }
   };
 
+  const handleGestionarPagos = (factura: Factura) => {
+    router.push(`/factura/pagos/${factura._id}`);
+  };
+
   const getMetodosPagoInfo = (factura: Factura) => {
     if (factura.metodos_pago && factura.metodos_pago.length > 0) {
       return factura.metodos_pago.map((mp: any, idx: number) => (
@@ -407,11 +507,9 @@ export default function FacturaPage() {
       detalles: factura.detalles || '—',
       estado: (
         <Chip
-          label={factura.emitida ? 'Emitida' : 'Pendiente'}
+          label={factura.estadoPago || 'Pendiente'}
           sx={{
-            background: factura.emitida
-              ? 'linear-gradient(45deg, #10B981, #34D399)'
-              : 'linear-gradient(45deg, #F59E0B, #FBBF24)',
+            background: getColorEstado(factura.estadoPago || 'Pendiente'),
             color: 'white',
             fontWeight: 'medium'
           }}
@@ -493,6 +591,29 @@ export default function FacturaPage() {
           >
             <PrintIcon fontSize="small" />
           </IconButton>
+
+          {/* Botón de gestión de pagos solo para facturas a crédito */}
+          {factura.tipo_factura === 'Credito' && (
+            <IconButton
+              size="small"
+              onClick={() => handleGestionarPagos(factura)}
+              title="Gestionar pagos"
+              sx={{
+                background: 'linear-gradient(45deg, #10B981, #34D399)',
+                color: 'white',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #059669, #10B981)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)'
+                },
+                transition: 'all 0.3s ease',
+                width: 32,
+                height: 32
+              }}
+            >
+              <PaymentIcon fontSize="small" />
+            </IconButton>
+          )}
         </Box>
       ),
       originalData: factura
