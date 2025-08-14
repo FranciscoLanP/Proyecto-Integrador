@@ -16,107 +16,74 @@
         padding: 0 !important;
     }
 
-    body>*:not(.MuiDialog-root) {
+    /* Ocultar todo excepto el área de impresión */
+    body>*:not(#print-area) {
         display: none !important;
     }
 
-    * {
-        visibility: hidden !important;
-    }
-
-    .MuiDialog-root,
-    .MuiDialog-root *,
-    .recibo-content,
-    .recibo-content *,
-    .recibo-document,
-    .recibo-document * {
+    /* Hacer visible solo el área de impresión */
+    #print-area {
+        display: block !important;
         visibility: visible !important;
-    }
-
-    .no-print,
-    button,
-    .MuiButton-root,
-    .MuiIconButton-root,
-    .MuiDialogTitle-root,
-    .MuiDialogActions-root,
-    nav,
-    .sidebar,
-    .header,
-    .navigation,
-    .menu,
-    .MuiAppBar-root,
-    .MuiDrawer-root,
-    .MuiToolbar-root,
-    header,
-    footer,
-    aside {
-        display: none !important;
-    }
-
-    .MuiDialog-root {
         position: static !important;
-        transform: none !important;
-    }
-
-    .MuiDialog-container {
-        position: static !important;
-        transform: none !important;
-    }
-
-    .MuiDialog-paper {
-        box-shadow: none !important;
-        margin: 0 !important;
-        max-width: none !important;
         width: 100% !important;
-        max-height: none !important;
         height: auto !important;
-        position: static !important;
-        transform: none !important;
-    }
-
-    .MuiDialogContent-root {
+        background: white !important;
+        color: black !important;
+        font-family: 'Segoe UI', Tahoma, sans-serif !important;
+        margin: 0 !important;
         padding: 0 !important;
+        z-index: 1 !important;
     }
 
-    .MuiBackdrop-root {
-        display: none !important;
+    #print-area * {
+        visibility: visible !important;
+        color: black !important;
     }
 
-    .recibo-header,
-    .recibo-pago-destacado,
-    .recibo-totales {
-        page-break-inside: avoid;
+    /* Estilos específicos para el contenido de facturas */
+    #print-area .container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
     }
 
-    .MuiTypography-h3 {
+    #print-area table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 10px 0 !important;
+    }
+
+    #print-area td,
+    #print-area th {
+        border: 1px solid #000 !important;
+        padding: 8px !important;
+        font-size: 11px !important;
+        color: black !important;
+    }
+
+    #print-area th {
+        background-color: #f0f0f0 !important;
+        font-weight: bold !important;
+    }
+
+    #print-area .brand {
         font-size: 24px !important;
-        margin-bottom: 4px !important;
+        font-weight: bold !important;
+        color: black !important;
     }
 
-    .MuiTypography-h5 {
-        font-size: 18px !important;
-        margin-top: 4px !important;
-    }
-
-    .MuiTypography-h6 {
+    #print-area .section-title {
+        font-weight: bold !important;
+        margin-top: 20px !important;
+        color: black !important;
         font-size: 14px !important;
     }
 
-    .MuiTypography-body2 {
-        font-size: 10px !important;
-    }
-
-    .MuiChip-root {
-        font-size: 10px !important;
-        height: 20px !important;
-    }
-
-    .MuiPaper-root {
-        box-shadow: none !important;
-        border: 1px solid #ddd !important;
-    }
-
-    .MuiDivider-root {
-        margin: 8px 0 !important;
+    #print-area hr {
+        border: none !important;
+        border-top: 2px solid #000 !important;
+        margin: 15px 0 !important;
     }
 }

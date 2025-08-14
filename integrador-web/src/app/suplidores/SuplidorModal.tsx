@@ -2,16 +2,11 @@
 
 import React, { useState, useEffect, JSX } from 'react'
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Button,
-  IconButton,
   Box
 } from '@mui/material'
-import CloseIcon from '@mui/icons-material/Close'
+import ModernModal from '@/components/ModernModal/ModernModal'
 import 'leaflet/dist/leaflet.css'
 import { MapPicker } from '@/components/MapPicker'
 import type { ISuplidor } from '../types'
@@ -29,6 +24,28 @@ export default function SuplidorModal({
   onClose,
   onSubmit
 }: Props): JSX.Element {
+  // Estilo moderno para TextFields con bordes visibles
+  const textFieldStyle = {
+    '& .MuiInputLabel-root': {
+      zIndex: 1,
+      backgroundColor: 'transparent',
+    },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: 'rgba(0, 0, 0, 0.23)',
+        borderWidth: '2px',
+      },
+      '&:hover fieldset': {
+        borderColor: 'rgba(0, 0, 0, 0.6)',
+        borderWidth: '2px',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#1976d2',
+        borderWidth: '2px',
+      },
+    },
+  };
+
   const [nombre, setNombre] = useState('')
   const [rnc, setRnc] = useState('')
   const [telefono, setTelefono] = useState('')
@@ -87,74 +104,142 @@ export default function SuplidorModal({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ position: 'relative', pr: 6 }}>
-        {defaultData ? 'Editar Suplidor' : 'Nuevo Suplidor'}
-        <IconButton
-          onClick={onClose}
-          sx={{ position: 'absolute', right: 8, top: 8 }}
-          size="small"
-        >
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent dividers>
-        <Box display="flex" flexDirection="column" gap={2}>
-          <TextField
-            label="Nombre"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            required
-            fullWidth
-          />
-
-          <TextField
-            label="RNC"
-            value={rnc}
-            onChange={(e) => setRnc(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="Teléfono"
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="Correo electrónico"
-            value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
-            fullWidth
-          />
-
-          <Box mt={2}>
-            <MapPicker
-              initialPosition={[markerLat, markerLng]}
-              initialSearch={mapLabel}
-              skipInitial={!defaultData}
-              onChange={(lat, lng, label) => {
-                setMarkerLat(lat)
-                setMarkerLng(lng)
-                if (label) setMapLabel(label)
-              }}
-            />
+    <ModernModal
+      open={open}
+      onClose={onClose}
+      title={defaultData ? 'Editar Suplidor' : 'Nuevo Suplidor'}
+      maxWidth="sm"
+    >
+      <Box display="flex" flexDirection="column" gap={3}>
+        {/* Sección: Información Básica */}
+        <Box>
+          <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+            <strong style={{ fontSize: '1.1rem' }}>Información Básica</strong>
           </Box>
 
-          <TextField
-            label="Dirección detallada"
-            placeholder="calle/casa #"
-            value={direccion}
-            onChange={(e) => setDireccion(e.target.value)}
-            fullWidth
-          />
+          <Box display="flex" flexDirection="column" gap={2}>
+            <TextField
+              label="Nombre"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
+              fullWidth
+              sx={textFieldStyle}
+              placeholder="Nombre del suplidor"
+              helperText="Nombre completo o razón social del suplidor"
+            />
+
+            <TextField
+              label="RNC"
+              value={rnc}
+              onChange={(e) => setRnc(e.target.value)}
+              fullWidth
+              sx={textFieldStyle}
+              placeholder="Registro Nacional del Contribuyente"
+              helperText="RNC del suplidor (opcional)"
+            />
+          </Box>
         </Box>
-      </DialogContent>
-      <DialogActions sx={{ px: 2, py: 1 }}>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button variant="contained" onClick={handleSave}>
-          {defaultData ? 'Guardar cambios' : 'Crear Suplidor'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+
+        {/* Sección: Contacto */}
+        <Box>
+          <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+            <strong style={{ fontSize: '1.1rem' }}>Información de Contacto</strong>
+          </Box>
+
+          <Box display="flex" flexDirection="column" gap={2}>
+            <TextField
+              label="Teléfono"
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+              fullWidth
+              sx={textFieldStyle}
+              placeholder="(809) 000-0000"
+              helperText="Número de teléfono principal"
+            />
+
+            <TextField
+              label="Correo electrónico"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+              fullWidth
+              sx={textFieldStyle}
+              placeholder="contacto@suplidor.com"
+              helperText="Dirección de correo electrónico"
+            />
+          </Box>
+        </Box>
+
+        {/* Sección: Ubicación */}
+        <Box>
+          <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+            <strong style={{ fontSize: '1.1rem' }}>Ubicación</strong>
+          </Box>
+
+          <Box display="flex" flexDirection="column" gap={2}>
+            <Box>
+              <MapPicker
+                initialPosition={[markerLat, markerLng]}
+                initialSearch={mapLabel}
+                skipInitial={!defaultData}
+                onChange={(lat, lng, label) => {
+                  setMarkerLat(lat)
+                  setMarkerLng(lng)
+                  if (label) setMapLabel(label)
+                }}
+              />
+            </Box>
+
+            <TextField
+              label="Dirección detallada"
+              placeholder="Calle, número de casa, apartamento, etc."
+              value={direccion}
+              onChange={(e) => setDireccion(e.target.value)}
+              fullWidth
+              multiline
+              minRows={2}
+              sx={textFieldStyle}
+              helperText="Información adicional sobre la dirección"
+            />
+          </Box>
+        </Box>
+
+        {/* Botones de acción */}
+        <Box display="flex" justifyContent="flex-end" gap={2} sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+          <Button
+            onClick={onClose}
+            variant="outlined"
+            sx={{
+              borderColor: 'rgba(0,0,0,0.5)',
+              color: 'rgba(0,0,0,0.7)',
+              borderWidth: '1px',
+              '&:hover': {
+                backgroundColor: 'rgba(0,0,0,0.05)',
+                borderColor: 'rgba(0,0,0,0.7)',
+              }
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            sx={{
+              background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+              color: 'white',
+              fontWeight: 'bold',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #1976D2 30%, #0288D1 90%)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(33, 150, 243, 0.4)',
+              },
+              transition: 'all 0.2s ease-in-out',
+            }}
+          >
+            {defaultData ? 'Guardar cambios' : 'Crear Suplidor'}
+          </Button>
+        </Box>
+      </Box>
+    </ModernModal>
   )
 }

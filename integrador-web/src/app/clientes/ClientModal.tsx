@@ -2,20 +2,15 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Button,
   MenuItem,
-  IconButton,
   Box
 } from '@mui/material'
-import CloseIcon from '@mui/icons-material/Close'
 import type { ICliente, ClienteTipo } from '../types'
 import 'leaflet/dist/leaflet.css'
 import { MapPicker } from '@/components/MapPicker'
+import { ModernModal } from '@/components/ModernModal'
 
 export type ClienteConUbicacion = Partial<ICliente> & {
   latitude: number
@@ -163,21 +158,84 @@ export default function ClientModal({
     !!correoError ||
     !!telefonoError
 
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ position: 'relative', pr: 6 }}>
-        {defaultData ? 'Editar Cliente' : 'Nuevo Cliente'}
-        <IconButton
-          onClick={onClose}
-          sx={{ position: 'absolute', right: 8, top: 8 }}
-          size="small"
-        >
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </DialogTitle>
+  // Estilo base para los TextFields
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '12px',
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      '&:hover': {
+        '& .MuiOutlinedInput-notchedOutline': {
+          borderColor: 'primary.main',
+          borderWidth: '2px'
+        }
+      },
+      '&.Mui-focused': {
+        '& .MuiOutlinedInput-notchedOutline': {
+          borderWidth: '2px',
+          boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)'
+        }
+      }
+    },
+    '& .MuiInputLabel-root': {
+      zIndex: 10,
+      '&.Mui-focused': {
+        zIndex: 10
+      }
+    },
+    '& .MuiInputLabel-shrink': {
+      zIndex: 10,
+      transform: 'translate(14px, -9px) scale(0.75)'
+    }
+  }
 
-      <DialogContent dividers>
-        <Box display="flex" flexDirection="column" gap={2}>
+  const isEdit = Boolean(defaultData)
+
+  return (
+    <ModernModal
+      open={open}
+      onClose={onClose}
+      title={isEdit ? 'Editar Cliente' : 'Nuevo Cliente'}
+      titleIcon="👥"
+      maxWidth="md"
+      actions={
+        <>
+          <Button
+            onClick={onClose}
+            sx={{
+              color: 'text.secondary',
+              '&:hover': { backgroundColor: 'action.hover' }
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            disabled={disabledSave}
+            onClick={handleSave}
+            sx={{
+              background: 'linear-gradient(45deg, #4CAF50 30%, #45a049 90%)',
+              boxShadow: '0 3px 10px rgba(76, 175, 80, 0.3)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #45a049 30%, #388e3c 90%)',
+                boxShadow: '0 5px 15px rgba(76, 175, 80, 0.4)',
+                transform: 'translateY(-1px)'
+              },
+              '&:disabled': {
+                background: 'rgba(0, 0, 0, 0.12)',
+                color: 'rgba(0, 0, 0, 0.26)',
+                boxShadow: 'none'
+              },
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {isEdit ? 'Guardar cambios' : 'Crear Cliente'}
+          </Button>
+        </>
+      }
+    >
+      <Box display="flex" flexDirection="column" gap={3} sx={{ paddingTop: '16px' }}>
+        {/* Fila 1: Cédula y RNC */}
+        <Box display="flex" gap={2}>
           <TextField
             label="Cédula"
             value={cedula}
@@ -186,6 +244,7 @@ export default function ClientModal({
             helperText={cedulaError}
             required
             fullWidth
+            sx={textFieldStyle}
           />
           <TextField
             label="RNC (opcional)"
@@ -194,14 +253,22 @@ export default function ClientModal({
             error={!!rncError}
             helperText={rncError}
             fullWidth
+            sx={textFieldStyle}
           />
-          <TextField
-            label="Nombre completo"
-            value={nombre}
-            onChange={e => setNombre(e.target.value)}
-            required
-            fullWidth
-          />
+        </Box>
+
+        {/* Fila 2: Nombre completo */}
+        <TextField
+          label="Nombre completo"
+          value={nombre}
+          onChange={e => setNombre(e.target.value)}
+          required
+          fullWidth
+          sx={textFieldStyle}
+        />
+
+        {/* Fila 3: Teléfono y Correo */}
+        <Box display="flex" gap={2}>
           <TextField
             label="Teléfono"
             value={telefono}
@@ -210,6 +277,7 @@ export default function ClientModal({
             helperText={telefonoError}
             required
             fullWidth
+            sx={textFieldStyle}
           />
           <TextField
             label="Correo electrónico"
@@ -220,58 +288,55 @@ export default function ClientModal({
             helperText={correoError}
             required
             fullWidth
-          />
-          <TextField
-            select
-            label="Tipo de cliente"
-            value={tipoCliente}
-            onChange={e => setTipoCliente(e.target.value as ClienteTipo)}
-            error={!tipoCliente}
-            helperText={!tipoCliente ? 'Seleccione un tipo' : ''}
-            required
-            fullWidth
-          >
-            {['Individual', 'Empresarial', 'Aseguradora', 'Gobierno'].map(t => (
-              <MenuItem key={t} value={t}>
-                {t}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <Box mt={2}>
-            <MapPicker
-              initialPosition={[markerLat, markerLng]}
-              initialSearch={mapLabel}
-              skipInitial={!defaultData}
-              onChange={(lat, lng, label) => {
-                setMarkerLat(lat)
-                setMarkerLng(lng)
-                if (label) setMapLabel(label)
-              }}
-            />
-          </Box>
-
-          <TextField
-            label="Dirección detallada"
-            placeholder="calle/casa #"
-            value={direccionDetallada}
-            onChange={e => setDireccionDetallada(e.target.value)}
-            fullWidth
-            margin="normal"
+            sx={textFieldStyle}
           />
         </Box>
-      </DialogContent>
 
-      <DialogActions sx={{ px: 2, py: 1 }}>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button
-          variant="contained"
-          disabled={disabledSave}
-          onClick={handleSave}
+        {/* Fila 4: Tipo de cliente */}
+        <TextField
+          select
+          label="Tipo de cliente"
+          value={tipoCliente}
+          onChange={e => setTipoCliente(e.target.value as ClienteTipo)}
+          error={!tipoCliente}
+          helperText={!tipoCliente ? 'Seleccione un tipo' : ''}
+          required
+          fullWidth
+          sx={textFieldStyle}
         >
-          {defaultData ? 'Guardar cambios' : 'Crear Cliente'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+          {['Individual', 'Empresarial', 'Aseguradora', 'Gobierno'].map(t => (
+            <MenuItem key={t} value={t}>
+              {t}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        {/* Mapa */}
+        <Box>
+          <MapPicker
+            initialPosition={[markerLat, markerLng]}
+            initialSearch={mapLabel}
+            skipInitial={!defaultData}
+            onChange={(lat, lng, label) => {
+              setMarkerLat(lat)
+              setMarkerLng(lng)
+              if (label) setMapLabel(label)
+            }}
+          />
+        </Box>
+
+        {/* Dirección detallada */}
+        <TextField
+          label="Dirección detallada"
+          placeholder="calle/casa #"
+          value={direccionDetallada}
+          onChange={e => setDireccionDetallada(e.target.value)}
+          fullWidth
+          multiline
+          rows={2}
+          sx={textFieldStyle}
+        />
+      </Box>
+    </ModernModal>
   )
 }

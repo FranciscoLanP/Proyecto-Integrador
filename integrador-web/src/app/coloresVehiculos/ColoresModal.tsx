@@ -3,13 +3,11 @@
 import React, { useState, useRef, useEffect, JSX } from 'react'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
-import IconButton from '@mui/material/IconButton'
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
-import CloseIcon from '@mui/icons-material/Close'
+import { ModernModal } from '../../components/ModernModal'
 
 import type { IColoresDatos } from '../types'
 
@@ -72,83 +70,132 @@ export default function ColoresDatosModal({
 
   return (
     <>
-      <Dialog
+      <ModernModal
         open={open}
         onClose={tryClose}
-        fullWidth
+        title={isEdit ? 'Editar Color' : 'Nuevo Color'}
+        titleIcon="🎨"
         maxWidth="xs"
+        actions={
+          <>
+            <Button
+              size="small"
+              onClick={tryClose}
+              sx={{
+                color: 'text.secondary',
+                '&:hover': { backgroundColor: 'action.hover' }
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={handleSubmit}
+              sx={{
+                background: 'linear-gradient(45deg, #4CAF50 30%, #45a049 90%)',
+                boxShadow: '0 3px 10px rgba(76, 175, 80, 0.3)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #45a049 30%, #388e3c 90%)',
+                  boxShadow: '0 5px 15px rgba(76, 175, 80, 0.4)',
+                  transform: 'translateY(-1px)'
+                },
+                transition: 'all 0.2s ease'
+              }}
+            >
+              {isEdit ? 'Guardar' : 'Crear'}
+            </Button>
+          </>
+        }
       >
-        <DialogTitle
+        <TextField
+          autoFocus
+          fullWidth
+          size="small"
+          label="Nombre del color"
+          value={value}
+          onChange={(e) => handleChange(e.target.value)}
+          error={showError && !value.trim()}
+          helperText={
+            showError && !value.trim()
+              ? 'Este campo es obligatorio'
+              : ''
+          }
           sx={{
-            m: 0,
-            p: 2,
-            fontSize: '1rem',
-            fontWeight: 500
-          }}
-        >
-          {isEdit ? 'Editar Color' : 'Nuevo Color'}
-          <IconButton
-            aria-label="close"
-            onClick={tryClose}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-            size="small"
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers sx={{ p: 2 }}>
-          <TextField
-            autoFocus
-            fullWidth
-            size="small"
-            label="Nombre del color"
-            value={value}
-            onChange={(e) => handleChange(e.target.value)}
-            error={showError && !value.trim()}
-            helperText={
-              showError && !value.trim()
-                ? 'Este campo es obligatorio'
-                : ''
+            marginTop: '8px',
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '12px',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              '&:hover': {
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'primary.main',
+                  borderWidth: '2px'
+                }
+              },
+              '&.Mui-focused': {
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderWidth: '2px',
+                  boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)'
+                }
+              }
+            },
+            '& .MuiInputLabel-root': {
+              zIndex: 10,
+              '&.Mui-focused': {
+                zIndex: 10
+              }
+            },
+            '& .MuiInputLabel-shrink': {
+              zIndex: 10,
+              transform: 'translate(14px, -9px) scale(0.75)'
             }
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 1 }}>
-          <Button size="small" onClick={tryClose}>
-            Cancelar
-          </Button>
-          <Button
-            size="small"
-            variant="contained"
-            onClick={handleSubmit}
-          >
-            {isEdit ? 'Guardar' : 'Crear'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+          }}
+        />
+      </ModernModal>
 
       <Dialog
         open={confirmDiscard}
         onClose={() => setConfirmDiscard(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: '12px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)'
+          }
+        }}
       >
         <DialogTitle
           sx={{
             display: 'flex',
             alignItems: 'center',
             gap: 1,
-            fontSize: '0.9rem'
+            fontSize: '0.9rem',
+            background: 'linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%)',
+            color: '#e65100'
           }}
         >
           <WarningAmberIcon color="warning" fontSize="small" />
           ¿Descartar cambios?
         </DialogTitle>
-        <DialogActions sx={{ p: 1 }}>
-          <Button size="small" onClick={() => setConfirmDiscard(false)}>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            size="small"
+            onClick={() => setConfirmDiscard(false)}
+            sx={{ color: 'text.secondary' }}
+          >
             Volver
           </Button>
           <Button
             size="small"
             color="error"
+            variant="contained"
             onClick={confirmAndClose}
+            sx={{
+              background: 'linear-gradient(45deg, #f44336 30%, #d32f2f 90%)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #d32f2f 30%, #c62828 90%)',
+                transform: 'translateY(-1px)'
+              }
+            }}
           >
             Descartar
           </Button>

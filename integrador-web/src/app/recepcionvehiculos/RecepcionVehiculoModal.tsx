@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, MenuItem, IconButton, Box
+  TextField, Button, MenuItem, Box, Typography
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { ModernModal } from '@/components/ModernModal';
 import type {
   IRecepcionVehiculo,
   ICliente,
@@ -69,8 +68,8 @@ export default function RecepcionVehiculoModal({
 
     const empId = rec?.id_empleadoInformacion
       ? (typeof rec.id_empleadoInformacion === 'string'
-          ? rec.id_empleadoInformacion
-          : rec.id_empleadoInformacion._id)
+        ? rec.id_empleadoInformacion
+        : rec.id_empleadoInformacion._id)
       : '';
     setEmpleadoId(empId);
     const dt = rec?.fecha
@@ -129,110 +128,199 @@ export default function RecepcionVehiculoModal({
     });
   };
 
+  // Estilo base para los TextFields
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '12px',
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      '&:hover': {
+        '& .MuiOutlinedInput-notchedOutline': {
+          borderColor: 'primary.main',
+          borderWidth: '2px'
+        }
+      },
+      '&.Mui-focused': {
+        '& .MuiOutlinedInput-notchedOutline': {
+          borderWidth: '2px',
+          boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)'
+        }
+      }
+    },
+    '& .MuiInputLabel-root': {
+      zIndex: 10,
+      '&.Mui-focused': {
+        zIndex: 10
+      }
+    },
+    '& .MuiInputLabel-shrink': {
+      zIndex: 10,
+      transform: 'translate(14px, -9px) scale(0.75)'
+    }
+  };
+
+  const isEdit = Boolean(defaultData);
+
   return (
-    <Dialog open={open} onClose={tryClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ position: 'relative', pr: 6 }}>
-        {defaultData ? 'Editar Recepción' : 'Nueva Recepción'}
-        <IconButton
-          onClick={tryClose}
-          sx={{ position: 'absolute', right: 8, top: 8 }}
-          size="small"
-        >
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </DialogTitle>
+    <ModernModal
+      open={open}
+      onClose={tryClose}
+      title={isEdit ? 'Editar Recepción' : 'Nueva Recepción'}
+    >
+      <Box display="flex" flexDirection="column" gap={3}>
+        {/* Sección de Selección de Cliente y Vehículo */}
+        <Box>
+          <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
+            Cliente y Vehículo
+          </Typography>
+          <Box display="flex" flexDirection="column" gap={2}>
+            <TextField
+              select
+              label="Cliente"
+              value={clienteId}
+              onChange={e => {
+                setClienteId(e.target.value);
+                setVehiculoId('');
+              }}
+              error={errors.cliente}
+              helperText={errors.cliente ? 'Selecciona un cliente' : ''}
+              fullWidth
+              sx={textFieldStyle}
+            >
+              {clientes.map(c => (
+                <MenuItem key={c._id} value={c._id}>
+                  {c.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
 
-      <DialogContent dividers>
-        <Box display="flex" flexDirection="column" gap={2}>
-          <TextField
-            select
-            label="Cliente"
-            value={clienteId}
-            onChange={e => {
-              setClienteId(e.target.value);
-              setVehiculoId('');
-            }}
-            error={errors.cliente}
-            helperText={errors.cliente ? 'Obligatorio' : ''}
-            fullWidth
-          >
-            {clientes.map(c => (
-              <MenuItem key={c._id} value={c._id}>
-                {c.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <TextField
-            select
-            label="Vehículo"
-            value={vehiculoId}
-            onChange={e => setVehiculoId(e.target.value)}
-            error={errors.vehiculo}
-            helperText={errors.vehiculo ? 'Obligatorio' : ''}
-            fullWidth
-            disabled={!clienteId}
-          >
-            {availableVehiculos.map(v => (
-              <MenuItem key={v._id} value={v._id}>
-                {v.chasis}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <TextField
-            select
-            label="Empleado"
-            value={empleadoId}
-            onChange={e => setEmpleadoId(e.target.value)}
-            error={errors.empleado}
-            helperText={errors.empleado ? 'Obligatorio' : ''}
-            fullWidth
-          >
-            {empleados.map(emp => (
-              <MenuItem key={emp._id} value={emp._id}>
-                {emp.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <TextField
-            label="Fecha y hora"
-            type="datetime-local"
-            value={fecha}
-            onChange={e => setFecha(e.target.value)}
-            error={errors.fecha}
-            helperText={errors.fecha ? 'Obligatorio' : ''}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-          />
-
-          <TextField
-            label="Problema reportado (opcional)"
-            value={problema}
-            onChange={e => setProblema(e.target.value)}
-            multiline
-            rows={2}
-            fullWidth
-          />
-
-          <TextField
-            label="Comentario (opcional)"
-            value={comentario}
-            onChange={e => setComentario(e.target.value)}
-            multiline
-            rows={2}
-            fullWidth
-          />
+            <TextField
+              select
+              label="Vehículo"
+              value={vehiculoId}
+              onChange={e => setVehiculoId(e.target.value)}
+              error={errors.vehiculo}
+              helperText={
+                errors.vehiculo
+                  ? 'Selecciona un vehículo'
+                  : !clienteId
+                    ? 'Primero selecciona un cliente'
+                    : availableVehiculos.length === 0
+                      ? 'Este cliente no tiene vehículos registrados'
+                      : ''
+              }
+              fullWidth
+              disabled={!clienteId}
+              sx={textFieldStyle}
+            >
+              {availableVehiculos.map(v => (
+                <MenuItem key={v._id} value={v._id}>
+                  {v.chasis}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
         </Box>
-      </DialogContent>
 
-      <DialogActions sx={{ px: 2, py: 1 }}>
-        <Button onClick={tryClose}>Cancelar</Button>
-        <Button variant="contained" onClick={handleSave}>
-          {defaultData ? 'Guardar' : 'Crear'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        {/* Sección de Información de Recepción */}
+        <Box>
+          <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
+            Información de Recepción
+          </Typography>
+          <Box display="flex" flexDirection="column" gap={2}>
+            <TextField
+              select
+              label="Empleado"
+              value={empleadoId}
+              onChange={e => setEmpleadoId(e.target.value)}
+              error={errors.empleado}
+              helperText={errors.empleado ? 'Selecciona un empleado' : ''}
+              fullWidth
+              sx={textFieldStyle}
+            >
+              {empleados.map(emp => (
+                <MenuItem key={emp._id} value={emp._id}>
+                  {emp.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              label="Fecha y hora"
+              type="datetime-local"
+              value={fecha}
+              onChange={e => setFecha(e.target.value)}
+              error={errors.fecha}
+              helperText={errors.fecha ? 'La fecha es obligatoria' : ''}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              sx={textFieldStyle}
+            />
+          </Box>
+        </Box>
+
+        {/* Sección de Detalles Adicionales */}
+        <Box>
+          <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
+            Detalles Adicionales
+          </Typography>
+          <Box display="flex" flexDirection="column" gap={2}>
+            <TextField
+              label="Problema reportado (opcional)"
+              value={problema}
+              onChange={e => setProblema(e.target.value)}
+              multiline
+              rows={2}
+              fullWidth
+              sx={textFieldStyle}
+              placeholder="Describe el problema reportado por el cliente..."
+            />
+
+            <TextField
+              label="Comentario (opcional)"
+              value={comentario}
+              onChange={e => setComentario(e.target.value)}
+              multiline
+              rows={2}
+              fullWidth
+              sx={textFieldStyle}
+              placeholder="Comentarios adicionales sobre la recepción..."
+            />
+          </Box>
+        </Box>
+
+        {/* Botones de Acción */}
+        <Box
+          display="flex"
+          justifyContent="flex-end"
+          gap={2}
+          pt={2}
+          borderTop="1px solid rgba(0,0,0,0.1)"
+        >
+          <Button
+            onClick={tryClose}
+            sx={{
+              borderRadius: '25px',
+              minWidth: '100px'
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            sx={{
+              borderRadius: '25px',
+              minWidth: '100px',
+              background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+              }
+            }}
+          >
+            {isEdit ? 'Guardar' : 'Crear'}
+          </Button>
+        </Box>
+      </Box>
+    </ModernModal>
   );
 }

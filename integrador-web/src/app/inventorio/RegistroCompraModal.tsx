@@ -2,16 +2,15 @@
 
 import React, { useEffect, useState, JSX } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Button,
-  MenuItem
+  MenuItem,
+  Box,
+  Typography
 } from '@mui/material';
 import { useNotification } from '@/components/utils/NotificationProvider';
 import { useCrud } from '@/hooks/useCrud';
+import { ModernModal } from '@/components/ModernModal';
 import type {
   IPiezaInventario,
   ISuplidor,
@@ -20,7 +19,7 @@ import type {
 } from '@/app/types';
 
 interface Props {
-  piezaToEdit?: IPiezaInventario;   
+  piezaToEdit?: IPiezaInventario;
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
@@ -49,12 +48,12 @@ export default function RegistroCompraModal({
 
   useEffect(() => {
     if (!open) return;
-    
+
     if (piezaToEdit) {
       setNombre(piezaToEdit.nombre_pieza);
       setCantidad(piezaToEdit.cantidad_disponible);
       setCosto(piezaToEdit.costo_promedio);
-      
+
       const relacion = relaciones.find(r => r.id_pieza === piezaToEdit._id);
       setSupl(relacion?.id_suplidor || '');
     } else {
@@ -63,13 +62,13 @@ export default function RegistroCompraModal({
       setCosto(0);
       setSupl('');
     }
-  }, [open, piezaToEdit?._id, relaciones.length]); 
+  }, [open, piezaToEdit?._id, relaciones.length]);
 
   const validSup = piezaToEdit
     ? relaciones
-        .filter(r => r.id_pieza === piezaToEdit._id)
-        .map(r => suplidores.find(s => s._id === r.id_suplidor))
-        .filter((s): s is ISuplidor => !!s)
+      .filter(r => r.id_pieza === piezaToEdit._id)
+      .map(r => suplidores.find(s => s._id === r.id_suplidor))
+      .filter((s): s is ISuplidor => !!s)
     : suplidores;
 
   const handleSave = (): void => {
@@ -104,7 +103,8 @@ export default function RegistroCompraModal({
           onSuccess: pieza => {
             createRel.mutate(
               { id_pieza: pieza._id, id_suplidor: supl },
-              { onSuccess: () => {
+              {
+                onSuccess: () => {
                   notify('Pieza creada y suplidor asignado', 'success');
                   onSaved();
                   onClose();
@@ -139,67 +139,142 @@ export default function RegistroCompraModal({
     }
   };
 
+  // Estilo base para los TextFields
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '12px',
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      '&:hover': {
+        '& .MuiOutlinedInput-notchedOutline': {
+          borderColor: 'primary.main',
+          borderWidth: '2px'
+        }
+      },
+      '&.Mui-focused': {
+        '& .MuiOutlinedInput-notchedOutline': {
+          borderWidth: '2px',
+          boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)'
+        }
+      }
+    },
+    '& .MuiInputLabel-root': {
+      zIndex: 10,
+      '&.Mui-focused': {
+        zIndex: 10
+      }
+    },
+    '& .MuiInputLabel-shrink': {
+      zIndex: 10,
+      transform: 'translate(14px, -9px) scale(0.75)'
+    }
+  };
+
+  const isEdit = Boolean(piezaToEdit);
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle>
-        {piezaToEdit ? 'Editar Pieza' : 'Nueva Pieza'}
-      </DialogTitle>
+    <ModernModal
+      open={open}
+      onClose={onClose}
+      title={isEdit ? 'Editar Pieza' : 'Nueva Pieza'}
+    >
+      <Box display="flex" flexDirection="column" gap={3}>
+        {/* Sección de Información de la Pieza */}
+        <Box>
+          <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
+            Información de la Pieza
+          </Typography>
+          <Box display="flex" flexDirection="column" gap={2}>
+            <TextField
+              label="Nombre de la pieza"
+              fullWidth
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              required
+              sx={textFieldStyle}
+              placeholder="Ingresa el nombre de la pieza..."
+            />
 
-      <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-        <TextField
-          label="Nombre de la pieza"
-          fullWidth
-          size="small"
-          value={nombre}
-          onChange={e => setNombre(e.target.value)}
-          required
-        />
+            <TextField
+              select
+              label="Suplidor"
+              fullWidth
+              value={supl}
+              onChange={e => setSupl(e.target.value)}
+              required
+              sx={textFieldStyle}
+            >
+              {(piezaToEdit ? validSup : suplidores).map(s => (
+                <MenuItem key={s._id} value={s._id}>
+                  {s.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
+        </Box>
 
-        <TextField
-          select
-          label="Suplidor"
-          fullWidth
-          size="small"
-          value={supl}
-          onChange={e => setSupl(e.target.value)}
-          required
+        {/* Sección de Inventario y Costos */}
+        <Box>
+          <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
+            Inventario y Costos
+          </Typography>
+          <Box display="flex" gap={2}>
+            <TextField
+              label="Cantidad disponible"
+              type="number"
+              fullWidth
+              value={cantidad}
+              onChange={e => setCantidad(+e.target.value)}
+              required
+              inputProps={{ min: 0 }}
+              sx={textFieldStyle}
+            />
+
+            <TextField
+              label="Costo promedio"
+              type="number"
+              fullWidth
+              value={costo}
+              onChange={e => setCosto(+e.target.value)}
+              required
+              inputProps={{ min: 0, step: 0.01 }}
+              sx={textFieldStyle}
+            />
+          </Box>
+        </Box>
+
+        {/* Botones de Acción */}
+        <Box
+          display="flex"
+          justifyContent="flex-end"
+          gap={2}
+          pt={2}
+          borderTop="1px solid rgba(0,0,0,0.1)"
         >
-          {(piezaToEdit ? validSup : suplidores).map(s => (
-            <MenuItem key={s._id} value={s._id}>
-              {s.nombre}
-            </MenuItem>
-          ))}
-        </TextField>
-
-        <TextField
-          label="Cantidad disponible"
-          type="number"
-          fullWidth
-          size="small"
-          value={cantidad}
-          onChange={e => setCantidad(+e.target.value)}
-          required
-          inputProps={{ min: 0 }}
-        />
-
-        <TextField
-          label="Costo promedio"
-          type="number"
-          fullWidth
-          size="small"
-          value={costo}
-          onChange={e => setCosto(+e.target.value)}
-          required
-          inputProps={{ min: 0, step: 0.01 }}
-        />
-      </DialogContent>
-
-      <DialogActions sx={{ px: 2, py: 1 }}>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button variant="contained" onClick={handleSave}>
-          {piezaToEdit ? 'Actualizar' : 'Crear'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <Button
+            onClick={onClose}
+            sx={{
+              borderRadius: '25px',
+              minWidth: '100px'
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            sx={{
+              borderRadius: '25px',
+              minWidth: '100px',
+              background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+              }
+            }}
+          >
+            {isEdit ? 'Actualizar' : 'Crear'}
+          </Button>
+        </Box>
+      </Box>
+    </ModernModal>
   );
 }

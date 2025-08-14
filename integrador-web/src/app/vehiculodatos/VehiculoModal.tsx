@@ -2,20 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
   Button,
-  IconButton,
   Box
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import ModernModal from '@/components/ModernModal/ModernModal';
 import type {
   IVehiculoDatos,
   ICliente,
@@ -45,6 +40,28 @@ const VehiculoModal: React.FC<Props> = ({
   onClose,
   onSubmit
 }) => {
+  // Estilo moderno para TextFields con bordes visibles
+  const textFieldStyle = {
+    '& .MuiInputLabel-root': {
+      zIndex: 1,
+      backgroundColor: 'transparent',
+    },
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: 'rgba(0, 0, 0, 0.23)',
+        borderWidth: '2px',
+      },
+      '&:hover fieldset': {
+        borderColor: 'rgba(0, 0, 0, 0.6)',
+        borderWidth: '2px',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: '#1976d2',
+        borderWidth: '2px',
+      },
+    },
+  };
+
   const [chasis, setChasis] = useState('');
   const [anio, setAnio] = useState<number | ''>('');
   const [clienteId, setClienteId] = useState('');
@@ -143,49 +160,58 @@ const VehiculoModal: React.FC<Props> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ position: 'relative', pr: 6 }}>
-        {defaultData ? 'Editar Vehículo' : 'Nuevo Vehículo'}
-        <IconButton
-          size="small"
-          onClick={onClose}
-          sx={{ position: 'absolute', right: 8, top: 8 }}
-        >
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </DialogTitle>
+    <ModernModal
+      open={open}
+      onClose={onClose}
+      title={defaultData ? 'Editar Vehículo' : 'Nuevo Vehículo'}
+      maxWidth="sm"
+    >
+      <Box display="flex" flexDirection="column" gap={3}>
+        {/* Sección: Información del Vehículo */}
+        <Box>
+          <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+            <strong style={{ fontSize: '1.1rem' }}>Información del Vehículo</strong>
+          </Box>
 
-      <DialogContent dividers>
-        <Box display="flex" flexDirection="column" gap={2}>
+          <Box display="flex" flexDirection="column" gap={2}>
+            <TextField
+              label="Chasis"
+              value={chasis}
+              onChange={e => handleChasisChange(e.target.value)}
+              error={!!chasisError}
+              helperText={chasisError || "Número de chasis del vehículo (mínimo 5 caracteres)"}
+              required
+              fullWidth
+              sx={textFieldStyle}
+              placeholder="Ej: JH4TB2H26CC000123"
+            />
 
-          <TextField
-            label="Chasis"
-            value={chasis}
-            onChange={e => handleChasisChange(e.target.value)}
-            error={!!chasisError}
-            helperText={chasisError}
-            required
-            fullWidth
-          />
+            <FormControl fullWidth required sx={textFieldStyle}>
+              <InputLabel id="year-label">Año</InputLabel>
+              <Select
+                labelId="year-label"
+                label="Año"
+                value={anio}
+                onChange={e => setAnio(Number(e.target.value))}
+                MenuProps={{
+                  PaperProps: { style: { maxHeight: 200 } }
+                }}
+              >
+                {years.map(y => (
+                  <MenuItem key={y} value={y}>
+                    {y}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
 
-          <FormControl fullWidth required>
-            <InputLabel id="year-label">Año</InputLabel>
-            <Select
-              labelId="year-label"
-              label="Año"
-              value={anio}
-              onChange={e => setAnio(Number(e.target.value))}
-              MenuProps={{
-                PaperProps: { style: { maxHeight: 200 } }
-              }}
-            >
-              {years.map(y => (
-                <MenuItem key={y} value={y}>
-                  {y}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        {/* Sección: Propietario */}
+        <Box>
+          <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+            <strong style={{ fontSize: '1.1rem' }}>Propietario</strong>
+          </Box>
 
           <TextField
             select
@@ -194,6 +220,8 @@ const VehiculoModal: React.FC<Props> = ({
             onChange={e => setClienteId(e.target.value)}
             required
             fullWidth
+            sx={textFieldStyle}
+            helperText="Selecciona el propietario del vehículo"
           >
             {clientes.map(c => (
               <MenuItem key={c._id} value={c._id}>
@@ -201,67 +229,109 @@ const VehiculoModal: React.FC<Props> = ({
               </MenuItem>
             ))}
           </TextField>
-
-          <TextField
-            select
-            label="Marca"
-            value={marcaId}
-            onChange={e => onMarcaChange(e.target.value)}
-            required
-            fullWidth
-          >
-            {marcas.map(mk => (
-              <MenuItem key={mk._id} value={mk._id}>
-                {mk.nombre_marca}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <TextField
-            select
-            label="Modelo"
-            value={modeloId}
-            onChange={e => setModeloId(e.target.value)}
-            required
-            fullWidth
-            disabled={!marcaId}
-          >
-            {modelosFiltrados.map(md => (
-              <MenuItem key={md._id} value={md._id}>
-                {md.nombre_modelo}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <TextField
-            select
-            label="Color"
-            value={colorId}
-            onChange={e => setColorId(e.target.value)}
-            required
-            fullWidth
-          >
-            {colores.map(c => (
-              <MenuItem key={c._id} value={c._id}>
-                {c.nombre_color}
-              </MenuItem>
-            ))}
-          </TextField>
-
         </Box>
-      </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button
-          variant="contained"
-          disabled={disabledSave}
-          onClick={handleSave}
-        >
-          {defaultData ? 'Guardar cambios' : 'Crear Vehículo'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        {/* Sección: Especificaciones */}
+        <Box>
+          <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+            <strong style={{ fontSize: '1.1rem' }}>Especificaciones del Vehículo</strong>
+          </Box>
+
+          <Box display="flex" flexDirection="column" gap={2}>
+            <TextField
+              select
+              label="Marca"
+              value={marcaId}
+              onChange={e => onMarcaChange(e.target.value)}
+              required
+              fullWidth
+              sx={textFieldStyle}
+              helperText="Selecciona la marca del vehículo"
+            >
+              {marcas.map(mk => (
+                <MenuItem key={mk._id} value={mk._id}>
+                  {mk.nombre_marca}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select
+              label="Modelo"
+              value={modeloId}
+              onChange={e => setModeloId(e.target.value)}
+              required
+              fullWidth
+              disabled={!marcaId}
+              sx={textFieldStyle}
+              helperText={!marcaId ? "Primero selecciona una marca" : "Modelos disponibles para la marca seleccionada"}
+            >
+              {modelosFiltrados.map(md => (
+                <MenuItem key={md._id} value={md._id}>
+                  {md.nombre_modelo}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select
+              label="Color"
+              value={colorId}
+              onChange={e => setColorId(e.target.value)}
+              required
+              fullWidth
+              sx={textFieldStyle}
+              helperText="Color del vehículo"
+            >
+              {colores.map(c => (
+                <MenuItem key={c._id} value={c._id}>
+                  {c.nombre_color}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
+        </Box>
+
+        {/* Botones de acción */}
+        <Box display="flex" justifyContent="flex-end" gap={2} sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+          <Button
+            onClick={onClose}
+            variant="outlined"
+            sx={{
+              borderColor: 'rgba(0,0,0,0.5)',
+              color: 'rgba(0,0,0,0.7)',
+              borderWidth: '1px',
+              '&:hover': {
+                backgroundColor: 'rgba(0,0,0,0.05)',
+                borderColor: 'rgba(0,0,0,0.7)',
+              }
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            disabled={disabledSave}
+            onClick={handleSave}
+            sx={{
+              background: disabledSave
+                ? 'rgba(0,0,0,0.12)'
+                : 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+              color: disabledSave ? 'rgba(0,0,0,0.26)' : 'white',
+              fontWeight: 'bold',
+              '&:hover': !disabledSave ? {
+                background: 'linear-gradient(45deg, #1976D2 30%, #0288D1 90%)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(33, 150, 243, 0.4)',
+              } : {},
+              transition: 'all 0.2s ease-in-out',
+            }}
+          >
+            {defaultData ? 'Guardar cambios' : 'Crear Vehículo'}
+          </Button>
+        </Box>
+      </Box>
+    </ModernModal>
   );
 };
 
