@@ -15,7 +15,7 @@ const RecepcionVehiculoSchema = new Schema<IRecepcionVehiculo>({
     comentario: { type: String, required: false },
     fecha: { type: Date, required: true, default: Date.now },
     problema_reportado: { type: String, required: false }
-});
+}, { timestamps: true });
 
 export const RecepcionVehiculo = model<IRecepcionVehiculo>(
     'RecepcionVehiculo',

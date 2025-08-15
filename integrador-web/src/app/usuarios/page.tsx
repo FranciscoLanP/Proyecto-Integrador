@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState,JSX } from 'react';
+import React, { useState, JSX } from 'react';
 import {
   Box, IconButton, CircularProgress, Chip, Dialog, DialogTitle, DialogActions, Button
 } from '@mui/material';
@@ -16,8 +16,10 @@ import type { IUsuario } from '../types';
 import UsuarioModal from './UsuarioModal';
 import RoleGuard from '@/components/RoleGuard';
 import ModernTable from '@/components/ModernTable/ModernTable';
+import { useModernTable } from '@/components/ModernTable/useModernTable';
 import { useHydration } from '@/hooks/useHydration';
 import { useClientTheme } from '@/hooks/useClientTheme';
+import { useJwtDecode } from '@/hooks/useJwtDecode';
 
 export default function UsuariosPage(): JSX.Element {
   return (
@@ -31,6 +33,7 @@ function UsuariosPageContent(): JSX.Element {
   const { notify } = useNotification();
   const { currentTheme, isHydrated } = useClientTheme();
   const isHydratedCustom = useHydration();
+  const { userId } = useJwtDecode(); // Obtener el ID del usuario actual
 
   const { allQuery, createM, updateM, deleteM } = useCrud<IUsuario>('usuarios');
   const usuarios = allQuery.data || [];
@@ -39,6 +42,35 @@ function UsuariosPageContent(): JSX.Element {
   const [editData, setEditData] = useState<IUsuario | null>(null);
   const [confirmDel, setConfirmDel] = useState<boolean>(false);
   const [toDelete, setToDelete] = useState<IUsuario | null>(null);
+
+  // Hook para manejar la búsqueda y paginación
+  const {
+    filteredData,
+    paginatedData,
+    searchQuery,
+    page,
+    rowsPerPage,
+    handleSearchChange,
+    handlePageChange,
+    handleRowsPerPageChange
+  } = useModernTable({
+    data: usuarios,
+    searchFields: ['username', 'role'], // Buscar por nombre de usuario y rol
+    initialRowsPerPage: 10
+  });
+
+  // Funciones adaptadoras para ModernTable
+  const onSearchChange = (value: string) => {
+    handleSearchChange({ target: { value } } as React.ChangeEvent<HTMLInputElement>);
+  };
+
+  const onPageChange = (newPage: number) => {
+    handlePageChange(null, newPage);
+  };
+
+  const onRowsPerPageChange = (newRowsPerPage: number) => {
+    handleRowsPerPageChange({ target: { value: newRowsPerPage.toString() } } as React.ChangeEvent<HTMLInputElement>);
+  };
 
   if (allQuery.isLoading) {
     return (
@@ -139,148 +171,169 @@ function UsuariosPageContent(): JSX.Element {
     }
   };
 
-  const tableData = usuarios.map(usuario => ({
-    id: usuario._id,
-    usuario: (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box
-          sx={{
-            width: 45,
-            height: 45,
-            borderRadius: '12px',
-            background: currentTheme.buttonGradient,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '1.1rem',
-            boxShadow: `0 4px 12px ${currentTheme.colors.primary}30`
-          }}
-        >
-          {usuario.role?.toLowerCase() === 'administrador' ? '👨‍💼' :
-            usuario.role?.toLowerCase() === 'mecanico' ? '👨‍🔧' : '👤'}
-        </Box>
-        <Box>
-          <div className="font-medium" style={{ color: '#374151' }}>
-            {usuario.username}
-          </div>
-          <Chip
-            size="small"
-            label={`ID: ${usuario._id.slice(-8)}`}
+  const tableData = paginatedData.map(usuario => {
+    const isCurrentUser = usuario._id === userId; // Verificar si es el usuario actual
+
+    return {
+      id: usuario._id,
+      usuario: (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
             sx={{
-              background: 'linear-gradient(45deg, #6B7280, #9CA3AF)',
+              width: 45,
+              height: 45,
+              borderRadius: '12px',
+              background: isCurrentUser
+                ? 'linear-gradient(45deg, #8B5CF6, #A78BFA)' // Color especial para el usuario actual
+                : currentTheme.buttonGradient,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               color: 'white',
-              fontSize: '0.7rem',
-              mt: 0.5
+              fontWeight: 'bold',
+              fontSize: '1.1rem',
+              boxShadow: `0 4px 12px ${currentTheme.colors.primary}30`,
+              border: isCurrentUser ? '2px solid #8B5CF6' : 'none'
             }}
-          />
+          >
+            {usuario.role?.toLowerCase() === 'administrador' ? '👨‍💼' :
+              usuario.role?.toLowerCase() === 'mecanico' ? '👨‍🔧' : '👤'}
+          </Box>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <div className="font-medium" style={{ color: '#374151' }}>
+                {usuario.username}
+              </div>
+              {isCurrentUser && (
+                <Chip
+                  size="small"
+                  label="Tú"
+                  sx={{
+                    background: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
+                    color: 'white',
+                    fontSize: '0.65rem',
+                    height: '20px'
+                  }}
+                />
+              )}
+            </Box>
+            <Chip
+              size="small"
+              label={`ID: ${usuario._id.slice(-8)}`}
+              sx={{
+                background: 'linear-gradient(45deg, #6B7280, #9CA3AF)',
+                color: 'white',
+                fontSize: '0.7rem',
+                mt: 0.5
+              }}
+            />
+          </Box>
         </Box>
-      </Box>
-    ),
-    rol: (
-      <Chip
-        label={usuario.role || 'Sin rol'}
-        color={getRoleColor(usuario.role)}
-        size="small"
-        sx={{
-          background: usuario.role?.toLowerCase() === 'administrador'
-            ? 'linear-gradient(45deg, #EF4444, #F87171)'
-            : usuario.role?.toLowerCase() === 'empleado'
-              ? 'linear-gradient(45deg, #3B82F6, #60A5FA)'
-              : usuario.role?.toLowerCase() === 'mecanico'
-                ? 'linear-gradient(45deg, #10B981, #34D399)'
-                : 'linear-gradient(45deg, #6B7280, #9CA3AF)',
-          color: 'white',
-          fontWeight: 'medium'
-        }}
-      />
-    ),
-    estado: (
-      <Chip
-        label={usuario.activo ? 'Activo' : 'Inactivo'}
-        sx={{
-          background: usuario.activo
-            ? 'linear-gradient(45deg, #10B981, #34D399)'
-            : 'linear-gradient(45deg, #F59E0B, #FBBF24)',
-          color: 'white',
-          fontWeight: 'medium'
-        }}
-        size="small"
-      />
-    ),
-    acciones: (
-      <Box display="flex" gap={0.5}>
-        <IconButton
+      ),
+      rol: (
+        <Chip
+          label={usuario.role || 'Sin rol'}
+          color={getRoleColor(usuario.role)}
           size="small"
-          onClick={() => openEdit(usuario)}
-          title="Editar usuario"
           sx={{
-            background: 'linear-gradient(45deg, #3B82F6, #60A5FA)',
+            background: usuario.role?.toLowerCase() === 'administrador'
+              ? 'linear-gradient(45deg, #EF4444, #F87171)'
+              : usuario.role?.toLowerCase() === 'empleado'
+                ? 'linear-gradient(45deg, #3B82F6, #60A5FA)'
+                : usuario.role?.toLowerCase() === 'mecanico'
+                  ? 'linear-gradient(45deg, #10B981, #34D399)'
+                  : 'linear-gradient(45deg, #6B7280, #9CA3AF)',
             color: 'white',
-            '&:hover': {
-              background: 'linear-gradient(45deg, #2563EB, #3B82F6)',
-              transform: 'translateY(-1px)',
-              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
-            },
-            transition: 'all 0.3s ease',
-            width: 32,
-            height: 32
+            fontWeight: 'medium'
           }}
-        >
-          <EditIcon fontSize="small" />
-        </IconButton>
-        <IconButton
-          size="small"
-          onClick={() => toggleActivo(usuario)}
-          title={usuario.activo ? 'Desactivar' : 'Activar'}
+        />
+      ),
+      estado: (
+        <Chip
+          label={usuario.activo ? 'Activo' : 'Inactivo'}
           sx={{
             background: usuario.activo
-              ? 'linear-gradient(45deg, #F59E0B, #FBBF24)'
-              : 'linear-gradient(45deg, #10B981, #34D399)',
+              ? 'linear-gradient(45deg, #10B981, #34D399)'
+              : 'linear-gradient(45deg, #F59E0B, #FBBF24)',
             color: 'white',
-            '&:hover': {
-              background: usuario.activo
-                ? 'linear-gradient(45deg, #D97706, #F59E0B)'
-                : 'linear-gradient(45deg, #059669, #10B981)',
-              transform: 'translateY(-1px)',
-              boxShadow: usuario.activo
-                ? '0 4px 12px rgba(245, 158, 11, 0.4)'
-                : '0 4px 12px rgba(16, 185, 129, 0.4)'
-            },
-            transition: 'all 0.3s ease',
-            width: 32,
-            height: 32
+            fontWeight: 'medium'
           }}
-        >
-          {usuario.activo
-            ? <VisibilityOffIcon fontSize="small" />
-            : <VisibilityIcon fontSize="small" />
-          }
-        </IconButton>
-        <IconButton
           size="small"
-          onClick={() => askDelete(usuario)}
-          title="Eliminar usuario"
-          sx={{
-            background: 'linear-gradient(45deg, #EF4444, #F87171)',
-            color: 'white',
-            '&:hover': {
-              background: 'linear-gradient(45deg, #DC2626, #EF4444)',
-              transform: 'translateY(-1px)',
-              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
-            },
-            transition: 'all 0.3s ease',
-            width: 32,
-            height: 32
-          }}
-        >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-      </Box>
-    ),
-    originalData: usuario
-  }));
+        />
+      ),
+      acciones: (
+        <Box display="flex" gap={0.5}>
+          <IconButton
+            size="small"
+            onClick={() => openEdit(usuario)}
+            title="Editar usuario"
+            sx={{
+              background: 'linear-gradient(45deg, #3B82F6, #60A5FA)',
+              color: 'white',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #2563EB, #3B82F6)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+              },
+              transition: 'all 0.3s ease',
+              width: 32,
+              height: 32
+            }}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => toggleActivo(usuario)}
+            title={usuario.activo ? 'Desactivar' : 'Activar'}
+            sx={{
+              background: usuario.activo
+                ? 'linear-gradient(45deg, #F59E0B, #FBBF24)'
+                : 'linear-gradient(45deg, #10B981, #34D399)',
+              color: 'white',
+              '&:hover': {
+                background: usuario.activo
+                  ? 'linear-gradient(45deg, #D97706, #F59E0B)'
+                  : 'linear-gradient(45deg, #059669, #10B981)',
+                transform: 'translateY(-1px)',
+                boxShadow: usuario.activo
+                  ? '0 4px 12px rgba(245, 158, 11, 0.4)'
+                  : '0 4px 12px rgba(16, 185, 129, 0.4)'
+              },
+              transition: 'all 0.3s ease',
+              width: 32,
+              height: 32
+            }}
+          >
+            {usuario.activo
+              ? <VisibilityOffIcon fontSize="small" />
+              : <VisibilityIcon fontSize="small" />
+            }
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => askDelete(usuario)}
+            title="Eliminar usuario"
+            sx={{
+              background: 'linear-gradient(45deg, #EF4444, #F87171)',
+              color: 'white',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #DC2626, #EF4444)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+              },
+              transition: 'all 0.3s ease',
+              width: 32,
+              height: 32
+            }}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      ),
+      originalData: usuario
+    }
+  });
 
   const columns = [
     { id: 'usuario', label: 'Usuario' },
@@ -324,15 +377,16 @@ function UsuariosPageContent(): JSX.Element {
           subtitle="Administra los usuarios y permisos del sistema"
           data={tableData}
           columns={columns}
-          searchTerm=""
-          onSearchChange={() => { }}
-          page={0}
-          rowsPerPage={10}
-          onPageChange={() => { }}
-          onRowsPerPageChange={() => { }}
+          searchTerm={searchQuery}
+          onSearchChange={onSearchChange}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={onPageChange}
+          onRowsPerPageChange={onRowsPerPageChange}
           onCreateNew={openNew}
           createButtonText="Nuevo Usuario"
           emptyMessage="No se encontraron usuarios"
+          searchPlaceholder="Buscar por usuario..."
         />
 
         <UsuarioModal
@@ -340,6 +394,7 @@ function UsuariosPageContent(): JSX.Element {
           defaultData={editData ?? undefined}
           onClose={closeForm}
           onSubmit={onSubmit}
+          currentUserId={userId}
         />
 
         <Dialog

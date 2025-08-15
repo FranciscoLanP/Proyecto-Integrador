@@ -23,6 +23,7 @@ export default function InspeccionVehiculoPage() {
   const [reparacionModalOpen, setReparacionModalOpen] = useState(false);
   const [reparacionDefault, setReparacionDefault] = useState<ReparacionVehiculo | undefined>(undefined);
   const [printHtml, setPrintHtml] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { currentTheme, isHydrated } = useTheme();
   const isHydratedCustom = useHydration();
@@ -281,8 +282,15 @@ export default function InspeccionVehiculoPage() {
     }
   }, [printHtml]);
 
+  // Filtrar inspecciones por término de búsqueda (por cliente)
+  const inspeccionesFiltradas = inspecciones.filter(inspeccion => {
+    if (!searchTerm) return true;
+    const clienteNombre = getClienteNombre(inspeccion).toLowerCase();
+    return clienteNombre.includes(searchTerm.toLowerCase());
+  });
+
   // Datos para la tabla moderna
-  const tableData = inspecciones.map(inspeccion => {
+  const tableData = inspeccionesFiltradas.map(inspeccion => {
     const statusInfo = getInspectionStatus(inspeccion.resultado || '');
     const piezas = inspeccion.piezas_sugeridas ?? [];
     const total = piezas.reduce((acc, p) => acc + (p.precio_unitario ?? 0) * p.cantidad, 0);
@@ -607,8 +615,8 @@ export default function InspeccionVehiculoPage() {
           subtitle="Gestiona las inspecciones técnicas y genera cotizaciones de reparación"
           data={tableData}
           columns={columns}
-          searchTerm=""
-          onSearchChange={() => { }}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
           page={0}
           rowsPerPage={10}
           onPageChange={() => { }}
@@ -616,6 +624,7 @@ export default function InspeccionVehiculoPage() {
           onCreateNew={handleCreate}
           createButtonText="Nueva Inspección"
           emptyMessage="No se encontraron inspecciones"
+          searchPlaceholder="Buscar por cliente..."
         />
       )}
 

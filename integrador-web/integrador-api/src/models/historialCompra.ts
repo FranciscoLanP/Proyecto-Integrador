@@ -14,6 +14,6 @@ const HistorialCompraSchema = new Schema<IHistorialCompra>({
   cantidad: { type: Number, required: true },
   costo_unitario: { type: Number, required: true },
   fecha_compra: { type: Date, default: Date.now }
-});
+}, { timestamps: true });
 
 export const HistorialCompra = model<IHistorialCompra>('HistorialCompra', HistorialCompraSchema);

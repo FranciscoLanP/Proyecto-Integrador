@@ -17,6 +17,6 @@ const GarantiaSchema = new Schema<IGarantia>({
     fecha_expiracion: { type: Date, required: true },
     tipo_garantia: { type: String, required: true },
     descripcion: { type: String, required: false }
-});
+}, { timestamps: true });
 
 export const Garantia = model<IGarantia>('Garantia', GarantiaSchema);

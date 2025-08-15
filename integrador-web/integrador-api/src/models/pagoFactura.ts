@@ -5,7 +5,7 @@ export interface IPagoFactura extends Document {
   factura: Schema.Types.ObjectId;
   monto: number;
   metodoPago: 'efectivo' | 'tarjeta' | 'transferencia' | 'cheque';
-  referenciaMetodo?: string; // Para transferencias, cheques, etc.
+  referenciaMetodo?: string; 
   fechaPago: Date;
   observaciones?: string;
 }

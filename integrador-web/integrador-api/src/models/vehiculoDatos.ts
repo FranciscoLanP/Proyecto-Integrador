@@ -17,7 +17,7 @@ const VehiculoDatosSchema = new Schema<IVehiculoDatos>({
   id_color: { type: Schema.Types.ObjectId, ref: 'ColoresDatos', required: true },
   anio: { type: Number, required: true },
   activo: { type: Boolean, default: true }
-});
+}, { timestamps: true });
 
 export const VehiculoDatos = model<IVehiculoDatos>(
   'VehiculoDatos',

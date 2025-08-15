@@ -33,7 +33,7 @@ const InspeccionVehiculoSchema = new Schema<IInspeccionVehiculo>({
         cantidad: { type: Number, required: false },
         precio_unitario: { type: Number, required: false }
     }]
-});
+}, { timestamps: true });
 
 export const InspeccionVehiculo = model<IInspeccionVehiculo>(
     'InspeccionVehiculo',

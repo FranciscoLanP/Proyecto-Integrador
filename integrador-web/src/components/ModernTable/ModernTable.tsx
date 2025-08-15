@@ -143,6 +143,7 @@ export interface ModernTableProps {
     titleIcon?: string;
     height?: number;
     minWidth?: number;
+    filterComponent?: React.ReactNode;
 }
 
 const ModernTable: React.FC<ModernTableProps> = ({
@@ -163,7 +164,8 @@ const ModernTable: React.FC<ModernTableProps> = ({
     searchPlaceholder = 'Buscar...',
     titleIcon = '🎯',
     height = 400,
-    minWidth = 900
+    minWidth = 900,
+    filterComponent
 }) => {
     const { currentTheme } = useTheme();
 
@@ -177,7 +179,6 @@ const ModernTable: React.FC<ModernTableProps> = ({
             position: 'relative'
         }}
             className={styles.fadeIn}>
-            {/* Efecto glassmorphism de fondo */}
             <Box sx={{
                 position: 'absolute',
                 top: 0,
@@ -192,7 +193,6 @@ const ModernTable: React.FC<ModernTableProps> = ({
                 zIndex: 0
             }} />
 
-            {/* Header moderno */}
             <Box sx={{
                 mb: 4,
                 textAlign: 'center',
@@ -219,7 +219,6 @@ const ModernTable: React.FC<ModernTableProps> = ({
                 )}
             </Box>
 
-            {/* Barra de búsqueda moderna */}
             <Paper sx={{
                 p: 2,
                 mb: 3,
@@ -255,6 +254,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
                             )
                         }}
                     />
+                    {filterComponent}
                     {onCreateNew && (
                         <Button
                             variant="contained"
@@ -280,7 +280,6 @@ const ModernTable: React.FC<ModernTableProps> = ({
                 </Box>
             </Paper>
 
-            {/* Tabla con diseño moderno */}
             <Paper sx={{
                 borderRadius: '20px',
                 overflow: 'hidden',
@@ -375,7 +374,6 @@ const ModernTable: React.FC<ModernTableProps> = ({
                     </Box>
                 </Box>
 
-                {/* Paginación moderna */}
                 <Box sx={{
                     borderTop: '1px solid rgba(0, 0, 0, 0.1)',
                     background: 'rgba(248, 250, 252, 0.8)',
@@ -420,8 +418,6 @@ const ModernTable: React.FC<ModernTableProps> = ({
     );
 };
 
-// Exportar el tipo de columna como TableColumn para consistencia
 export type TableColumn = Column;
 
-// Exportación por defecto
 export default ModernTable;

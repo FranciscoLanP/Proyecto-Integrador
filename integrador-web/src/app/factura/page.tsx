@@ -1,21 +1,31 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Box, IconButton, CircularProgress, Chip
+  Box, IconButton, CircularProgress, Chip, TextField, FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import PrintIcon from '@mui/icons-material/Print';
 import PaymentIcon from '@mui/icons-material/Payment';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import FacturaModal from './FacturaModal';
 import { facturaService, Factura } from '@/services/facturaService';
 import { pagoFacturaCustomService } from '@/services/pagoFacturaService';
 import ModernTable from '@/components/ModernTable/ModernTable';
 import { useHydration } from '@/hooks/useHydration';
 import { useClientTheme } from '@/hooks/useClientTheme';
+import { useJwtDecode } from '@/hooks/useJwtDecode';
+
+// Configurar dayjs en español
+dayjs.locale('es');
 
 interface FacturaConPagos extends Factura {
   totalPagado?: number;
@@ -65,9 +75,13 @@ export default function FacturaPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<Factura | undefined>(undefined);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [tipoFilter, setTipoFilter] = useState('');
+  const [fechaEmision, setFechaEmision] = useState<dayjs.Dayjs | null>(null);
 
   const { currentTheme, isHydrated } = useClientTheme();
   const isHydratedCustom = useHydration();
+  const { role: userRole } = useJwtDecode();
 
   const fetchFacturas = async () => {
     setLoading(true);
@@ -349,7 +363,6 @@ export default function FacturaPage() {
               
               <div style="clear:both"></div>
               
-              <div class="section-title">Métodos de Pago</div>
               <table style="width: 350px; float: right;">
                 ${metodosPagoInfo.map(mp => `
                   <tr>
@@ -454,7 +467,33 @@ export default function FacturaPage() {
     return factura.metodo_pago || '—';
   };
 
-  const tableData = facturas.map(factura => {
+  // Filtrar facturas basado en búsqueda, tipo y fecha de emisión
+  const facturasFiltradas = React.useMemo(() => {
+    let filtered = facturas;
+
+    // Filtrar por tipo de factura
+    if (tipoFilter) {
+      filtered = filtered.filter(factura => factura.tipo_factura === tipoFilter);
+    }
+
+    // Filtrar por término de búsqueda (solo nombre del cliente)
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(factura => {
+        const clienteInfo = getClienteVehiculoInfo(factura);
+        return clienteInfo.cliente.toLowerCase().includes(searchTerm.toLowerCase());
+      });
+    }
+
+    if (fechaEmision) {
+      filtered = filtered.filter(factura => {
+        const fechaFactura = factura.fecha_emision?.toString().slice(0, 10) || '';
+        const fechaSeleccionada = fechaEmision.format('YYYY-MM-DD');
+        return fechaFactura === fechaSeleccionada;
+      });
+    }
+
+    return filtered;
+  }, [facturas, tipoFilter, searchTerm, fechaEmision]); const tableData = facturasFiltradas.map(factura => {
     const clienteVehiculo = getClienteVehiculoInfo(factura);
     const fechaEmision = factura.fecha_emision?.toString().slice(0, 10) || '—';
     const total = factura.total || 0;
@@ -522,60 +561,64 @@ export default function FacturaPage() {
       ),
       acciones: (
         <Box display="flex" gap={0.5}>
-          <IconButton
-            size="small"
-            onClick={() => handleEdit(factura)}
-            disabled={factura.emitida}
-            title="Editar"
-            sx={{
-              background: factura.emitida
-                ? 'linear-gradient(45deg, #9CA3AF, #D1D5DB)'
-                : 'linear-gradient(45deg, #3B82F6, #60A5FA)',
-              color: 'white',
-              '&:hover': factura.emitida ? {} : {
-                background: 'linear-gradient(45deg, #2563EB, #3B82F6)',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
-              },
-              '&:disabled': {
-                background: 'linear-gradient(45deg, #9CA3AF, #D1D5DB)',
+          {userRole === 'administrador' && (
+            <IconButton
+              size="small"
+              onClick={() => handleEdit(factura)}
+              disabled={factura.emitida}
+              title="Editar"
+              sx={{
+                background: factura.emitida
+                  ? 'linear-gradient(45deg, #9CA3AF, #D1D5DB)'
+                  : 'linear-gradient(45deg, #3B82F6, #60A5FA)',
                 color: 'white',
-                opacity: 0.6
-              },
-              transition: 'all 0.3s ease',
-              width: 32,
-              height: 32
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => handleDelete(factura._id!)}
-            disabled={factura.emitida}
-            title="Eliminar"
-            sx={{
-              background: factura.emitida
-                ? 'linear-gradient(45deg, #9CA3AF, #D1D5DB)'
-                : 'linear-gradient(45deg, #EF4444, #F87171)',
-              color: 'white',
-              '&:hover': factura.emitida ? {} : {
-                background: 'linear-gradient(45deg, #DC2626, #EF4444)',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
-              },
-              '&:disabled': {
-                background: 'linear-gradient(45deg, #9CA3AF, #D1D5DB)',
+                '&:hover': factura.emitida ? {} : {
+                  background: 'linear-gradient(45deg, #2563EB, #3B82F6)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+                },
+                '&:disabled': {
+                  background: 'linear-gradient(45deg, #9CA3AF, #D1D5DB)',
+                  color: 'white',
+                  opacity: 0.6
+                },
+                transition: 'all 0.3s ease',
+                width: 32,
+                height: 32
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+          {userRole === 'administrador' && (
+            <IconButton
+              size="small"
+              onClick={() => handleDelete(factura._id!)}
+              disabled={factura.emitida}
+              title="Eliminar"
+              sx={{
+                background: factura.emitida
+                  ? 'linear-gradient(45deg, #9CA3AF, #D1D5DB)'
+                  : 'linear-gradient(45deg, #EF4444, #F87171)',
                 color: 'white',
-                opacity: 0.6
-              },
-              transition: 'all 0.3s ease',
-              width: 32,
-              height: 32
-            }}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+                '&:hover': factura.emitida ? {} : {
+                  background: 'linear-gradient(45deg, #DC2626, #EF4444)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+                },
+                '&:disabled': {
+                  background: 'linear-gradient(45deg, #9CA3AF, #D1D5DB)',
+                  color: 'white',
+                  opacity: 0.6
+                },
+                transition: 'all 0.3s ease',
+                width: 32,
+                height: 32
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          )}
           <IconButton
             size="small"
             onClick={() => handlePrint(factura)}
@@ -675,8 +718,8 @@ export default function FacturaPage() {
             subtitle="Administra las facturas del taller y controla los pagos"
             data={tableData}
             columns={columns}
-            searchTerm=""
-            onSearchChange={() => { }}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
             page={0}
             rowsPerPage={10}
             onPageChange={() => { }}
@@ -684,6 +727,164 @@ export default function FacturaPage() {
             onCreateNew={handleCreate}
             createButtonText="Nueva Factura"
             emptyMessage="No se encontraron facturas"
+            searchPlaceholder="Buscar por nombre del cliente..."
+            filterComponent={
+              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  {/* Filtro de fecha de emisión */}
+                  <DatePicker
+                    label="📅 Fecha de emisión"
+                    value={fechaEmision}
+                    onChange={(newValue) => setFechaEmision(newValue)}
+                    format="DD/MM/YYYY"
+                    slotProps={{
+                      textField: {
+                        size: 'small',
+                        placeholder: "Seleccione fecha",
+
+                        sx: {
+                          minWidth: 220,
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '12px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            backdropFilter: 'blur(15px)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                              boxShadow: '0 6px 25px rgba(0,0,0,0.12)',
+                              transform: 'translateY(-1px)'
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'rgba(100, 149, 237, 0.3)',
+                              borderRadius: '12px',
+                              borderWidth: '1.5px'
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'rgba(100, 149, 237, 0.5)',
+                              borderWidth: '2px'
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'primary.main',
+                              borderWidth: '2px',
+                              boxShadow: '0 0 10px rgba(100, 149, 237, 0.3)'
+                            }
+                          },
+                          '& .MuiInputLabel-root': {
+                            color: 'rgba(0, 0, 0, 0.7)',
+                            fontWeight: 500,
+                            '&.Mui-focused': {
+                              color: 'primary.main'
+                            }
+                          },
+                          '& .MuiFormHelperText-root': {
+                            color: 'rgba(0, 0, 0, 0.6)',
+                            fontSize: '0.75rem',
+                            fontWeight: 400
+                          }
+                        }
+                      },
+                      openPickerIcon: {
+                        sx: {
+                          color: 'primary.main',
+                          '&:hover': {
+                            color: 'primary.dark'
+                          }
+                        }
+                      }
+                    }}
+                    sx={{
+                      '& .MuiPickersDay-root': {
+                        borderRadius: '8px',
+                        '&:hover': {
+                          backgroundColor: 'rgba(100, 149, 237, 0.1)'
+                        },
+                        '&.Mui-selected': {
+                          backgroundColor: 'primary.main',
+                          '&:hover': {
+                            backgroundColor: 'primary.dark'
+                          }
+                        }
+                      }
+                    }}
+                  />
+
+                  {/* Botón para limpiar filtro de fecha */}
+                  {fechaEmision && (
+                    <IconButton
+                      size="small"
+                      onClick={() => setFechaEmision(null)}
+                      sx={{
+                        background: 'linear-gradient(45deg, #ff6b6b, #ff8e53)',
+                        color: 'white',
+                        width: 36,
+                        height: 36,
+                        boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          background: 'linear-gradient(45deg, #ee5a52, #ff7043)',
+                          transform: 'scale(1.1)',
+                          boxShadow: '0 6px 20px rgba(255, 107, 107, 0.4)'
+                        }
+                      }}
+                      title="Limpiar filtro de fecha"
+                    >
+                      ✕
+                    </IconButton>
+                  )}
+
+                  {/* Select de tipo de factura */}
+                  <FormControl size="small" sx={{ minWidth: 170 }}>
+                    <InputLabel
+                      sx={{
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        '&.Mui-focused': {
+                          color: 'primary.main'
+                        }
+                      }}
+                    >
+                      Tipo de Factura
+                    </InputLabel>
+                    <Select
+                      value={tipoFilter}
+                      onChange={(e) => setTipoFilter(e.target.value)}
+                      label="Tipo de Factura"
+                      sx={{
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        backdropFilter: 'blur(15px)',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          boxShadow: '0 6px 25px rgba(0,0,0,0.12)',
+                          transform: 'translateY(-1px)'
+                        },
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(100, 149, 237, 0.3)',
+                          borderRadius: '12px',
+                          borderWidth: '1.5px'
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(100, 149, 237, 0.5)',
+                          borderWidth: '2px'
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'primary.main',
+                          borderWidth: '2px',
+                          boxShadow: '0 0 10px rgba(100, 149, 237, 0.3)'
+                        }
+                      }}
+                    >
+                      <MenuItem value="">🗂️ Todos</MenuItem>
+                      <MenuItem value="Contado">💵 Contado</MenuItem>
+                      <MenuItem value="Credito">💳 Crédito</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </LocalizationProvider>
+            }
           />
         )}
 

@@ -9,6 +9,6 @@ export interface IModelosDatos extends Document {
 const ModelosDatosSchema = new Schema<IModelosDatos>({
     nombre_modelo: { type: String, required: true },
     id_marca: { type: Schema.Types.ObjectId, ref: 'MarcaVehiculo', required: true }
-});
+}, { timestamps: true });
 
 export const ModelosDatos = model<IModelosDatos>('ModelosDatos', ModelosDatosSchema);

@@ -9,7 +9,7 @@ export interface ISuplidorPiezaRelacion extends Document {
 const SuplidorPiezaRelacionSchema = new Schema<ISuplidorPiezaRelacion>({
     id_suplidor: { type: Schema.Types.ObjectId, ref: 'SuplidorPieza', required: true },
     id_pieza: { type: Schema.Types.ObjectId, ref: 'PiezaInventario', required: true }
-});
+}, { timestamps: true });
 
 export const SuplidorPiezaRelacion = model<ISuplidorPiezaRelacion>(
     'SuplidorPiezaRelacion',

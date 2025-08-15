@@ -9,7 +9,7 @@ export interface ReparacionVehiculo {
   _id?: string;
   id_inspeccion: string;
   empleados_trabajos?: EmpleadoTrabajo[];
-  fecha_inicio: string;
+  fecha_inicio?: string;
   fecha_fin?: string;
   descripcion: string;
   costo_total?: number;

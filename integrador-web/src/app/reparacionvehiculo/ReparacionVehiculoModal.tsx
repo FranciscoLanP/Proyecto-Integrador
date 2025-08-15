@@ -41,7 +41,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
   const [form, setForm] = useState<ReparacionVehiculo>({
     id_inspeccion: '',
     empleados_trabajos: [{ id_empleado: '', descripcion_trabajo: '' }],
-    fecha_inicio: new Date().toISOString().slice(0, 10),
     descripcion: '',
     piezas_usadas: []
   });
@@ -57,7 +56,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
       setForm({
         id_inspeccion: '',
         empleados_trabajos: [{ id_empleado: '', descripcion_trabajo: '' }],
-        fecha_inicio: new Date().toISOString().slice(0, 10),
         descripcion: '',
         piezas_usadas: []
       });
@@ -73,7 +71,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
         setForm({
           id_inspeccion: '',
           empleados_trabajos: [{ id_empleado: '', descripcion_trabajo: '' }],
-          fecha_inicio: new Date().toISOString().slice(0, 10),
           descripcion: '',
           piezas_usadas: []
         });
@@ -135,8 +132,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
             ? (defaultData.id_inspeccion as any)?._id || defaultData.id_inspeccion
             : defaultData.id_inspeccion || '',
           empleados_trabajos: empleadosTrabajos,
-          fecha_inicio: defaultData.fecha_inicio ? new Date(defaultData.fecha_inicio).toISOString().slice(0, 10) : '',
-          fecha_fin: defaultData.fecha_fin ? new Date(defaultData.fecha_fin).toISOString().slice(0, 10) : '',
           piezas_usadas: piezasUsadas,
           descripcion: defaultData.descripcion || '',
           costo_total: defaultData.costo_total || 0
@@ -309,31 +304,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
                 );
               })}
             </TextField>
-
-            <Box display="flex" gap={2}>
-              <TextField
-                label="Fecha inicio"
-                name="fecha_inicio"
-                type="date"
-                value={form.fecha_inicio}
-                onChange={handleChange}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                sx={textFieldStyle}
-                helperText="Fecha de inicio de la reparación"
-              />
-              <TextField
-                label="Fecha fin"
-                name="fecha_fin"
-                type="date"
-                value={form.fecha_fin ?? ''}
-                onChange={handleChange}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                sx={textFieldStyle}
-                helperText="Fecha de finalización (opcional)"
-              />
-            </Box>
 
             <TextField
               label="Descripción"

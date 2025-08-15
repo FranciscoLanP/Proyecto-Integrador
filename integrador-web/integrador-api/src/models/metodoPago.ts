@@ -19,6 +19,6 @@ const MetodoPagoSchema = new Schema<IMetodoPago>({
     enum: ['Contado', 'Credito'],
     default: 'Contado',
   },
-});
+}, { timestamps: true });
 
 export const MetodoPago = model<IMetodoPago>('MetodoPago', MetodoPagoSchema);

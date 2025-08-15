@@ -2,21 +2,27 @@
 
 import React, { useEffect, useState } from 'react'
 import {
-  TextField, Button, MenuItem, Box
+  TextField, Button, MenuItem, Box, Typography
 } from '@mui/material'
 import ModernModal from '@/components/ModernModal/ModernModal'
 import { IUsuario, Role } from '../types'
+import { useJwtDecode } from '@/hooks/useJwtDecode'
 
 interface Props {
   open: boolean
   defaultData?: IUsuario | null
   onClose: () => void
   onSubmit: (data: Partial<IUsuario>) => void
+  currentUserId?: string | null
 }
 
 export default function UsuarioModal({
-  open, defaultData, onClose, onSubmit
+  open, defaultData, onClose, onSubmit, currentUserId
 }: Props) {
+  const { userId } = useJwtDecode(); // Obtener el ID del usuario actual
+
+  // Determinar si estamos editando a otro usuario
+  const isEditingOtherUser = defaultData && defaultData._id !== (currentUserId || userId);
   // Estilo moderno para TextFields con bordes visibles
   const textFieldStyle = {
     '& .MuiInputLabel-root': {
@@ -57,55 +63,116 @@ export default function UsuarioModal({
   }, [open, defaultData])
 
   const handleSave = () => {
-    onSubmit({
-      username,
-      ...(password && { password }),
-      role,
-      activo
-    })
+    // Si estamos editando otro usuario, solo enviamos rol y estado
+    if (isEditingOtherUser) {
+      onSubmit({
+        role,
+        activo
+      });
+    } else {
+      // Si es el propio usuario o es un nuevo usuario, enviamos todo
+      onSubmit({
+        username,
+        ...(password && { password }),
+        role,
+        activo
+      });
+    }
   }
 
-  const disabled = !username.trim() || (!defaultData && !password)
+  const disabled = isEditingOtherUser
+    ? false // Para otros usuarios, solo necesitamos que el modal esté abierto
+    : (!username.trim() || (!defaultData && !password)); // Para el propio usuario o nuevo usuario
+
+  const getModalTitle = () => {
+    if (!defaultData) return 'Nuevo Usuario';
+    if (isEditingOtherUser) return `Editar Usuario: ${defaultData.username}`;
+    return 'Editar Mi Perfil';
+  };
 
   return (
     <ModernModal
       open={open}
       onClose={onClose}
-      title={defaultData ? 'Editar Usuario' : 'Nuevo Usuario'}
+      title={getModalTitle()}
       maxWidth="sm"
     >
       <Box display="flex" flexDirection="column" gap={3}>
-        {/* Sección: Credenciales */}
-        <Box>
-          <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-            <strong style={{ fontSize: '1.1rem' }}>Credenciales de Acceso</strong>
+        {/* Mostrar información de restricción si estamos editando otro usuario */}
+        {isEditingOtherUser && (
+          <Box
+            sx={{
+              p: 2,
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: '8px',
+              mb: 1
+            }}
+          >
+            <Typography variant="body2" sx={{ color: '#856404', fontWeight: 'medium' }}>
+              ⚠️ <strong>Editando otro usuario:</strong> Solo puedes cambiar el rol y estado.
+              Las credenciales (usuario y contraseña) no pueden ser modificadas.
+            </Typography>
           </Box>
+        )}
 
-          <Box display="flex" flexDirection="column" gap={2}>
-            <TextField
-              label="Usuario"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              required
-              fullWidth
-              sx={textFieldStyle}
-              placeholder="Nombre de usuario único"
-              helperText="Nombre de usuario para iniciar sesión"
-            />
+        {/* Sección: Credenciales - Solo visible si NO estamos editando otro usuario */}
+        {!isEditingOtherUser && (
+          <Box>
+            <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+              <strong style={{ fontSize: '1.1rem' }}>Credenciales de Acceso</strong>
+            </Box>
 
-            <TextField
-              label={defaultData ? 'Nueva contraseña (opcional)' : 'Contraseña'}
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required={!defaultData}
-              fullWidth
-              sx={textFieldStyle}
-              placeholder="••••••••"
-              helperText={defaultData ? "Deja en blanco para mantener la contraseña actual" : "Contraseña para el nuevo usuario"}
-            />
+            <Box display="flex" flexDirection="column" gap={2}>
+              <TextField
+                label="Usuario"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                required
+                fullWidth
+                sx={textFieldStyle}
+                placeholder="Nombre de usuario único"
+                helperText="Nombre de usuario para iniciar sesión"
+              />
+
+              <TextField
+                label={defaultData ? 'Nueva contraseña (opcional)' : 'Contraseña'}
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required={!defaultData}
+                fullWidth
+                sx={textFieldStyle}
+                placeholder="••••••••"
+                helperText={defaultData ? "Deja en blanco para mantener la contraseña actual" : "Contraseña para el nuevo usuario"}
+              />
+            </Box>
           </Box>
-        </Box>
+        )}
+
+        {/* Información del usuario si estamos editando otro usuario */}
+        {isEditingOtherUser && (
+          <Box>
+            <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+              <strong style={{ fontSize: '1.1rem' }}>Información del Usuario</strong>
+            </Box>
+            <Box
+              sx={{
+                p: 2,
+                backgroundColor: '#f8f9fa',
+                borderRadius: '8px',
+                border: '1px solid #e9ecef'
+              }}
+            >
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                <strong>Usuario:</strong> {defaultData?.username}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#6c757d', fontSize: '0.85rem' }}>
+                No puedes modificar el nombre de usuario ni la contraseña de otros usuarios.
+              </Typography>
+            </Box>
+          </Box>
+        )}
 
         {/* Sección: Configuración */}
         <Box>
@@ -180,7 +247,12 @@ export default function UsuarioModal({
               transition: 'all 0.2s ease-in-out',
             }}
           >
-            {defaultData ? 'Guardar cambios' : 'Crear Usuario'}
+            {!defaultData
+              ? 'Crear Usuario'
+              : isEditingOtherUser
+                ? 'Actualizar Permisos'
+                : 'Guardar cambios'
+            }
           </Button>
         </Box>
       </Box>

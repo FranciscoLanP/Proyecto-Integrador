@@ -109,9 +109,7 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
 
       const processedData = {
         ...defaultData,
-        metodos_pago: metodosPago.map((mp, idx) =>
-          idx === 0 ? { ...mp, monto: totalCorrecto } : mp
-        ),
+        metodos_pago: metodosPago, // Mantener los métodos de pago originales sin modificar
         tipo_factura: defaultData.tipo_factura || 'Contado',
         id_reparacion: reparacionId,
         detalles: defaultData.detalles || '',
@@ -199,10 +197,9 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
     setForm(f => ({
       ...f,
       id_reparacion: reparacionId,
-      total: nuevoTotal,
-      metodos_pago: f.metodos_pago.map((mp, idx) =>
-        idx === 0 ? { ...mp, monto: nuevoTotal } : mp
-      )
+      total: nuevoTotal
+      // Removemos la actualización automática de métodos_pago
+      // Los usuarios deben ajustar manualmente los métodos de pago si es necesario
     }));
   };
 
@@ -321,13 +318,13 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
                       if (cliente && vehiculo) {
                         const clienteNombre = cliente.nombre || 'Cliente';
                         const vehiculoInfo = vehiculo.id_modelo?.nombre_modelo || 'Vehículo';
-                        return `${clienteNombre} | ${vehiculoInfo} | $${reparacion.costo_total || 0}`;
+                        return `${clienteNombre} | ${vehiculoInfo}`;
                       }
                     }
-                    return `Reparación | ${reparacion.descripcion || 'Sin descripción'} | $${reparacion.costo_total || 0}`;
+                    return `Reparación | ${reparacion.descripcion || 'Sin descripción'}`;
                   } catch (error) {
                     console.error('Error al procesar reparación:', error);
-                    return `Reparación ${reparacion._id} | $${reparacion.costo_total || 0}`;
+                    return `Reparación ${reparacion._id}`;
                   }
                 })();
 

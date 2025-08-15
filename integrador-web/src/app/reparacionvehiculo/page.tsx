@@ -20,6 +20,7 @@ export default function ReparacionVehiculoPage() {
   const [editData, setEditData] = useState<ReparacionVehiculo | undefined>(undefined);
   const [facturaModalOpen, setFacturaModalOpen] = useState(false);
   const [facturaDefault, setFacturaDefault] = useState<Factura | undefined>(undefined);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { currentTheme, isHydrated } = useTheme();
   const isHydratedCustom = useHydration();
@@ -104,26 +105,6 @@ export default function ReparacionVehiculoPage() {
     }
   };
 
-  const getRepairStatus = (fechaInicio: string, fechaFin?: string) => {
-    if (!fechaInicio) return { status: 'Sin fecha', color: 'gray' as const };
-
-    if (fechaFin) {
-      return { status: 'Completada', color: 'green' as const };
-    } else {
-      const inicio = new Date(fechaInicio);
-      const hoy = new Date();
-      const diffDays = Math.floor((hoy.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
-
-      if (diffDays <= 1) {
-        return { status: 'Nueva', color: 'blue' as const };
-      } else if (diffDays <= 7) {
-        return { status: 'En Proceso', color: 'yellow' as const };
-      } else {
-        return { status: 'Demorada', color: 'red' as const };
-      }
-    }
-  };
-
   const getClienteVehiculoInfo = (reparacion: ReparacionVehiculo): { cliente: string; vehiculo: string } => {
     const inspeccion = reparacion.id_inspeccion as any;
     if (!inspeccion || typeof inspeccion === 'string') {
@@ -176,8 +157,15 @@ export default function ReparacionVehiculoPage() {
     });
   };
 
-  const tableData = reparaciones.map(reparacion => {
-    const statusInfo = getRepairStatus(reparacion.fecha_inicio || '', reparacion.fecha_fin);
+  // Filtrar reparaciones por cliente
+  const reparacionesFiltradas = reparaciones.filter(reparacion => {
+    if (!searchTerm.trim()) return true;
+
+    const clienteInfo = getClienteVehiculoInfo(reparacion);
+    return clienteInfo.cliente.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+  const tableData = reparacionesFiltradas.map(reparacion => {
     const clienteVehiculo = getClienteVehiculoInfo(reparacion);
     const empleados = getEmpleadosInfo(reparacion);
     const piezas = getPiezasInfo(reparacion);
@@ -250,45 +238,7 @@ export default function ReparacionVehiculoPage() {
           </Box>
         </Box>
       ),
-      fechas: (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #06B6D4, #0891B2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white'
-            }}
-          >
-            📅
-          </Box>
-          <Box>
-            <div className="text-sm">
-              <div><strong>Inicio:</strong> {reparacion.fecha_inicio?.toString().slice(0, 10) || '—'}</div>
-              <div><strong>Fin:</strong> {reparacion.fecha_fin?.toString().slice(0, 10) || 'Pendiente'}</div>
-            </div>
-          </Box>
-        </Box>
-      ),
       descripcion: reparacion.descripcion || '—',
-      estado: (
-        <Chip
-          label={statusInfo.status}
-          sx={{
-            background: statusInfo.color === 'green' ? 'linear-gradient(45deg, #10B981, #34D399)' :
-              statusInfo.color === 'red' ? 'linear-gradient(45deg, #EF4444, #F87171)' :
-                statusInfo.color === 'yellow' ? 'linear-gradient(45deg, #F59E0B, #FBBF24)' :
-                  'linear-gradient(45deg, #3B82F6, #60A5FA)',
-            color: 'white',
-            fontWeight: 'medium'
-          }}
-          size="small"
-        />
-      ),
       piezas: piezas.length > 0 ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Box
@@ -433,9 +383,7 @@ export default function ReparacionVehiculoPage() {
   }); const columns = [
     { id: 'clienteVehiculo', label: 'Cliente | Vehículo' },
     { id: 'empleados', label: 'Empleados' },
-    { id: 'fechas', label: 'Fechas' },
     { id: 'descripcion', label: 'Descripción' },
-    { id: 'estado', label: 'Estado' },
     { id: 'piezas', label: 'Piezas Usadas' },
     { id: 'costo', label: 'Costo Total' },
     { id: 'acciones', label: 'Acciones' }
@@ -455,8 +403,6 @@ export default function ReparacionVehiculoPage() {
       </div>
     );
   }
-  const completadas = reparaciones.filter(r => r.fecha_fin).length;
-  const enProceso = reparaciones.filter(r => !r.fecha_fin && r.fecha_inicio).length;
   const totalCostos = reparaciones.reduce((sum, r) => sum + (r.costo_total || 0), 0);
 
   return (
@@ -480,8 +426,8 @@ export default function ReparacionVehiculoPage() {
             subtitle="Gestiona las reparaciones del taller y crea facturas"
             data={tableData}
             columns={columns}
-            searchTerm=""
-            onSearchChange={() => { }}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
             page={0}
             rowsPerPage={10}
             onPageChange={() => { }}
@@ -489,6 +435,7 @@ export default function ReparacionVehiculoPage() {
             onCreateNew={handleCreate}
             createButtonText="Nueva Reparación"
             emptyMessage="No se encontraron reparaciones"
+            searchPlaceholder="Buscar por cliente..."
           />
         )}
 

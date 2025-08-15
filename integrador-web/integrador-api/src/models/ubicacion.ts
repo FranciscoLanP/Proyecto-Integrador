@@ -9,7 +9,6 @@ export interface IUbicacion extends Document {
   };
   direccion?: string;
   createdAt: Date;
-  updatedAt: Date;
 }
 
 const UbicacionSchema = new Schema<IUbicacion>(

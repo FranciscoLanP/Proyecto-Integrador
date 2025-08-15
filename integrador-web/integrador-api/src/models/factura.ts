@@ -16,9 +16,8 @@ export interface IFactura extends Document {
   detalles?: string;
   emitida: boolean;
   descuento_porcentaje?: number;
-  estado?: string; // Para tracking de pagos en facturas a crédito
-  fecha_pago_completo?: Date; // Fecha cuando se completó el pago
-  // Campos de compatibilidad
+  estado?: string;
+  fecha_pago_completo?: Date;
   metodo_pago?: string;
 }
 
@@ -46,10 +45,9 @@ const FacturaSchema = new Schema<IFactura>({
   detalles: { type: String },
   emitida: { type: Boolean, default: false },
   descuento_porcentaje: { type: Number, default: 0, min: 0, max: 100 },
-  estado: { type: String, default: 'Pendiente' }, // Pendiente, Parcialmente Pagada, Pagada
+  estado: { type: String, default: 'Pendiente' },
   fecha_pago_completo: { type: Date },
-  // Campo de compatibilidad
   metodo_pago: { type: String }
-});
+}, { timestamps: true });
 
 export const Factura = model<IFactura>('Factura', FacturaSchema);

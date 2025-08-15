@@ -4,7 +4,7 @@ export interface IPiezaUsada extends Document {
   id_pieza: Schema.Types.ObjectId
   cantidad: number
   origen: 'inspeccion' | 'reparacion'
-  referencia: Schema.Types.ObjectId 
+  referencia: Schema.Types.ObjectId
 }
 
 const PiezaUsadaSchema = new Schema<IPiezaUsada>({
@@ -12,6 +12,6 @@ const PiezaUsadaSchema = new Schema<IPiezaUsada>({
   cantidad: { type: Number, required: true },
   origen: { type: String, enum: ['inspeccion', 'reparacion'], required: true },
   referencia: { type: Schema.Types.ObjectId, required: true }
-})
+}, { timestamps: true })
 
 export const PiezaUsada = model<IPiezaUsada>('PiezaUsada', PiezaUsadaSchema)

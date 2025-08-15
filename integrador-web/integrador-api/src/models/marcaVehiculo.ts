@@ -7,7 +7,7 @@ export interface IMarcaVehiculo extends Document {
 
 const MarcaVehiculoSchema = new Schema<IMarcaVehiculo>({
     nombre_marca: { type: String, required: true }
-});
+}, { timestamps: true });
 
 export const MarcaVehiculo = model<IMarcaVehiculo>(
     'MarcaVehiculo',

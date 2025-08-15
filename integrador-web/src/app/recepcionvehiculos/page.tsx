@@ -135,27 +135,27 @@ export default function RecepcionVehiculosPage() {
   const columns: TableColumn[] = [
     {
       id: 'fecha',
-      label: 'Fecha & Hora',
-      minWidth: 180,
+      label: 'Fecha',
+      minWidth: 130,
       render: (value, row) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box
             sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '10px',
+              width: 36,
+              height: 36,
+              borderRadius: '8px',
               background: 'linear-gradient(135deg, #06B6D4, #0891B2)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: 'white',
-              fontSize: '1.2rem'
+              fontSize: '1rem'
             }}
           >
             📅
           </Box>
           <Box>
-            <DateDisplay date={row.fecha} format="long" />
+            <DateDisplay date={row.fecha} format="short" />
           </Box>
         </Box>
       )
@@ -163,14 +163,14 @@ export default function RecepcionVehiculosPage() {
     {
       id: 'empleado',
       label: 'Empleado',
-      minWidth: 200,
+      minWidth: 140,
       render: (value, row) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box
             sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '10px',
+              width: 36,
+              height: 36,
+              borderRadius: '8px',
               background: 'linear-gradient(135deg, #10B981, #059669)',
               display: 'flex',
               alignItems: 'center',
@@ -181,16 +181,17 @@ export default function RecepcionVehiculosPage() {
             <PersonIcon fontSize="small" />
           </Box>
           <Box>
-            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151', fontSize: '0.85rem' }}>
               {getEmpleadoName(row.id_empleadoInformacion)}
             </Typography>
             <Chip
               size="small"
-              label="Recepcionista"
+              label="Recep."
               sx={{
                 background: 'linear-gradient(45deg, #10B981, #34D399)',
                 color: 'white',
-                fontSize: '0.7rem'
+                fontSize: '0.65rem',
+                height: '18px'
               }}
             />
           </Box>
@@ -199,18 +200,18 @@ export default function RecepcionVehiculosPage() {
     },
     {
       id: 'vehiculo',
-      label: 'Vehículo & Cliente',
-      minWidth: 250,
+      label: 'Vehículo',
+      minWidth: 170,
       render: (value, row) => {
         const vehiculo = getVehiculoData(row.id_vehiculo);
         const clienteNombre = vehiculo ? getClienteFromVehiculo(vehiculo) : 'N/A';
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box
               sx={{
-                width: 40,
-                height: 40,
-                borderRadius: '10px',
+                width: 36,
+                height: 36,
+                borderRadius: '8px',
                 background: 'linear-gradient(135deg, #6366F1, #4F46E5)',
                 display: 'flex',
                 alignItems: 'center',
@@ -221,11 +222,11 @@ export default function RecepcionVehiculosPage() {
               <DirectionsCarIcon fontSize="small" />
             </Box>
             <Box>
-              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
-                Chasis: {vehiculo?.chasis || 'N/A'}
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151', fontSize: '0.85rem' }}>
+                {vehiculo?.chasis || 'N/A'}
               </Typography>
-              <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.8rem' }}>
-                Cliente: {clienteNombre}
+              <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                {clienteNombre}
               </Typography>
             </Box>
           </Box>
@@ -234,12 +235,12 @@ export default function RecepcionVehiculosPage() {
     },
     {
       id: 'problema',
-      label: 'Problema Reportado',
-      minWidth: 300,
+      label: 'Problema',
+      minWidth: 160,
       render: (value, row) => (
         <Box>
-          <Typography variant="body2" sx={{ color: '#374151', fontWeight: 'medium', mb: 0.5 }}>
-            {row.problema_reportado || 'Sin problema especificado'}
+          <Typography variant="body2" sx={{ color: '#374151', fontWeight: 'medium', mb: 0.5, fontSize: '0.85rem' }}>
+            {row.problema_reportado || 'Sin especificar'}
           </Typography>
           {row.problema_reportado && (
             <Chip
@@ -248,7 +249,8 @@ export default function RecepcionVehiculosPage() {
               sx={{
                 background: 'linear-gradient(45deg, #F59E0B, #FBBF24)',
                 color: 'white',
-                fontSize: '0.7rem'
+                fontSize: '0.65rem',
+                height: '18px'
               }}
             />
           )}
@@ -258,7 +260,7 @@ export default function RecepcionVehiculosPage() {
     {
       id: 'comentario',
       label: 'Comentarios',
-      minWidth: 250,
+      minWidth: 150,
       render: (value, row) => (
         <Box>
           <Typography
@@ -266,13 +268,14 @@ export default function RecepcionVehiculosPage() {
             sx={{
               color: '#6b7280',
               fontStyle: row.comentario ? 'normal' : 'italic',
-              maxWidth: '250px',
+              maxWidth: '150px',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              fontSize: '0.85rem'
             }}
           >
-            {row.comentario || 'Sin comentarios adicionales'}
+            {row.comentario || 'Sin comentarios'}
           </Typography>
         </Box>
       )
@@ -280,7 +283,7 @@ export default function RecepcionVehiculosPage() {
     {
       id: 'estado',
       label: 'Estado',
-      minWidth: 120,
+      minWidth: 100,
       render: (value, row) => (
         <StatusChip
           status="Recibido"
@@ -296,7 +299,7 @@ export default function RecepcionVehiculosPage() {
       id: 'acciones',
       label: 'Acciones',
       align: 'center',
-      minWidth: 150,
+      minWidth: 130,
       render: (value, row) => (
         <ActionButtons
           onEdit={() => openEdit(row)}

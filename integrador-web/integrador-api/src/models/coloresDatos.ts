@@ -7,6 +7,6 @@ export interface IColoresDatos extends Document {
 
 const ColoresDatosSchema = new Schema<IColoresDatos>({
     nombre_color: { type: String, required: true }
-});
+}, { timestamps: true });
 
 export const ColoresDatos = model<IColoresDatos>('ColoresDatos', ColoresDatosSchema);

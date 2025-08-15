@@ -46,27 +46,67 @@ export default function RecibosVehiculosPage() {
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<IReciboVehiculo | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Hook para manejar la tabla
+  // Funciones auxiliares para obtener datos relacionados
+  const getRecepcionData = (recepcionId: string | IRecepcionVehiculo) => {
+    if (typeof recepcionId === 'object') return recepcionId;
+    return recepciones.find(r => r._id === recepcionId);
+  };
+
+  const getVehiculoFromRecepcion = (recepcion: IRecepcionVehiculo) => {
+    if (typeof recepcion.id_vehiculo === 'object') return recepcion.id_vehiculo;
+    return vehiculos.find(v => v._id === recepcion.id_vehiculo);
+  };
+
+  const getClienteFromVehiculo = (vehiculo: IVehiculoDatos) => {
+    if (typeof vehiculo.id_cliente === 'object') return vehiculo.id_cliente;
+    return clientes.find(c => c._id === vehiculo.id_cliente);
+  };
+
+  const getEmpleadoFromRecepcion = (recepcion: IRecepcionVehiculo) => {
+    if (typeof recepcion.id_empleadoInformacion === 'object') return recepcion.id_empleadoInformacion;
+    return empleados.find(e => e._id === recepcion.id_empleadoInformacion);
+  };
+
+  // Función para obtener información de búsqueda de un recibo
+  const getSearchInfo = (recibo: IReciboVehiculo) => {
+    const recepcion = getRecepcionData(recibo.id_recepcion);
+    const vehiculo = recepcion ? getVehiculoFromRecepcion(recepcion) : null;
+    const cliente = vehiculo ? getClienteFromVehiculo(vehiculo) : null;
+
+    return {
+      clienteNombre: cliente?.nombre || '',
+      vehiculoChasis: vehiculo?.chasis || ''
+    };
+  };
+
+  // Filtrar recibos por término de búsqueda (cliente o vehículo)
+  const recibosFiltrados = recibos.filter(recibo => {
+    if (!searchTerm) return true;
+    const { clienteNombre, vehiculoChasis } = getSearchInfo(recibo);
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      clienteNombre.toLowerCase().includes(searchLower) ||
+      vehiculoChasis.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Hook simplificado para manejar solo paginación
   const {
-    filteredData,
     paginatedData,
-    searchQuery,
     page,
     rowsPerPage,
-    handleSearchChange,
     handlePageChange,
     handleRowsPerPageChange
   } = useModernTable({
-    data: recibos,
-    searchFields: ['observaciones'],
+    data: recibosFiltrados,
     initialRowsPerPage: 10
   });
 
   // Funciones adaptadoras
   const onSearchChange = (value: string) => {
-    const mockEvent = { target: { value } } as React.ChangeEvent<HTMLInputElement>;
-    handleSearchChange(mockEvent);
+    setSearchTerm(value);
   };
 
   const onPageChange = (page: number) => {
@@ -190,8 +230,11 @@ export default function RecibosVehiculosPage() {
       </html>
     `;
 
-    const w = window.open('', '_blank');
-    if (!w) return;
+    const w = window.open('', 'recibo_print', 'width=800,height=900,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
+    if (!w) {
+      alert('Por favor permite las ventanas emergentes para imprimir el recibo');
+      return;
+    }
     w.document.write(html);
     w.document.close();
     w.focus();
@@ -199,60 +242,41 @@ export default function RecibosVehiculosPage() {
     w.print();
   };
 
-  const getRecepcionData = (recepcionId: string | IRecepcionVehiculo) => {
-    if (typeof recepcionId === 'object') return recepcionId;
-    return recepciones.find(r => r._id === recepcionId);
-  };
-
-  const getVehiculoFromRecepcion = (recepcion: IRecepcionVehiculo) => {
-    if (typeof recepcion.id_vehiculo === 'object') return recepcion.id_vehiculo;
-    return vehiculos.find(v => v._id === recepcion.id_vehiculo);
-  };
-
-  const getClienteFromVehiculo = (vehiculo: IVehiculoDatos) => {
-    if (typeof vehiculo.id_cliente === 'object') return vehiculo.id_cliente;
-    return clientes.find(c => c._id === vehiculo.id_cliente);
-  };
-
-  const getEmpleadoFromRecepcion = (recepcion: IRecepcionVehiculo) => {
-    if (typeof recepcion.id_empleadoInformacion === 'object') return recepcion.id_empleadoInformacion;
-    return empleados.find(e => e._id === recepcion.id_empleadoInformacion);
-  };
-
   // Definir las columnas
   const columns: TableColumn[] = [
     {
       id: 'recibo',
       label: 'Recibo',
-      minWidth: 200,
+      minWidth: 120,
       render: (value, row) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box
             sx={{
-              width: 48,
-              height: 48,
-              borderRadius: '12px',
+              width: 32,
+              height: 32,
+              borderRadius: '8px',
               background: 'linear-gradient(135deg, #EC4899, #BE185D)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: 'white',
-              fontSize: '1.2rem'
+              fontSize: '0.9rem'
             }}
           >
-            <ReceiptIcon />
+            <ReceiptIcon fontSize="small" />
           </Box>
           <Box>
-            <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1f2937' }}>
-              Recibo #{row._id.slice(-6).toUpperCase()}
+            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#1f2937', fontSize: '0.8rem' }}>
+              #{row._id.slice(-4).toUpperCase()}
             </Typography>
             <Chip
               size="small"
-              label="Comprobante"
+              label="Recibo"
               sx={{
                 background: 'linear-gradient(45deg, #EC4899, #F472B6)',
                 color: 'white',
-                fontSize: '0.7rem'
+                fontSize: '0.6rem',
+                height: '16px'
               }}
             />
           </Box>
@@ -262,19 +286,19 @@ export default function RecibosVehiculosPage() {
     {
       id: 'cliente',
       label: 'Cliente',
-      minWidth: 220,
+      minWidth: 140,
       render: (value, row) => {
         const recepcion = getRecepcionData(row.id_recepcion);
         const vehiculo = recepcion ? getVehiculoFromRecepcion(recepcion) : null;
         const cliente = vehiculo ? getClienteFromVehiculo(vehiculo) : null;
 
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box
               sx={{
-                width: 40,
-                height: 40,
-                borderRadius: '10px',
+                width: 32,
+                height: 32,
+                borderRadius: '6px',
                 background: 'linear-gradient(135deg, #10B981, #059669)',
                 display: 'flex',
                 alignItems: 'center',
@@ -285,11 +309,11 @@ export default function RecibosVehiculosPage() {
               <PersonIcon fontSize="small" />
             </Box>
             <Box>
-              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
-                {cliente?.nombre || 'Cliente no encontrado'}
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151', fontSize: '0.8rem' }}>
+                {cliente?.nombre || 'N/A'}
               </Typography>
-              <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.8rem' }}>
-                {cliente?.tipo_cliente || 'Tipo no especificado'}
+              <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.7rem' }}>
+                {cliente?.tipo_cliente || 'N/A'}
               </Typography>
             </Box>
           </Box>
@@ -299,18 +323,18 @@ export default function RecibosVehiculosPage() {
     {
       id: 'vehiculo',
       label: 'Vehículo',
-      minWidth: 200,
+      minWidth: 120,
       render: (value, row) => {
         const recepcion = getRecepcionData(row.id_recepcion);
         const vehiculo = recepcion ? getVehiculoFromRecepcion(recepcion) : null;
 
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box
               sx={{
-                width: 40,
-                height: 40,
-                borderRadius: '10px',
+                width: 32,
+                height: 32,
+                borderRadius: '6px',
                 background: 'linear-gradient(135deg, #6366F1, #4F46E5)',
                 display: 'flex',
                 alignItems: 'center',
@@ -321,11 +345,11 @@ export default function RecibosVehiculosPage() {
               <DirectionsCarIcon fontSize="small" />
             </Box>
             <Box>
-              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
-                Chasis: {vehiculo?.chasis || 'N/A'}
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151', fontSize: '0.8rem' }}>
+                {vehiculo?.chasis || 'N/A'}
               </Typography>
-              <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.8rem' }}>
-                Año: {vehiculo?.anio || 'N/A'}
+              <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.7rem' }}>
+                {vehiculo?.anio || 'N/A'}
               </Typography>
             </Box>
           </Box>
@@ -335,23 +359,24 @@ export default function RecibosVehiculosPage() {
     {
       id: 'empleado',
       label: 'Empleado',
-      minWidth: 180,
+      minWidth: 110,
       render: (value, row) => {
         const recepcion = getRecepcionData(row.id_recepcion);
         const empleado = recepcion ? getEmpleadoFromRecepcion(recepcion) : null;
 
         return (
           <Box>
-            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
-              {empleado?.nombre || 'Empleado no encontrado'}
+            <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151', fontSize: '0.8rem' }}>
+              {empleado?.nombre || 'N/A'}
             </Typography>
             <Chip
               size="small"
-              label={empleado?.tipo_empleado || 'Tipo no especificado'}
+              label={empleado?.tipo_empleado || 'N/A'}
               sx={{
                 background: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
                 color: 'white',
-                fontSize: '0.7rem',
+                fontSize: '0.6rem',
+                height: '16px',
                 mt: 0.5
               }}
             />
@@ -362,7 +387,7 @@ export default function RecibosVehiculosPage() {
     {
       id: 'observaciones',
       label: 'Observaciones',
-      minWidth: 300,
+      minWidth: 160,
       render: (value, row) => (
         <Box>
           <Typography
@@ -370,22 +395,24 @@ export default function RecibosVehiculosPage() {
             sx={{
               color: '#374151',
               fontStyle: row.observaciones ? 'normal' : 'italic',
-              maxWidth: '300px',
+              maxWidth: '160px',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              fontSize: '0.8rem'
             }}
           >
-            {row.observaciones || 'Sin observaciones adicionales'}
+            {row.observaciones || 'Sin observaciones'}
           </Typography>
           {row.observaciones && (
             <Chip
               size="small"
-              label="Con observaciones"
+              label="Con obs."
               sx={{
                 background: 'linear-gradient(45deg, #F59E0B, #FBBF24)',
                 color: 'white',
-                fontSize: '0.7rem',
+                fontSize: '0.6rem',
+                height: '16px',
                 mt: 0.5
               }}
             />
@@ -396,7 +423,7 @@ export default function RecibosVehiculosPage() {
     {
       id: 'estado',
       label: 'Estado',
-      minWidth: 120,
+      minWidth: 90,
       render: (value, row) => (
         <StatusChip
           status="Completado"
@@ -412,7 +439,7 @@ export default function RecibosVehiculosPage() {
       id: 'acciones',
       label: 'Acciones',
       align: 'center',
-      minWidth: 180,
+      minWidth: 130,
       render: (value, row) => (
         <ActionButtons
           onEdit={() => openEdit(row)}
@@ -444,7 +471,7 @@ export default function RecibosVehiculosPage() {
         titleIcon="🧾"
         columns={columns}
         data={paginatedData}
-        searchTerm={searchQuery}
+        searchTerm={searchTerm}
         onSearchChange={onSearchChange}
         page={page}
         rowsPerPage={rowsPerPage}
@@ -454,7 +481,7 @@ export default function RecibosVehiculosPage() {
         createButtonText="Nuevo Recibo"
         emptyMessage="No hay recibos registrados"
         emptySubMessage="Comienza generando el primer recibo"
-        searchPlaceholder="Buscar por observaciones..."
+        searchPlaceholder="Buscar por cliente o vehículo (chasis)..."
       />
 
       <ReciboVehiculoModal

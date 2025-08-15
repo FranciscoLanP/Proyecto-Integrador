@@ -13,6 +13,6 @@ const TiposPagosSchema = new Schema<ITiposPagos>({
     enum: ['Cheque', 'Transferencia', 'Efectivo', 'Tarjeta'],
     default: 'Efectivo',
   },
-});
+}, { timestamps: true });
 
 export const TiposPagos = model<ITiposPagos>('TiposPagos', TiposPagosSchema);

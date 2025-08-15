@@ -9,7 +9,7 @@ export interface IReciboVehiculo extends Document {
 const ReciboVehiculoSchema = new Schema<IReciboVehiculo>({
     id_recepcion: { type: Schema.Types.ObjectId, ref: 'RecepcionVehiculo', required: true },
     observaciones: { type: String, required: false }
-});
+}, { timestamps: true });
 
 export const ReciboVehiculo = model<IReciboVehiculo>(
     'ReciboVehiculo',
