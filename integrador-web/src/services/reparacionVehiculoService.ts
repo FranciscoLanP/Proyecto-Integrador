@@ -14,10 +14,21 @@ export interface ReparacionVehiculo {
   descripcion: string;
   costo_total?: number;
   piezas_usadas?: Array<{
-    id_pieza: string;
+    _id: string;
+    id_pieza: {
+      _id: string;
+      nombre_pieza: string;
+      costo_promedio: number;
+      precio?: number;
+    };
     cantidad: number;
+    origen: 'inspeccion' | 'reparacion';
+    referencia: string;
+    precio_utilizado?: number;
   }>;
   id_empleadoInformacion?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export const reparacionVehiculoService = createCrudService<ReparacionVehiculo>('reparacionvehiculos');

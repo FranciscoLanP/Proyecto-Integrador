@@ -26,6 +26,9 @@ export default function ColoresDatosPage(): JSX.Element {
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<IColoresDatos | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   if (error) return <Typography color="error">{error.message}</Typography>;
 
@@ -67,6 +70,15 @@ export default function ColoresDatosPage(): JSX.Element {
       );
     }
     setModalOpen(false);
+  };
+
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (newRowsPerPage: number) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset to first page when changing rows per page
   };
 
   // Función para obtener un color representativo basado en el nombre
@@ -191,6 +203,15 @@ export default function ColoresDatosPage(): JSX.Element {
           </IconButton>
         </Box>
       ),
+      fechaCreacion: (
+        <Typography variant="body2" sx={{ color: '#374151', fontSize: '0.85rem' }}>
+          {new Date((color as any).createdAt || new Date()).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          })}
+        </Typography>
+      ),
       originalData: color
     };
   });
@@ -199,6 +220,7 @@ export default function ColoresDatosPage(): JSX.Element {
     { id: 'color', label: 'Color' },
     { id: 'muestra', label: 'Muestra' },
     { id: 'estado', label: 'Estado' },
+    { id: 'fechaCreacion', label: 'Fecha Creación' },
     { id: 'acciones', label: 'Acciones' }
   ];
 
@@ -235,12 +257,12 @@ export default function ColoresDatosPage(): JSX.Element {
           subtitle="Administra los colores disponibles para los vehículos del sistema"
           data={tableData}
           columns={columns}
-          searchTerm=""
-          onSearchChange={() => { }}
-          page={0}
-          rowsPerPage={10}
-          onPageChange={() => { }}
-          onRowsPerPageChange={() => { }}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
           onCreateNew={handleCreate}
           createButtonText="Nuevo Color"
           emptyMessage="No se encontraron colores de vehículo"

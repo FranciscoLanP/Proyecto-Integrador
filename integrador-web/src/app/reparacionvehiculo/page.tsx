@@ -21,6 +21,8 @@ export default function ReparacionVehiculoPage() {
   const [facturaModalOpen, setFacturaModalOpen] = useState(false);
   const [facturaDefault, setFacturaDefault] = useState<Factura | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { currentTheme, isHydrated } = useTheme();
   const isHydratedCustom = useHydration();
@@ -83,7 +85,6 @@ export default function ReparacionVehiculoPage() {
   const handleCrearFactura = (reparacion: ReparacionVehiculo) => {
     setFacturaDefault({
       id_reparacion: reparacion._id!,
-      fecha_emision: new Date().toISOString().slice(0, 10),
       total: reparacion.costo_total ?? 0,
       metodo_pago: '',
       detalles: '',
@@ -103,6 +104,15 @@ export default function ReparacionVehiculoPage() {
     } catch {
       alert('Error al guardar factura');
     }
+  };
+
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (newRowsPerPage: number) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset to first page when changing rows per page
   };
 
   const getClienteVehiculoInfo = (reparacion: ReparacionVehiculo): { cliente: string; vehiculo: string } => {
@@ -140,18 +150,30 @@ export default function ReparacionVehiculoPage() {
   };
 
   const getPiezasInfo = (reparacion: ReparacionVehiculo) => {
-    return (reparacion.piezas_usadas ?? []).map((p) => {
-      const pieza = (p as any)?.id_pieza;
+    console.log('🔧 Procesando piezas_usadas:', reparacion.piezas_usadas);
+
+    if (!reparacion.piezas_usadas || reparacion.piezas_usadas.length === 0) {
+      return [];
+    }
+
+    return reparacion.piezas_usadas.map((piezaUsada: any) => {
+      console.log('🔍 PiezaUsada completa:', piezaUsada);
+
+      // El objeto piezaUsada debe tener cantidad directamente y id_pieza poblado
+      const pieza = piezaUsada.id_pieza;
+      console.log('🧩 Pieza poblada:', pieza);
+
       if (pieza && typeof pieza === 'object' && pieza.nombre_pieza) {
         return {
           nombre: pieza.nombre_pieza,
-          cantidad: p.cantidad,
-          precio: pieza.precio_venta || 0
+          cantidad: piezaUsada.cantidad || 0,
+          precio: pieza.costo_promedio || 0
         };
       }
+
       return {
         nombre: 'Pieza desconocida',
-        cantidad: p.cantidad,
+        cantidad: piezaUsada.cantidad || 0,
         precio: 0
       };
     });
@@ -378,6 +400,15 @@ export default function ReparacionVehiculoPage() {
           </IconButton>
         </Box>
       ),
+      fechaCreacion: (
+        <Typography variant="body2" sx={{ color: '#374151', fontSize: '0.85rem' }}>
+          {new Date(reparacion.createdAt || new Date()).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          })}
+        </Typography>
+      ),
       originalData: reparacion
     };
   }); const columns = [
@@ -386,6 +417,7 @@ export default function ReparacionVehiculoPage() {
     { id: 'descripcion', label: 'Descripción' },
     { id: 'piezas', label: 'Piezas Usadas' },
     { id: 'costo', label: 'Costo Total' },
+    { id: 'fechaCreacion', label: 'Fecha Creación' },
     { id: 'acciones', label: 'Acciones' }
   ];
 
@@ -428,10 +460,10 @@ export default function ReparacionVehiculoPage() {
             columns={columns}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
-            page={0}
-            rowsPerPage={10}
-            onPageChange={() => { }}
-            onRowsPerPageChange={() => { }}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
             onCreateNew={handleCreate}
             createButtonText="Nueva Reparación"
             emptyMessage="No se encontraron reparaciones"

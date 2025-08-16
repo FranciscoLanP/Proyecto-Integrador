@@ -24,6 +24,8 @@ export interface ICliente {
   };
   direccion?: string;
   ubicacionLabel?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface IUbicacion {
@@ -67,6 +69,8 @@ export interface IRecepcionVehiculo {
   comentario?: string;
   fecha: string;
   problema_reportado?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface IEmpleadoInformacion {
@@ -117,6 +121,8 @@ export interface ISuplidor {
   };
   direccion?: string;
   ubicacionLabel?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface IEventoHistorico {
@@ -132,6 +138,8 @@ export interface IPiezaInventario {
   cantidad_disponible: number;
   costo_promedio: number;
   historial: IEventoHistorico[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ISuplidorPiezaRelacion {

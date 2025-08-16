@@ -305,6 +305,20 @@ export default function VehiculoDatosPage() {
       )
     },
     {
+      id: 'fechaCreacion',
+      label: 'Fecha Creación',
+      minWidth: 130,
+      render: (value, row) => (
+        <Typography variant="body2" sx={{ color: '#374151', fontSize: '0.85rem' }}>
+          {new Date((row as any).createdAt || new Date()).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          })}
+        </Typography>
+      )
+    },
+    {
       id: 'acciones',
       label: 'Acciones',
       align: 'center',
@@ -341,7 +355,7 @@ export default function VehiculoDatosPage() {
         subtitle="Administra la información de todos los vehículos registrados"
         titleIcon="🚗"
         columns={columns}
-        data={paginatedData}
+        data={vehiculos}
         searchTerm={searchQuery}
         onSearchChange={onSearchChange}
         page={page}

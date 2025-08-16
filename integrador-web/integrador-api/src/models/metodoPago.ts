@@ -1,4 +1,4 @@
-// src/models/metodoPago.ts
+
 import { Schema, model, Document } from 'mongoose';
 
 export interface IMetodoPago extends Document {

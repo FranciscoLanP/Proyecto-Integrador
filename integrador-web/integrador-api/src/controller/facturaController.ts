@@ -253,16 +253,15 @@ export const getFacturaById = async (req: Request, res: Response, next: NextFunc
 
 export const createFactura = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id_reparacion, fecha_emision, total, metodo_pago, tipo_factura, detalles, emitida, descuento_porcentaje } = req.body
+    const { id_reparacion, total, metodo_pago, tipo_factura, detalles, emitida, descuento_porcentaje } = req.body
 
-    if (!id_reparacion || !fecha_emision || !total || !metodo_pago) {
-      res.status(400).json({ message: 'Campos requeridos: id_reparacion, fecha_emision, total, metodo_pago' })
+    if (!id_reparacion || !total || !metodo_pago) {
+      res.status(400).json({ message: 'Campos requeridos: id_reparacion, total, metodo_pago' })
       return
     }
 
     const newItem = new Factura({
       id_reparacion,
-      fecha_emision,
       total,
       metodo_pago,
       tipo_factura: tipo_factura || 'Contado',

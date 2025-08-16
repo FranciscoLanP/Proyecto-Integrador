@@ -6,7 +6,8 @@
     "dev": "nodemon --watch src --exec ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "seed": "ts-node src/seeds/seedMaster.ts"
+    "seed": "node src/scripts/runSeed.js",
+    "seed:direct": "ts-node src/scripts/seedDatabase.ts"
   },
   "keywords": [],
   "author": "",

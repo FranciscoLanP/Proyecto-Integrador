@@ -30,7 +30,6 @@ const ReparacionVehiculoSchema = new Schema<IReparacionVehiculo>({
     descripcion: { type: String, required: true },
     costo_total: { type: Number, required: false },
     piezas_usadas: [{ type: Schema.Types.ObjectId, ref: 'PiezaUsada', required: false }],
-    // Campo de compatibilidad (deprecated)
     id_empleadoInformacion: { type: Schema.Types.ObjectId, ref: 'EmpleadoInformacion', required: false }
 }, { timestamps: true });
 

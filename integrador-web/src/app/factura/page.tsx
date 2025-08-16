@@ -77,7 +77,9 @@ export default function FacturaPage() {
   const [editData, setEditData] = useState<Factura | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
   const [tipoFilter, setTipoFilter] = useState('');
-  const [fechaEmision, setFechaEmision] = useState<dayjs.Dayjs | null>(null);
+  const [fechaCreacion, setFechaCreacion] = useState<dayjs.Dayjs | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { currentTheme, isHydrated } = useClientTheme();
   const isHydratedCustom = useHydration();
@@ -220,7 +222,7 @@ export default function FacturaPage() {
       }
 
       const now = new Date().toLocaleString();
-      const fechaEmision = new Date(factura.fecha_emision).toLocaleDateString('es-DO');
+      const fechaEmision = new Date(factura.createdAt || new Date()).toLocaleDateString('es-DO');
 
       const piezasUsadas = reparacion.piezas_usadas || [];
 
@@ -455,6 +457,15 @@ export default function FacturaPage() {
     router.push(`/factura/pagos/${factura._id}`);
   };
 
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (newRowsPerPage: number) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset to first page when changing rows per page
+  };
+
   const getMetodosPagoInfo = (factura: Factura) => {
     if (factura.metodos_pago && factura.metodos_pago.length > 0) {
       return factura.metodos_pago.map((mp: any, idx: number) => (
@@ -484,18 +495,18 @@ export default function FacturaPage() {
       });
     }
 
-    if (fechaEmision) {
+    if (fechaCreacion) {
       filtered = filtered.filter(factura => {
-        const fechaFactura = factura.fecha_emision?.toString().slice(0, 10) || '';
-        const fechaSeleccionada = fechaEmision.format('YYYY-MM-DD');
+        const fechaFactura = factura.createdAt?.toString().slice(0, 10) || '';
+        const fechaSeleccionada = fechaCreacion.format('YYYY-MM-DD');
         return fechaFactura === fechaSeleccionada;
       });
     }
 
     return filtered;
-  }, [facturas, tipoFilter, searchTerm, fechaEmision]); const tableData = facturasFiltradas.map(factura => {
+  }, [facturas, tipoFilter, searchTerm, fechaCreacion]); const tableData = facturasFiltradas.map(factura => {
     const clienteVehiculo = getClienteVehiculoInfo(factura);
-    const fechaEmision = factura.fecha_emision?.toString().slice(0, 10) || '—';
+    const fechaCreacion = factura.createdAt ? new Date(factura.createdAt).toLocaleDateString('es-ES') : '—';
     const total = factura.total || 0;
     const descuento = factura.descuento_porcentaje || 0;
     const tipoFactura = factura.tipo_factura || 'Contado';
@@ -530,7 +541,6 @@ export default function FacturaPage() {
           </Box>
         </Box>
       ),
-      fechaEmision: fechaEmision,
       total: `$${total.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`,
       descuento: `${descuento}%`,
       tipo: (
@@ -662,13 +672,18 @@ export default function FacturaPage() {
           )}
         </Box>
       ),
+      fechaCreacion: new Date((factura as any).createdAt || new Date()).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }),
       originalData: factura
     };
   });
 
   const columns = [
     { id: 'clienteVehiculo', label: 'Cliente | Vehículo' },
-    { id: 'fechaEmision', label: 'Fecha Emisión' },
+    { id: 'fechaCreacion', label: 'Fecha Creación' },
     { id: 'total', label: 'Total' },
     { id: 'descuento', label: 'Descuento' },
     { id: 'tipo', label: 'Tipo' },
@@ -720,10 +735,10 @@ export default function FacturaPage() {
             columns={columns}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
-            page={0}
-            rowsPerPage={10}
-            onPageChange={() => { }}
-            onRowsPerPageChange={() => { }}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
             onCreateNew={handleCreate}
             createButtonText="Nueva Factura"
             emptyMessage="No se encontraron facturas"
@@ -731,11 +746,11 @@ export default function FacturaPage() {
             filterComponent={
               <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                  {/* Filtro de fecha de emisión */}
+                  {/* Filtro de fecha de creación */}
                   <DatePicker
-                    label="📅 Fecha de emisión"
-                    value={fechaEmision}
-                    onChange={(newValue) => setFechaEmision(newValue)}
+                    label="📅 Fecha de creación"
+                    value={fechaCreacion}
+                    onChange={(newValue) => setFechaCreacion(newValue)}
                     format="DD/MM/YYYY"
                     slotProps={{
                       textField: {
@@ -810,10 +825,10 @@ export default function FacturaPage() {
                   />
 
                   {/* Botón para limpiar filtro de fecha */}
-                  {fechaEmision && (
+                  {fechaCreacion && (
                     <IconButton
                       size="small"
-                      onClick={() => setFechaEmision(null)}
+                      onClick={() => setFechaCreacion(null)}
                       sx={{
                         background: 'linear-gradient(45deg, #ff6b6b, #ff8e53)',
                         color: 'white',

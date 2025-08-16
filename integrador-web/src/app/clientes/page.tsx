@@ -279,6 +279,14 @@ export default function ClientesPage(): JSX.Element {
                     }}>
                       ✉️ Correo
                     </TableCell>
+                    <TableCell sx={{
+                      background: currentTheme.headerGradient,
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: '0.95rem'
+                    }}>
+                      📅 Fecha Creación
+                    </TableCell>
                     <TableCell align="right" sx={{
                       background: currentTheme.headerGradient,
                       color: 'white',
@@ -357,6 +365,32 @@ export default function ClientesPage(): JSX.Element {
                         <Typography variant="body2" sx={{ color: currentTheme.colors.text }}>
                           {c.correo}
                         </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: '6px',
+                              background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white',
+                              fontSize: '0.9rem'
+                            }}
+                          >
+                            📅
+                          </Box>
+                          <Typography variant="body2" sx={{ color: currentTheme.colors.text, fontSize: '0.85rem' }}>
+                            {c.createdAt ? new Date(c.createdAt).toLocaleDateString('es-ES', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            }) : 'N/A'}
+                          </Typography>
+                        </Box>
                       </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>

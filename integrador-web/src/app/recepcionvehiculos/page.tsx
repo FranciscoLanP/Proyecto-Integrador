@@ -296,6 +296,39 @@ export default function RecepcionVehiculosPage() {
       )
     },
     {
+      id: 'fechaCreacion',
+      label: 'Fecha Creación',
+      minWidth: 120,
+      render: (value, row) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: '6px',
+              background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '0.9rem'
+            }}
+          >
+            📅
+          </Box>
+          <Box>
+            <Typography variant="body2" sx={{ color: '#374151', fontSize: '0.85rem' }}>
+              {row.createdAt ? new Date(row.createdAt).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              }) : 'N/A'}
+            </Typography>
+          </Box>
+        </Box>
+      )
+    },
+    {
       id: 'acciones',
       label: 'Acciones',
       align: 'center',
@@ -330,7 +363,7 @@ export default function RecepcionVehiculosPage() {
         subtitle="Gestiona las recepciones de vehículos para servicio y reparación"
         titleIcon="🔧"
         columns={columns}
-        data={paginatedData}
+        data={recepciones}
         searchTerm={searchQuery}
         onSearchChange={onSearchChange}
         page={page}

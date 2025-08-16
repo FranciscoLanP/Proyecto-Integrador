@@ -9,7 +9,6 @@ interface IMetodoPago {
 export interface IFactura extends Document {
   _id: Schema.Types.ObjectId;
   id_reparacion: Schema.Types.ObjectId;
-  fecha_emision: Date;
   total: number;
   tipo_factura: 'Contado' | 'Credito';
   metodos_pago: IMetodoPago[];
@@ -33,7 +32,6 @@ const MetodoPagoSchema = new Schema({
 
 const FacturaSchema = new Schema<IFactura>({
   id_reparacion: { type: Schema.Types.ObjectId, ref: 'ReparacionVehiculo', required: true },
-  fecha_emision: { type: Date, required: true },
   total: { type: Number, required: true },
   tipo_factura: {
     type: String,

@@ -436,6 +436,20 @@ export default function RecibosVehiculosPage() {
       )
     },
     {
+      id: 'fechaCreacion',
+      label: 'Fecha Creación',
+      minWidth: 110,
+      render: (value, row) => (
+        <Typography variant="body2" sx={{ color: '#374151', fontSize: '0.85rem' }}>
+          {new Date((row as any).createdAt || new Date()).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          })}
+        </Typography>
+      )
+    },
+    {
       id: 'acciones',
       label: 'Acciones',
       align: 'center',
@@ -470,7 +484,7 @@ export default function RecibosVehiculosPage() {
         subtitle="Gestiona los recibos y comprobantes de servicio vehicular"
         titleIcon="🧾"
         columns={columns}
-        data={paginatedData}
+        data={recibosFiltrados}
         searchTerm={searchTerm}
         onSearchChange={onSearchChange}
         page={page}

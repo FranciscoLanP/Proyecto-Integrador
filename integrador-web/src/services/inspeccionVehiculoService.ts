@@ -18,6 +18,8 @@ export interface InspeccionVehiculo {
   costo_aproximado?: number;
   resultado?: string;
   piezas_sugeridas?: PiezaSugerida[];
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export const inspeccionVehiculoService = createCrudService<InspeccionVehiculo>('inspeccionvehiculos');

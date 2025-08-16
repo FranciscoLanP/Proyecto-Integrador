@@ -27,6 +27,9 @@ export default function ModelosDatosPage(): JSX.Element {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<IModelosDatos | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   if (errMarcas) return <Typography color="error">{errMarcas.message}</Typography>;
   if (errModelos) return <Typography color="error">{errModelos.message}</Typography>;
@@ -69,6 +72,15 @@ export default function ModelosDatosPage(): JSX.Element {
       );
     }
     setModalOpen(false);
+  };
+
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (newRowsPerPage: number) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset to first page when changing rows per page
   };
 
   const tableData = modelos.map(modelo => {
@@ -174,6 +186,15 @@ export default function ModelosDatosPage(): JSX.Element {
           </IconButton>
         </Box>
       ),
+      fechaCreacion: (
+        <Typography variant="body2" sx={{ color: '#374151', fontSize: '0.85rem' }}>
+          {new Date((modelo as any).createdAt || new Date()).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          })}
+        </Typography>
+      ),
       originalData: modelo
     };
   });
@@ -182,6 +203,7 @@ export default function ModelosDatosPage(): JSX.Element {
     { id: 'modelo', label: 'Modelo de Vehículo' },
     { id: 'marca', label: 'Marca' },
     { id: 'estado', label: 'Estado' },
+    { id: 'fechaCreacion', label: 'Fecha Creación' },
     { id: 'acciones', label: 'Acciones' }
   ];
 
@@ -217,12 +239,12 @@ export default function ModelosDatosPage(): JSX.Element {
           subtitle="Administra los modelos de vehículo asociados a cada marca"
           data={tableData}
           columns={columns}
-          searchTerm=""
-          onSearchChange={() => { }}
-          page={0}
-          rowsPerPage={10}
-          onPageChange={() => { }}
-          onRowsPerPageChange={() => { }}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
           onCreateNew={handleCreate}
           createButtonText="Nuevo Modelo"
           emptyMessage="No se encontraron modelos de vehículo"

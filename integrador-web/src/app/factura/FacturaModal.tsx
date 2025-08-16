@@ -18,7 +18,6 @@ const tiposFactura = ['Contado', 'Credito'] as const;
 export default function FacturaModal({ open, defaultData, onClose, onSubmit }: Props) {
   const [form, setForm] = useState<Factura>({
     id_reparacion: '',
-    fecha_emision: new Date().toISOString().slice(0, 10),
     total: 0,
     tipo_factura: 'Contado',
     metodos_pago: [{ tipo: 'Efectivo', monto: 0 }],
@@ -113,7 +112,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
         tipo_factura: defaultData.tipo_factura || 'Contado',
         id_reparacion: reparacionId,
         detalles: defaultData.detalles || '',
-        fecha_emision: defaultData.fecha_emision?.split('T')[0] || new Date().toISOString().slice(0, 10),
         total: totalCorrecto,
         descuento_porcentaje: defaultData.descuento_porcentaje || 0,
         emitida: defaultData.emitida || false
@@ -131,7 +129,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
     } else if (!defaultData && open) {
       setForm({
         id_reparacion: '',
-        fecha_emision: new Date().toISOString().slice(0, 10),
         total: 0,
         tipo_factura: 'Contado',
         metodos_pago: [{ tipo: 'Efectivo', monto: 0 }],
@@ -209,11 +206,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
       return;
     }
 
-    if (!form.fecha_emision) {
-      alert('Debe especificar la fecha de emisión');
-      return;
-    }
-
     if (!form.total || form.total <= 0) {
       alert('El total debe ser mayor que 0');
       return;
@@ -239,7 +231,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
       ...form,
       metodo_pago: form.metodos_pago[0]?.tipo || 'Efectivo',
       id_reparacion: form.id_reparacion || '',
-      fecha_emision: form.fecha_emision || new Date().toISOString().slice(0, 10),
       total: Number(form.total) || 0,
       tipo_factura: form.tipo_factura || 'Contado'
     };
@@ -337,17 +328,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
             </TextField>
 
             <Box display="flex" gap={2}>
-              <TextField
-                label="Fecha de emisión"
-                name="fecha_emision"
-                type="date"
-                value={form.fecha_emision || ''}
-                onChange={handleChange}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                disabled={form.emitida}
-                sx={textFieldStyle}
-              />
               <TextField
                 label="Total"
                 name="total"

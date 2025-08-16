@@ -24,6 +24,8 @@ export default function InspeccionVehiculoPage() {
   const [reparacionDefault, setReparacionDefault] = useState<ReparacionVehiculo | undefined>(undefined);
   const [printHtml, setPrintHtml] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const { currentTheme, isHydrated } = useTheme();
   const isHydratedCustom = useHydration();
@@ -81,6 +83,15 @@ export default function InspeccionVehiculoPage() {
     } else {
       return { status: 'Revisión', color: 'blue' as const };
     }
+  };
+
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (newRowsPerPage: number) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset to first page when changing rows per page
   };
 
   const handleCreate = () => {
@@ -566,6 +577,15 @@ export default function InspeccionVehiculoPage() {
           </IconButton>
         </Box>
       ),
+      fechaCreacion: (
+        <Typography variant="body2" sx={{ color: '#374151', fontSize: '0.85rem' }}>
+          {new Date((inspeccion as any).createdAt || new Date()).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          })}
+        </Typography>
+      ),
       originalData: inspeccion
     };
   });
@@ -578,6 +598,7 @@ export default function InspeccionVehiculoPage() {
     { id: 'resultado', label: 'Estado' },
     { id: 'piezas', label: 'Piezas Sugeridas' },
     { id: 'total', label: 'Total Est.' },
+    { id: 'fechaCreacion', label: 'Fecha Creación' },
     { id: 'acciones', label: 'Acciones' }
   ];
 
@@ -617,10 +638,10 @@ export default function InspeccionVehiculoPage() {
           columns={columns}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          page={0}
-          rowsPerPage={10}
-          onPageChange={() => { }}
-          onRowsPerPageChange={() => { }}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
           onCreateNew={handleCreate}
           createButtonText="Nueva Inspección"
           emptyMessage="No se encontraron inspecciones"

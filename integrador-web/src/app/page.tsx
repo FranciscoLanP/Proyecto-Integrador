@@ -133,7 +133,7 @@ function DashboardContent() {
       const añoActual = new Date().getFullYear()
 
       const facturasMesActual = facturasPagadas.filter(f => {
-        const fechaFactura = new Date(f.fecha_emision)
+        const fechaFactura = new Date(f.createdAt || new Date())
         return fechaFactura.getMonth() === mesActual && fechaFactura.getFullYear() === añoActual
       })
 
@@ -163,7 +163,7 @@ function DashboardContent() {
         const añoMes = fecha.getFullYear()
 
         const facturasDelMes = facturasPagadas.filter(f => {
-          const fechaFactura = new Date(f.fecha_emision)
+          const fechaFactura = new Date(f.createdAt || new Date())
           return fechaFactura.getMonth() === mesIndex && fechaFactura.getFullYear() === añoMes
         })
 

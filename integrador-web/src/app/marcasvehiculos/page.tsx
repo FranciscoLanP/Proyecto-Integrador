@@ -26,6 +26,9 @@ export default function MarcasVehiculoPage(): JSX.Element {
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<IMarcaVehiculo | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   if (error) return <Typography color="error">{error.message}</Typography>;
 
@@ -67,6 +70,15 @@ export default function MarcasVehiculoPage(): JSX.Element {
       );
     }
     setModalOpen(false);
+  };
+
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (newRowsPerPage: number) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset to first page when changing rows per page
   };
 
   const tableData = marcas.map(marca => ({
@@ -148,12 +160,22 @@ export default function MarcasVehiculoPage(): JSX.Element {
         </IconButton>
       </Box>
     ),
+    fechaCreacion: (
+      <Typography variant="body2" sx={{ color: '#374151', fontSize: '0.85rem' }}>
+        {new Date((marca as any).createdAt || new Date()).toLocaleDateString('es-ES', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        })}
+      </Typography>
+    ),
     originalData: marca
   }));
 
   const columns = [
     { id: 'marca', label: 'Marca de Vehículo' },
     { id: 'estado', label: 'Estado' },
+    { id: 'fechaCreacion', label: 'Fecha Creación' },
     { id: 'acciones', label: 'Acciones' }
   ];
 
@@ -189,12 +211,12 @@ export default function MarcasVehiculoPage(): JSX.Element {
           subtitle="Administra las marcas de vehículo disponibles en el sistema"
           data={tableData}
           columns={columns}
-          searchTerm=""
-          onSearchChange={() => { }}
-          page={0}
-          rowsPerPage={10}
-          onPageChange={() => { }}
-          onRowsPerPageChange={() => { }}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
           onCreateNew={handleCreate}
           createButtonText="Nueva Marca"
           emptyMessage="No se encontraron marcas de vehículo"

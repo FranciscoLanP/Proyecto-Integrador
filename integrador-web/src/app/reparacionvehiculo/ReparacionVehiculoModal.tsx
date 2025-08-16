@@ -87,17 +87,38 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
 
         if (Array.isArray(piezasUsadas) && piezasUsadas.length > 0) {
           if (piezasUsadas[0]?.id_pieza) {
-            piezasUsadas = piezasUsadas.map((p: any) => ({
-              id_pieza: typeof p.id_pieza === 'object' && p.id_pieza._id
-                ? p.id_pieza._id
-                : p.id_pieza,
-              cantidad: p.cantidad || 1
+            piezasUsadas = piezasUsadas.map((p: any, index: number) => ({
+              _id: p._id || `temp_${index}`,
+              id_pieza: typeof p.id_pieza === 'object'
+                ? {
+                  _id: p.id_pieza._id || '',
+                  nombre_pieza: p.id_pieza.nombre_pieza || '',
+                  costo_promedio: p.id_pieza.costo_promedio || 0,
+                  precio: p.id_pieza.precio
+                }
+                : {
+                  _id: p.id_pieza || '',
+                  nombre_pieza: '',
+                  costo_promedio: 0
+                },
+              cantidad: p.cantidad || 1,
+              origen: p.origen || 'reparacion' as 'inspeccion' | 'reparacion',
+              referencia: p.referencia || `REF_${index}`,
+              precio_utilizado: p.precio_utilizado || p.precio_unitario
             }));
           }
           else if (typeof piezasUsadas[0] === 'object') {
-            piezasUsadas = piezasUsadas.map((p: any) => ({
-              id_pieza: p._id || p.id || '',
-              cantidad: p.cantidad || 1
+            piezasUsadas = piezasUsadas.map((p: any, index: number) => ({
+              _id: p._id || `temp_${index}`,
+              id_pieza: {
+                _id: p._id || p.id || '',
+                nombre_pieza: p.nombre_pieza || '',
+                costo_promedio: p.costo_promedio || 0
+              },
+              cantidad: p.cantidad || 1,
+              origen: 'reparacion' as 'inspeccion' | 'reparacion',
+              referencia: `REF_${index}`,
+              precio_utilizado: p.costo_promedio || 0
             }));
           }
         }
@@ -157,9 +178,17 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
       if (inspeccionSeleccionada?.piezas_sugeridas) {
         setForm(f => ({
           ...f,
-          piezas_usadas: inspeccionSeleccionada.piezas_sugeridas.map((pieza: any) => ({
-            id_pieza: pieza.id_pieza,
-            cantidad: pieza.cantidad
+          piezas_usadas: inspeccionSeleccionada.piezas_sugeridas.map((pieza: any, index: number) => ({
+            _id: `temp_insp_${index}`,
+            id_pieza: {
+              _id: typeof pieza.id_pieza === 'object' ? pieza.id_pieza._id : pieza.id_pieza,
+              nombre_pieza: typeof pieza.id_pieza === 'object' ? pieza.id_pieza.nombre_pieza : '',
+              costo_promedio: typeof pieza.id_pieza === 'object' ? pieza.id_pieza.costo_promedio : 0
+            },
+            cantidad: pieza.cantidad || 1,
+            origen: 'inspeccion' as 'inspeccion' | 'reparacion',
+            referencia: `INSP_${index}`,
+            precio_utilizado: typeof pieza.id_pieza === 'object' ? pieza.id_pieza.costo_promedio : 0
           }))
         }));
       }
@@ -208,11 +237,24 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
   };
 
   const handleAddPieza = () => {
+    const nuevaPieza = {
+      _id: `temp_${Date.now()}`,
+      id_pieza: {
+        _id: '',
+        nombre_pieza: '',
+        costo_promedio: 0
+      },
+      cantidad: 1,
+      origen: 'reparacion' as 'inspeccion' | 'reparacion',
+      referencia: `REF_${Date.now()}`,
+      precio_utilizado: 0
+    };
+
     setForm(f => ({
       ...f,
       piezas_usadas: [
         ...(f.piezas_usadas ?? []),
-        { id_pieza: '', cantidad: 1 }
+        nuevaPieza
       ]
     }));
   };
@@ -223,7 +265,17 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
       piezas_usadas: f.piezas_usadas?.map((p, i) =>
         i === idx ? {
           ...p,
-          [field]: value
+          [field]: value,
+          // Si se está cambiando id_pieza y se proporcionan datos de la pieza
+          ...(field === 'id_pieza' && piezaData ? {
+            id_pieza: {
+              _id: piezaData._id || value,
+              nombre_pieza: piezaData.nombre_pieza || '',
+              costo_promedio: piezaData.costo_promedio || 0,
+              precio: piezaData.precio
+            },
+            precio_utilizado: piezaData.costo_promedio || 0
+          } : {})
         } : p
       )
     }));
@@ -446,12 +498,13 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
           </Box>
 
           {(form.piezas_usadas ?? []).map((pieza, idx) => {
-            const piezaInfo = piezasCatalogo.find(p => p._id === pieza.id_pieza);
+            const piezaId = typeof pieza.id_pieza === 'object' ? pieza.id_pieza._id : pieza.id_pieza;
+            const piezaInfo = piezasCatalogo.find(p => p._id === piezaId);
             return (
               <Box key={idx} display="flex" gap={1} mb={1} alignItems="center">
                 <Box sx={{ minWidth: 300 }}>
                   <PiezaBuscador
-                    value={pieza.id_pieza}
+                    value={piezaId}
                     onChange={(piezaId, piezaData) => handlePiezaChange(idx, 'id_pieza', piezaId, piezaData)}
                     label={piezaInfo ? `${piezaInfo.nombre_pieza}` : 'Buscar pieza'}
                     size="small"

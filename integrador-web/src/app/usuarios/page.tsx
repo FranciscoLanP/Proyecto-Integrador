@@ -331,6 +331,34 @@ function UsuariosPageContent(): JSX.Element {
           </IconButton>
         </Box>
       ),
+      fechaCreacion: (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: '6px',
+              background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '0.9rem'
+            }}
+          >
+            📅
+          </Box>
+          <Box>
+            <div style={{ color: '#374151', fontSize: '0.85rem' }}>
+              {usuario.createdAt ? new Date(usuario.createdAt).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              }) : 'N/A'}
+            </div>
+          </Box>
+        </Box>
+      ),
       originalData: usuario
     }
   });
@@ -339,6 +367,7 @@ function UsuariosPageContent(): JSX.Element {
     { id: 'usuario', label: 'Usuario' },
     { id: 'rol', label: 'Rol' },
     { id: 'estado', label: 'Estado' },
+    { id: 'fechaCreacion', label: 'Fecha Creación' },
     { id: 'acciones', label: 'Acciones' }
   ];
 

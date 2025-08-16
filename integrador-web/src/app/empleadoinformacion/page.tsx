@@ -174,12 +174,26 @@ function EmpleadoInformacionPageContent() {
       minWidth: 120,
       render: (value, row) => (
         <StatusChip
-          status="Activo" 
+          status="Activo"
           colorMap={{
             'Activo': 'linear-gradient(45deg, #4CAF50, #8BC34A)',
             'Inactivo': 'linear-gradient(45deg, #f44336, #ff5722)'
           }}
         />
+      )
+    },
+    {
+      id: 'fechaCreacion',
+      label: 'Fecha Creación',
+      minWidth: 130,
+      render: (value, row) => (
+        <Typography variant="body2" sx={{ color: '#374151', fontSize: '0.85rem' }}>
+          {new Date((row as any).createdAt || new Date()).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          })}
+        </Typography>
       )
     },
     {
@@ -210,7 +224,7 @@ function EmpleadoInformacionPageContent() {
         subtitle="Gestiona la información del personal de la empresa"
         titleIcon="👥"
         columns={columns}
-        data={paginatedData}
+        data={empleados}
         searchTerm={searchQuery}
         onSearchChange={onSearchChange}
         page={page}
