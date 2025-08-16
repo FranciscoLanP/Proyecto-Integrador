@@ -421,21 +421,6 @@ export default function RecibosVehiculosPage() {
       )
     },
     {
-      id: 'estado',
-      label: 'Estado',
-      minWidth: 90,
-      render: (value, row) => (
-        <StatusChip
-          status="Completado"
-          colorMap={{
-            'Completado': 'linear-gradient(45deg, #10B981, #059669)',
-            'Pendiente': 'linear-gradient(45deg, #F59E0B, #FBBF24)',
-            'Anulado': 'linear-gradient(45deg, #EF4444, #F87171)'
-          }}
-        />
-      )
-    },
-    {
       id: 'fechaCreacion',
       label: 'Fecha Creación',
       minWidth: 110,
@@ -464,12 +449,6 @@ export default function RecibosVehiculosPage() {
               onClick: () => handlePrint(row),
               color: 'linear-gradient(45deg, #06B6D4, #0891B2)',
               tooltip: 'Imprimir Recibo'
-            },
-            {
-              icon: <AssignmentIcon fontSize="small" />,
-              onClick: () => notify('Ver detalles del recibo', 'info'),
-              color: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
-              tooltip: 'Ver Detalles'
             }
           ]}
         />

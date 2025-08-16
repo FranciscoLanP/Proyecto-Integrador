@@ -225,20 +225,6 @@ export default function SuplidorPage(): JSX.Element {
       )
     },
     {
-      id: 'estado',
-      label: 'Estado',
-      minWidth: 120,
-      render: (value, row) => (
-        <StatusChip
-          status="Activo"
-          colorMap={{
-            'Activo': safeTheme.gradient,
-            'Inactivo': 'linear-gradient(45deg, #6B7280, #9CA3AF)'
-          }}
-        />
-      )
-    },
-    {
       id: 'fechaCreacion',
       label: 'Fecha Creación',
       minWidth: 120,
@@ -280,14 +266,6 @@ export default function SuplidorPage(): JSX.Element {
         <ActionButtons
           onEdit={() => openEdit(row)}
           onDelete={() => askDelete(row)}
-          customActions={[
-            {
-              icon: <ContactPhoneIcon fontSize="small" />,
-              onClick: () => notify('Ver historial de pedidos', 'info'),
-              color: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
-              tooltip: 'Historial de Pedidos'
-            }
-          ]}
         />
       )
     }

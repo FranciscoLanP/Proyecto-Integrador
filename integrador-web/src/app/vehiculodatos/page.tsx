@@ -335,12 +335,6 @@ export default function VehiculoDatosPage() {
                 ? 'linear-gradient(45deg, #10B981, #34D399)'
                 : 'linear-gradient(45deg, #F59E0B, #FBBF24)',
               tooltip: row.activo ? 'Desactivar' : 'Activar'
-            },
-            {
-              icon: <CarRepairIcon fontSize="small" />,
-              onClick: () => notify('Ver historial de reparaciones', 'info'),
-              color: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
-              tooltip: 'Historial de Reparaciones'
             }
           ]}
         />

@@ -281,21 +281,6 @@ export default function RecepcionVehiculosPage() {
       )
     },
     {
-      id: 'estado',
-      label: 'Estado',
-      minWidth: 100,
-      render: (value, row) => (
-        <StatusChip
-          status="Recibido"
-          colorMap={{
-            'Recibido': 'linear-gradient(45deg, #06B6D4, #0891B2)',
-            'En Proceso': 'linear-gradient(45deg, #F59E0B, #FBBF24)',
-            'Completado': 'linear-gradient(45deg, #10B981, #059669)'
-          }}
-        />
-      )
-    },
-    {
       id: 'fechaCreacion',
       label: 'Fecha Creación',
       minWidth: 120,
@@ -337,20 +322,6 @@ export default function RecepcionVehiculosPage() {
         <ActionButtons
           onEdit={() => openEdit(row)}
           onDelete={() => handleDelete(row)}
-          customActions={[
-            {
-              icon: <AssignmentIcon fontSize="small" />,
-              onClick: () => notify('Ver detalles de recepción', 'info'),
-              color: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
-              tooltip: 'Ver Detalles'
-            },
-            {
-              icon: <BuildIcon fontSize="small" />,
-              onClick: () => notify('Iniciar reparación', 'info'),
-              color: 'linear-gradient(45deg, #F59E0B, #FBBF24)',
-              tooltip: 'Iniciar Reparación'
-            }
-          ]}
         />
       )
     }

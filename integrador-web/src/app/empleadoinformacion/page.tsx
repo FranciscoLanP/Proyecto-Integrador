@@ -169,20 +169,6 @@ function EmpleadoInformacionPageContent() {
       )
     },
     {
-      id: 'estado',
-      label: 'Estado',
-      minWidth: 120,
-      render: (value, row) => (
-        <StatusChip
-          status="Activo"
-          colorMap={{
-            'Activo': 'linear-gradient(45deg, #4CAF50, #8BC34A)',
-            'Inactivo': 'linear-gradient(45deg, #f44336, #ff5722)'
-          }}
-        />
-      )
-    },
-    {
       id: 'fechaCreacion',
       label: 'Fecha Creación',
       minWidth: 130,
@@ -204,14 +190,6 @@ function EmpleadoInformacionPageContent() {
       render: (value, row) => (
         <ActionButtons
           onEdit={() => openEdit(row)}
-          customActions={[
-            {
-              icon: <WorkIcon fontSize="small" />,
-              onClick: () => notify('Ver historial laboral', 'info'),
-              color: 'linear-gradient(45deg, #673AB7, #9C27B0)',
-              tooltip: 'Historial Laboral'
-            }
-          ]}
         />
       )
     }
