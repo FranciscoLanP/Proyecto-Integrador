@@ -19,11 +19,9 @@ interface Props {
 export default function UsuarioModal({
   open, defaultData, onClose, onSubmit, currentUserId
 }: Props) {
-  const { userId } = useJwtDecode(); // Obtener el ID del usuario actual
+  const { userId } = useJwtDecode(); 
 
-  // Determinar si estamos editando a otro usuario
   const isEditingOtherUser = defaultData && defaultData._id !== (currentUserId || userId);
-  // Estilo moderno para TextFields con bordes visibles
   const textFieldStyle = {
     '& .MuiInputLabel-root': {
       zIndex: 1,
@@ -63,14 +61,12 @@ export default function UsuarioModal({
   }, [open, defaultData])
 
   const handleSave = () => {
-    // Si estamos editando otro usuario, solo enviamos rol y estado
     if (isEditingOtherUser) {
       onSubmit({
         role,
         activo
       });
     } else {
-      // Si es el propio usuario o es un nuevo usuario, enviamos todo
       onSubmit({
         username,
         ...(password && { password }),
@@ -81,8 +77,8 @@ export default function UsuarioModal({
   }
 
   const disabled = isEditingOtherUser
-    ? false // Para otros usuarios, solo necesitamos que el modal esté abierto
-    : (!username.trim() || (!defaultData && !password)); // Para el propio usuario o nuevo usuario
+    ? false 
+    : (!username.trim() || (!defaultData && !password)); 
 
   const getModalTitle = () => {
     if (!defaultData) return 'Nuevo Usuario';
@@ -98,7 +94,6 @@ export default function UsuarioModal({
       maxWidth="sm"
     >
       <Box display="flex" flexDirection="column" gap={3}>
-        {/* Mostrar información de restricción si estamos editando otro usuario */}
         {isEditingOtherUser && (
           <Box
             sx={{
@@ -116,7 +111,6 @@ export default function UsuarioModal({
           </Box>
         )}
 
-        {/* Sección: Credenciales - Solo visible si NO estamos editando otro usuario */}
         {!isEditingOtherUser && (
           <Box>
             <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
@@ -150,7 +144,6 @@ export default function UsuarioModal({
           </Box>
         )}
 
-        {/* Información del usuario si estamos editando otro usuario */}
         {isEditingOtherUser && (
           <Box>
             <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
@@ -174,7 +167,6 @@ export default function UsuarioModal({
           </Box>
         )}
 
-        {/* Sección: Configuración */}
         <Box>
           <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
             <strong style={{ fontSize: '1.1rem' }}>Configuración del Usuario</strong>
@@ -212,7 +204,6 @@ export default function UsuarioModal({
           </Box>
         </Box>
 
-        {/* Botones de acción */}
         <Box display="flex" justifyContent="flex-end" gap={2} sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
           <Button
             onClick={onClose}

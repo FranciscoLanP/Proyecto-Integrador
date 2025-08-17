@@ -156,7 +156,6 @@ export default function ClienteVehiculosModal({
           </Box>
         )}
 
-        {/* Botón de cerrar */}
         <Box display="flex" justifyContent="flex-end" sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
           <Button
             onClick={onClose}

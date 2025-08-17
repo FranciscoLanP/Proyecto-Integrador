@@ -33,7 +33,7 @@ function UsuariosPageContent(): JSX.Element {
   const { notify } = useNotification();
   const { currentTheme, isHydrated } = useClientTheme();
   const isHydratedCustom = useHydration();
-  const { userId } = useJwtDecode(); // Obtener el ID del usuario actual
+  const { userId } = useJwtDecode(); 
 
   const { allQuery, createM, updateM, deleteM } = useCrud<IUsuario>('usuarios');
   const usuarios = allQuery.data || [];
@@ -43,7 +43,6 @@ function UsuariosPageContent(): JSX.Element {
   const [confirmDel, setConfirmDel] = useState<boolean>(false);
   const [toDelete, setToDelete] = useState<IUsuario | null>(null);
 
-  // Hook para manejar la búsqueda y paginación
   const {
     filteredData,
     paginatedData,
@@ -55,11 +54,10 @@ function UsuariosPageContent(): JSX.Element {
     handleRowsPerPageChange
   } = useModernTable({
     data: usuarios,
-    searchFields: ['username', 'role'], // Buscar por nombre de usuario y rol
+    searchFields: ['username', 'role'], 
     initialRowsPerPage: 10
   });
 
-  // Funciones adaptadoras para ModernTable
   const onSearchChange = (value: string) => {
     handleSearchChange({ target: { value } } as React.ChangeEvent<HTMLInputElement>);
   };
@@ -172,7 +170,7 @@ function UsuariosPageContent(): JSX.Element {
   };
 
   const tableData = paginatedData.map(usuario => {
-    const isCurrentUser = usuario._id === userId; // Verificar si es el usuario actual
+    const isCurrentUser = usuario._id === userId; 
 
     return {
       id: usuario._id,
@@ -184,7 +182,7 @@ function UsuariosPageContent(): JSX.Element {
               height: 45,
               borderRadius: '12px',
               background: isCurrentUser
-                ? 'linear-gradient(45deg, #8B5CF6, #A78BFA)' // Color especial para el usuario actual
+                ? 'linear-gradient(45deg, #8B5CF6, #A78BFA)' 
                 : currentTheme.buttonGradient,
               display: 'flex',
               alignItems: 'center',

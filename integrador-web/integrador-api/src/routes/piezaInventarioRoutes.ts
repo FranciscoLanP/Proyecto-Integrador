@@ -1,4 +1,3 @@
-// src/routes/piezaInventario.routes.ts
 
 import { Router } from 'express';
 import {
@@ -6,7 +5,7 @@ import {
   getPaginatedPiezaInventario,
   getPiezaInventarioById,
   createPiezaInventario,
-  addStockPieza,              
+  addStockPieza,
   updatePiezaInventario,
   deletePiezaInventario
 } from '../controller/piezaInventarioController';
@@ -14,20 +13,11 @@ import {
 const router = Router();
 
 router.get('/piezasinventario/paginado', getPaginatedPiezaInventario);
-router.get('/piezasinventario/:id',    getPiezaInventarioById);
-router.get('/piezasinventario',         getAllPiezaInventario);
-
-router.post('/piezasinventario',        createPiezaInventario);
-
-router.post(
-  '/piezasinventario/:id/stock',     
-  addStockPieza
-);
-
-// Actualizar datos generales de la pieza (nombre)
-router.put('/piezasinventario/:id',     updatePiezaInventario);
-
-// Eliminar pieza
-router.delete('/piezasinventario/:id',  deletePiezaInventario);
+router.get('/piezasinventario/:id', getPiezaInventarioById);
+router.get('/piezasinventario', getAllPiezaInventario);
+router.post('/piezasinventario', createPiezaInventario);
+router.post('/piezasinventario/:id/stock', addStockPieza);
+router.put('/piezasinventario/:id', updatePiezaInventario);
+router.delete('/piezasinventario/:id', deletePiezaInventario);
 
 export default router;

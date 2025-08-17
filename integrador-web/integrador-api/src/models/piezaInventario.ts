@@ -1,4 +1,3 @@
-// src/models/piezaInventario.ts
 
 import { Schema, model, Document } from 'mongoose';
 import { Counter } from './counter';

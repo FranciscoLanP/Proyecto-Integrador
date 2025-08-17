@@ -78,10 +78,9 @@ export default function MarcasVehiculoPage(): JSX.Element {
 
   const handleChangeRowsPerPage = (newRowsPerPage: number) => {
     setRowsPerPage(newRowsPerPage);
-    setPage(0); // Reset to first page when changing rows per page
+    setPage(0); 
   };
 
-  // Filtrar datos basado en el término de búsqueda
   const filteredMarcas = marcas.filter(marca =>
     marca.nombre_marca.toLowerCase().includes(searchTerm.toLowerCase())
   );

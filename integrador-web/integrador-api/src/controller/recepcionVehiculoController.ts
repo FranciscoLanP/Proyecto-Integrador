@@ -1,4 +1,3 @@
-// src/controllers/recepcionVehiculoController.ts
 
 import { Request, Response, NextFunction } from 'express'
 import { RecepcionVehiculo } from '../models/recepcionVehiculo'

@@ -33,20 +33,17 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Interceptor para responses - manejar errores de autenticación
 apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token expirado o inválido
       if (typeof window !== 'undefined') {
         console.warn('Token de autenticación inválido, redirigiendo al login...');
         localStorage.removeItem('auth');
         delete apiClient.defaults.headers.common['Authorization'];
 
-        // Solo redirigir si no estamos ya en la página de login
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
         }
@@ -60,7 +57,6 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Inicializar token al cargar si existe
 if (typeof window !== 'undefined') {
   const stored = localStorage.getItem('auth');
   if (stored) {

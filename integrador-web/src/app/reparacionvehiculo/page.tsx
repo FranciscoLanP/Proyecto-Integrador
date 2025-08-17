@@ -9,14 +9,11 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ReceiptIcon from '@mui/icons-material/Receipt';
 import ModernTable from '@/components/ModernTable/ModernTable';
 import { useHydration } from '@/hooks/useHydration';
 import { useTheme } from '@/app/context/ThemeContext';
 import ReparacionVehiculoModal from './ReparacionVehiculoModal';
-import FacturaModal from '../factura/FacturaModal';
 import { reparacionVehiculoService, ReparacionVehiculo } from '@/services/reparacionVehiculoService';
-import { facturaService, Factura } from '@/services/facturaService';
 
 // Configurar dayjs en español
 dayjs.locale('es');
@@ -26,8 +23,6 @@ export default function ReparacionVehiculoPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<ReparacionVehiculo | undefined>(undefined);
-  const [facturaModalOpen, setFacturaModalOpen] = useState(false);
-  const [facturaDefault, setFacturaDefault] = useState<Factura | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
   const [fechaCreacion, setFechaCreacion] = useState<dayjs.Dayjs | null>(null);
   const [page, setPage] = useState(0);
@@ -88,30 +83,6 @@ export default function ReparacionVehiculoPage() {
       fetchReparaciones();
     } catch {
       alert('Error al guardar');
-    }
-  };
-
-  const handleCrearFactura = (reparacion: ReparacionVehiculo) => {
-    setFacturaDefault({
-      id_reparacion: reparacion._id!,
-      total: reparacion.costo_total ?? 0,
-      metodo_pago: '',
-      detalles: '',
-      emitida: false,
-      tipo_factura: 'Contado',
-      metodos_pago: [{ tipo: 'Efectivo', monto: reparacion.costo_total ?? 0 }],
-      descuento_porcentaje: 0
-    });
-    setFacturaModalOpen(true);
-  };
-
-  const handleFacturaModalSubmit = async (data: Factura) => {
-    try {
-      await facturaService.create(data);
-      setFacturaModalOpen(false);
-      alert('Factura creada correctamente');
-    } catch {
-      alert('Error al guardar factura');
     }
   };
 
@@ -402,25 +373,6 @@ export default function ReparacionVehiculoPage() {
           >
             <DeleteIcon fontSize="small" />
           </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => handleCrearFactura(reparacion)}
-            title="Crear factura"
-            sx={{
-              background: 'linear-gradient(45deg, #10B981, #34D399)',
-              color: 'white',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #059669, #10B981)',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)'
-              },
-              transition: 'all 0.3s ease',
-              width: 32,
-              height: 32
-            }}
-          >
-            <ReceiptIcon fontSize="small" />
-          </IconButton>
         </Box>
       ),
       fechaCreacion: (
@@ -602,13 +554,6 @@ export default function ReparacionVehiculoPage() {
             setEditData(undefined);
           }}
           onSubmit={handleModalSubmit}
-        />
-
-        <FacturaModal
-          open={facturaModalOpen}
-          defaultData={facturaDefault}
-          onClose={() => setFacturaModalOpen(false)}
-          onSubmit={handleFacturaModalSubmit}
         />
       </div>
     </div>

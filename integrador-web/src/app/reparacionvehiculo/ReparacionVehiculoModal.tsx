@@ -15,7 +15,6 @@ interface Props {
 }
 
 export default function ReparacionVehiculoModal({ open, defaultData, onClose, onSubmit }: Props) {
-  // Estilo moderno para TextFields con bordes visibles y tema adaptativo
   const textFieldStyle = {
     '& .MuiInputLabel-root': {
       zIndex: 1,
@@ -37,7 +36,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
     },
   };
 
-  // 🔥 Estado inicial limpio - se resetea en useEffect
   const [form, setForm] = useState<ReparacionVehiculo>({
     id_inspeccion: '',
     empleados_trabajos: [{ id_empleado: '', descripcion_trabajo: '' }],
@@ -45,7 +43,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
     piezas_usadas: []
   });
 
-  // Estados para los datos de los dropdowns
   const [inspecciones, setInspecciones] = useState<any[]>([]);
   const [empleados, setEmpleados] = useState<any[]>([]);
   const [piezasCatalogo, setPiezasCatalogo] = useState<any[]>([]);
@@ -266,7 +263,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
         i === idx ? {
           ...p,
           [field]: value,
-          // Si se está cambiando id_pieza y se proporcionan datos de la pieza
           ...(field === 'id_pieza' && piezaData ? {
             id_pieza: {
               _id: piezaData._id || value,
@@ -319,7 +315,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
       maxWidth="md"
     >
       <Box display="flex" flexDirection="column" gap={3}>
-        {/* Sección: Información de la Reparación */}
         <Box>
           <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             <strong style={{ fontSize: '1.1rem' }}>Información de la Reparación</strong>
@@ -387,7 +382,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
           </Box>
         </Box>
 
-        {/* Sección: Empleados y Trabajos */}
         <Box>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} pb={1} sx={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             <strong style={{ fontSize: '1.1rem' }}>Empleados y Trabajos Realizados</strong>
@@ -468,7 +462,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
           })}
         </Box>
 
-        {/* Sección: Piezas Usadas */}
         <Box>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} pb={1} sx={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             <Box>

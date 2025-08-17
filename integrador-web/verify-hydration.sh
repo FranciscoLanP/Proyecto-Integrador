@@ -4,7 +4,6 @@
 echo "🚀 Verificación de Sistema de Temas y Hidratación"
 echo "================================================="
 
-# Verificar que el servidor esté ejecutándose
 echo "📡 Verificando servidor..."
 if curl -s http://localhost:3000 > /dev/null; then
     echo "✅ Servidor ejecutándose en http://localhost:3000"
@@ -13,7 +12,6 @@ else
     exit 1
 fi
 
-# Verificar compilación
 echo "🔨 Verificando compilación..."
 cd "$(dirname "$0")"
 if npm run build > /dev/null 2>&1; then
@@ -23,7 +21,6 @@ else
     exit 1
 fi
 
-# Verificar páginas principales
 echo "🌐 Verificando páginas principales..."
 
 pages=("/suplidores" "/empleadoinformacion" "/vehiculodatos" "/clientes")
@@ -36,7 +33,6 @@ for page in "${pages[@]}"; do
     fi
 done
 
-# Verificar archivos clave
 echo "🔍 Verificando archivos clave..."
 
 files=(

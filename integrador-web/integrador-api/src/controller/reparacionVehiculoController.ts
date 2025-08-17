@@ -59,12 +59,10 @@ export const getAllReparacionVehiculo = async (req: Request, res: Response, next
           }
         }
       })
-      // Poblar los empleados en el nuevo campo empleados_trabajos
       .populate({
         path: 'empleados_trabajos.id_empleado',
         select: 'nombre telefono tipo_empleado'
       })
-      // Mantener compatibilidad con el campo anterior
       .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado')
     res.status(200).json(items)
   } catch (error) {
@@ -202,13 +200,12 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
   try {
     const {
       id_inspeccion,
-      empleados_trabajos, // [{ id_empleado, descripcion_trabajo }]
+      empleados_trabajos, 
       fecha_inicio,
       fecha_fin,
       descripcion,
       costo_total,
-      piezas_usadas, // [{ id_pieza, cantidad }]
-      // Compatibilidad con campo anterior
+      piezas_usadas,
       id_empleadoInformacion
     } = req.body;
 
@@ -217,13 +214,11 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
       return;
     }
 
-    // Verificar que hay al menos un empleado (nuevo campo o campo anterior)
     if ((!empleados_trabajos || empleados_trabajos.length === 0) && !id_empleadoInformacion) {
       res.status(400).json({ message: 'Se requiere al menos un empleado' });
       return;
     }
 
-    // Si viene el campo anterior, convertirlo al nuevo formato
     let empleadosFinales = empleados_trabajos || [];
     if (id_empleadoInformacion && empleadosFinales.length === 0) {
       empleadosFinales = [{
@@ -232,7 +227,6 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
       }];
     }
 
-    // 1. Crear la reparación SIN piezas_usadas
     const reparacion = new ReparacionVehiculo({
       id_inspeccion,
       empleados_trabajos: empleadosFinales,
@@ -241,12 +235,10 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
       descripcion,
       costo_total,
       piezas_usadas: [],
-      // Mantener compatibilidad
       id_empleadoInformacion: id_empleadoInformacion || empleadosFinales[0]?.id_empleado
     });
     const savedReparacion = await reparacion.save();
 
-    // 2. Crear las piezas usadas con referencia al id de la reparación
     let piezasUsadasIds: any[] = [];
     if (Array.isArray(piezas_usadas)) {
       for (const pieza of piezas_usadas) {
@@ -258,7 +250,6 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
         });
         piezasUsadasIds.push(piezaUsada._id);
 
-        // Descontar inventario
         await PiezaInventario.findByIdAndUpdate(
           pieza.id_pieza,
           { $inc: { cantidad_disponible: -pieza.cantidad } }
@@ -266,7 +257,6 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
       }
     }
 
-    // 3. Actualizar la reparación con los ids de las piezas usadas
     savedReparacion.piezas_usadas = piezasUsadasIds;
     await savedReparacion.save();
 
@@ -280,17 +270,16 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
   try {
     const {
       id_inspeccion,
-      empleados_trabajos, // [{ id_empleado, descripcion_trabajo }]
+      empleados_trabajos, 
       fecha_inicio,
       fecha_fin,
       descripcion,
       costo_total,
-      piezas_usadas, // [{ id_pieza, cantidad }]
-      // Compatibilidad con campo anterior
+      piezas_usadas, 
+      
       id_empleadoInformacion
     } = req.body;
 
-    // 1. Obtener la reparación actual para restaurar inventario de piezas anteriores
     const reparacionActual = await ReparacionVehiculo.findById(req.params.id)
       .populate('piezas_usadas')
       .populate({
@@ -309,13 +298,11 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
       return;
     }
 
-    // Verificar que hay al menos un empleado (nuevo campo o campo anterior)
     if ((!empleados_trabajos || empleados_trabajos.length === 0) && !id_empleadoInformacion) {
       res.status(400).json({ message: 'Se requiere al menos un empleado' });
       return;
     }
 
-    // Si viene el campo anterior, convertirlo al nuevo formato
     let empleadosFinales = empleados_trabajos || [];
     if (id_empleadoInformacion && empleadosFinales.length === 0) {
       empleadosFinales = [{
@@ -324,23 +311,19 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
       }];
     }
 
-    // 2. Restaurar inventario de las piezas usadas anteriores
     if (reparacionActual.piezas_usadas && reparacionActual.piezas_usadas.length > 0) {
       for (const piezaUsadaId of reparacionActual.piezas_usadas) {
         const piezaUsada = await PiezaUsada.findById(piezaUsadaId);
         if (piezaUsada) {
-          // Restaurar cantidad al inventario
           await PiezaInventario.findByIdAndUpdate(
             piezaUsada.id_pieza,
             { $inc: { cantidad_disponible: piezaUsada.cantidad } }
           );
-          // Eliminar la pieza usada
           await PiezaUsada.findByIdAndDelete(piezaUsadaId);
         }
       }
     }
 
-    // 3. Crear las nuevas piezas usadas
     let piezasUsadasIds: any[] = [];
     if (Array.isArray(piezas_usadas)) {
       for (const pieza of piezas_usadas) {
@@ -352,7 +335,6 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
         });
         piezasUsadasIds.push(piezaUsada._id);
 
-        // Descontar inventario
         await PiezaInventario.findByIdAndUpdate(
           pieza.id_pieza,
           { $inc: { cantidad_disponible: -pieza.cantidad } }
@@ -360,7 +342,6 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
       }
     }
 
-    // 4. Actualizar la reparación
     const updated = await ReparacionVehiculo.findByIdAndUpdate(
       req.params.id,
       {
@@ -371,7 +352,6 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
         descripcion,
         costo_total,
         piezas_usadas: piezasUsadasIds,
-        // Mantener compatibilidad
         id_empleadoInformacion: id_empleadoInformacion || empleadosFinales[0]?.id_empleado
       },
       { new: true }
@@ -412,12 +392,10 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
           }
         }
       })
-      // Poblar los empleados en el nuevo campo empleados_trabajos
       .populate({
         path: 'empleados_trabajos.id_empleado',
         select: 'nombre telefono tipo_empleado'
       })
-      // Mantener compatibilidad con el campo anterior
       .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado');
 
     res.status(200).json(updated);
@@ -428,7 +406,6 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
 
 export const deleteReparacionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // 1. Obtener la reparación con sus piezas usadas
     const reparacion = await ReparacionVehiculo.findById(req.params.id)
       .populate('piezas_usadas')
       .populate({
@@ -473,23 +450,19 @@ export const deleteReparacionVehiculo = async (req: Request, res: Response, next
       return;
     }
 
-    // 2. Restaurar inventario de las piezas usadas
     if (reparacion.piezas_usadas && reparacion.piezas_usadas.length > 0) {
       for (const piezaUsadaId of reparacion.piezas_usadas) {
         const piezaUsada = await PiezaUsada.findById(piezaUsadaId);
         if (piezaUsada) {
-          // Restaurar cantidad al inventario
           await PiezaInventario.findByIdAndUpdate(
             piezaUsada.id_pieza,
             { $inc: { cantidad_disponible: piezaUsada.cantidad } }
           );
-          // Eliminar la pieza usada
           await PiezaUsada.findByIdAndDelete(piezaUsadaId);
         }
       }
     }
 
-    // 3. Eliminar la reparación
     await ReparacionVehiculo.findByIdAndDelete(req.params.id);
     res.sendStatus(204);
   } catch (error) {

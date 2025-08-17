@@ -24,7 +24,6 @@ export default function SuplidorModal({
   onClose,
   onSubmit
 }: Props): JSX.Element {
-  // Estilo moderno para TextFields con bordes visibles
   const textFieldStyle = {
     '& .MuiInputLabel-root': {
       zIndex: 1,
@@ -55,17 +54,14 @@ export default function SuplidorModal({
   const [mapLabel, setMapLabel] = useState('')
   const [direccion, setDireccion] = useState('')
 
-  // Estados para validaciones
   const [rncError, setRncError] = useState<string>('')
   const [correoError, setCorreoError] = useState<string>('')
   const [telefonoError, setTelefonoError] = useState<string>('')
 
-  // Expresiones regulares para validación
   const rncRegex = /^\d{3}-\d{6,7}$/
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   const phoneRegex = /^\(\d{3}\)-\d{3}-\d{4}$/
 
-  // Funciones de formateo
   const formatRncInput = (v: string): string => {
     const d = v.replace(/\D/g, '').slice(0, 9)
     if (d.length <= 3) return d
@@ -79,7 +75,6 @@ export default function SuplidorModal({
     return `(${d.slice(0, 3)})-${d.slice(3, 6)}-${d.slice(6)}`
   }
 
-  // Manejadores de cambio con validación
   const handleRncChange = (v: string): void => {
     const f = formatRncInput(v)
     setRnc(f)
@@ -129,7 +124,6 @@ export default function SuplidorModal({
   }, [open, defaultData])
 
   const handleSave = (): void => {
-    // Validar que no haya errores antes de enviar
     if (rncError || correoError || telefonoError) {
       return
     }
@@ -164,7 +158,6 @@ export default function SuplidorModal({
       maxWidth="sm"
     >
       <Box display="flex" flexDirection="column" gap={3}>
-        {/* Sección: Información Básica */}
         <Box>
           <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
             <strong style={{ fontSize: '1.1rem' }}>Información Básica</strong>
@@ -201,7 +194,6 @@ export default function SuplidorModal({
           </Box>
         </Box>
 
-        {/* Sección: Contacto */}
         <Box>
           <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
             <strong style={{ fontSize: '1.1rem' }}>Información de Contacto</strong>
@@ -238,7 +230,6 @@ export default function SuplidorModal({
           </Box>
         </Box>
 
-        {/* Sección: Ubicación */}
         <Box>
           <Box sx={{ mb: 2, pb: 1, borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
             <strong style={{ fontSize: '1.1rem' }}>Ubicación</strong>
@@ -272,7 +263,6 @@ export default function SuplidorModal({
           </Box>
         </Box>
 
-        {/* Botones de acción */}
         <Box display="flex" justifyContent="flex-end" gap={2} sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
           <Button
             onClick={onClose}

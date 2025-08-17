@@ -139,7 +139,6 @@ export default function RegistroCompraModal({
     }
   };
 
-  // Estilo base para los TextFields
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
       borderRadius: '12px',
@@ -178,7 +177,6 @@ export default function RegistroCompraModal({
       title={isEdit ? 'Editar Pieza' : 'Nueva Pieza'}
     >
       <Box display="flex" flexDirection="column" gap={3}>
-        {/* Sección de Información de la Pieza */}
         <Box>
           <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
             Información de la Pieza
@@ -212,7 +210,6 @@ export default function RegistroCompraModal({
           </Box>
         </Box>
 
-        {/* Sección de Inventario y Costos */}
         <Box>
           <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
             Inventario y Costos
@@ -242,7 +239,6 @@ export default function RegistroCompraModal({
           </Box>
         </Box>
 
-        {/* Botones de Acción */}
         <Box
           display="flex"
           justifyContent="flex-end"

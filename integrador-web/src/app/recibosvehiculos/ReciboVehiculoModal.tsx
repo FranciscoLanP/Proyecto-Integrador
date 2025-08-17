@@ -65,7 +65,6 @@ export default function ReciboVehiculoModal({
     onSubmit({ id_recepcion: recepcionId, observaciones: observaciones || undefined });
   };
 
-  // Estilo base para los TextFields
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
       borderRadius: '12px',
@@ -104,7 +103,6 @@ export default function ReciboVehiculoModal({
       title={isEdit ? 'Editar Recibo' : 'Nuevo Recibo'}
     >
       <Box display="flex" flexDirection="column" gap={3}>
-        {/* Sección de Información del Recibo */}
         <Box>
           <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
             Información del Recibo
@@ -160,7 +158,6 @@ export default function ReciboVehiculoModal({
           </Box>
         </Box>
 
-        {/* Botones de Acción */}
         <Box
           display="flex"
           justifyContent="flex-end"

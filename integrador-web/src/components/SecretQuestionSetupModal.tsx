@@ -114,10 +114,8 @@ export default function SecretQuestionSetupModal({
             className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
             onClick={handleBackdropClick}
         >
-            {/* Backdrop */}
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fadeIn" />
 
-            {/* Modal */}
             <div className="relative w-full max-w-md bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 p-6 animate-scaleIn">
                 {success ? (
                     <div className="text-center">

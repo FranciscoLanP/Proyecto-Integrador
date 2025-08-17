@@ -58,7 +58,6 @@ export default function ModelosDatosModal({
     onSubmit({ nombre_modelo: nombre.trim(), id_marca: marcaId });
   };
 
-  // Estilo base para los TextFields
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
       borderRadius: '12px',
@@ -98,7 +97,6 @@ export default function ModelosDatosModal({
         title={isEdit ? 'Editar Modelo' : 'Nuevo Modelo'}
       >
         <Box display="flex" flexDirection="column" gap={3}>
-          {/* Información del Modelo */}
           <Box>
             <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
               Información del Modelo
@@ -134,7 +132,6 @@ export default function ModelosDatosModal({
             </Box>
           </Box>
 
-          {/* Botones de Acción */}
           <Box
             display="flex"
             justifyContent="flex-end"
@@ -169,7 +166,6 @@ export default function ModelosDatosModal({
         </Box>
       </ModernModal>
 
-      {/* Modal de Confirmación para Descartar Cambios */}
       <ModernModal
         open={confirmDiscard}
         onClose={() => setConfirmDiscard(false)}
@@ -186,7 +182,6 @@ export default function ModelosDatosModal({
             </Typography>
           </Box>
 
-          {/* Botones de Acción */}
           <Box
             display="flex"
             justifyContent="flex-end"

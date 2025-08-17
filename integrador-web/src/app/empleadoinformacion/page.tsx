@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import { Typography, Box } from '@mui/material'
-import WorkIcon from '@mui/icons-material/Work'
 import { useCrud } from '@/hooks/useCrud'
 import { useNotification } from '@/components/utils/NotificationProvider'
 import { useHydration, defaultTheme } from '@/hooks/useHydration'
@@ -15,7 +14,6 @@ import {
   useModernTable,
   ClientCell,
   ContactCell,
-  StatusChip,
   ActionButtons,
   type TableColumn
 } from '@/components/ModernTable'

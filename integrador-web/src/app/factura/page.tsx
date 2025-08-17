@@ -12,10 +12,8 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 import PrintIcon from '@mui/icons-material/Print';
 import PaymentIcon from '@mui/icons-material/Payment';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import FacturaModal from './FacturaModal';
 import { facturaService, Factura } from '@/services/facturaService';
 import { pagoFacturaCustomService } from '@/services/pagoFacturaService';
@@ -24,7 +22,6 @@ import { useHydration } from '@/hooks/useHydration';
 import { useClientTheme } from '@/hooks/useClientTheme';
 import { useJwtDecode } from '@/hooks/useJwtDecode';
 
-// Configurar dayjs en español
 dayjs.locale('es');
 
 interface FacturaConPagos extends Factura {
@@ -414,7 +411,6 @@ export default function FacturaPage() {
         totalCalculado: totalConItbis
       });
 
-      // Abrir ventana flotante para impresión
       const w = window.open('', 'factura_print', 'width=800,height=900,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
       if (!w) {
         alert('Por favor permite las ventanas emergentes para imprimir la factura');
@@ -463,7 +459,7 @@ export default function FacturaPage() {
 
   const handleChangeRowsPerPage = (newRowsPerPage: number) => {
     setRowsPerPage(newRowsPerPage);
-    setPage(0); // Reset to first page when changing rows per page
+    setPage(0);
   };
 
   const getMetodosPagoInfo = (factura: Factura) => {
@@ -478,16 +474,13 @@ export default function FacturaPage() {
     return factura.metodo_pago || '—';
   };
 
-  // Filtrar facturas basado en búsqueda, tipo y fecha de emisión
   const facturasFiltradas = React.useMemo(() => {
     let filtered = facturas;
 
-    // Filtrar por tipo de factura
     if (tipoFilter) {
       filtered = filtered.filter(factura => factura.tipo_factura === tipoFilter);
     }
 
-    // Filtrar por término de búsqueda (solo nombre del cliente)
     if (searchTerm.trim()) {
       filtered = filtered.filter(factura => {
         const clienteInfo = getClienteVehiculoInfo(factura);
@@ -746,7 +739,6 @@ export default function FacturaPage() {
             filterComponent={
               <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                  {/* Filtro de fecha de creación */}
                   <DatePicker
                     label="📅 Fecha de creación"
                     value={fechaCreacion}
@@ -824,7 +816,6 @@ export default function FacturaPage() {
                     }}
                   />
 
-                  {/* Botón para limpiar filtro de fecha */}
                   {fechaCreacion && (
                     <IconButton
                       size="small"
@@ -848,7 +839,6 @@ export default function FacturaPage() {
                     </IconButton>
                   )}
 
-                  {/* Select de tipo de factura */}
                   <FormControl size="small" sx={{ minWidth: 170 }}>
                     <InputLabel
                       sx={{

@@ -7,15 +7,11 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import PersonIcon from '@mui/icons-material/Person';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 
-// Configurar dayjs en español
 dayjs.locale('es');
 
 import { useCrud } from '../../hooks/useCrud';
@@ -56,7 +52,6 @@ export default function RecibosVehiculosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [fechaCreacion, setFechaCreacion] = useState<dayjs.Dayjs | null>(null);
 
-  // Funciones auxiliares para obtener datos relacionados
   const getRecepcionData = (recepcionId: string | IRecepcionVehiculo) => {
     if (typeof recepcionId === 'object') return recepcionId;
     return recepciones.find(r => r._id === recepcionId);
@@ -77,7 +72,6 @@ export default function RecibosVehiculosPage() {
     return empleados.find(e => e._id === recepcion.id_empleadoInformacion);
   };
 
-  // Función para obtener información de búsqueda de un recibo
   const getSearchInfo = (recibo: IReciboVehiculo) => {
     const recepcion = getRecepcionData(recibo.id_recepcion);
     const vehiculo = recepcion ? getVehiculoFromRecepcion(recepcion) : null;
@@ -89,7 +83,6 @@ export default function RecibosVehiculosPage() {
     };
   };
 
-  // Filtrar recibos por término de búsqueda y fecha
   const recibosFiltrados = React.useMemo(() => {
     let filtered = recibos.filter(recibo => {
       if (!searchTerm) return true;
@@ -101,7 +94,6 @@ export default function RecibosVehiculosPage() {
       );
     });
 
-    // Filtrar por fecha si está seleccionada
     if (fechaCreacion) {
       filtered = filtered.filter(recibo => {
         const recepcion = recibo.id_recepcion as IRecepcionVehiculo;
@@ -114,7 +106,6 @@ export default function RecibosVehiculosPage() {
     return filtered;
   }, [recibos, searchTerm, fechaCreacion]);
 
-  // Hook simplificado para manejar solo paginación
   const {
     paginatedData,
     page,
@@ -126,7 +117,6 @@ export default function RecibosVehiculosPage() {
     initialRowsPerPage: 10
   });
 
-  // Funciones adaptadoras
   const onSearchChange = (value: string) => {
     setSearchTerm(value);
   };
@@ -223,36 +213,206 @@ export default function RecibosVehiculosPage() {
         <head>
           <title>Recibo - JHS AutoServicios</title>
           <style>
-            body { font-family: 'Segoe UI', Tahoma, sans-serif; margin:0; padding:20px; color:#333; }
-            header { text-align:center; margin-bottom:20px; }
-            h1 { margin:0; color:#005B96; }
-            .subtitle { margin:5px 0 20px; color:#007ACC; }
-            table { width:100%; border-collapse:collapse; margin-top:20px; }
-            td { padding:8px; border-bottom:1px solid #ddd; }
-            .label { font-weight:bold; width:30%; color:#005B96; }
-            footer { text-align:center; margin-top:30px; font-size:0.85em; color:#666; }
+            @page { size: A5; margin: 10mm; }
+            * { box-sizing: border-box; }
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 0; 
+              padding: 8px; 
+              color: #333; 
+              font-size: 11px;
+              line-height: 1.2;
+            }
+            .header { 
+              text-align: center; 
+              border-bottom: 2px solid #005B96; 
+              padding-bottom: 6px; 
+              margin-bottom: 8px; 
+            }
+            .header h1 { 
+              margin: 0; 
+              color: #005B96; 
+              font-size: 16px; 
+              font-weight: bold; 
+            }
+            .header .subtitle { 
+              margin: 2px 0 0; 
+              color: #007ACC; 
+              font-size: 10px; 
+              font-weight: normal; 
+            }
+            .recibo-info { 
+              display: flex; 
+              justify-content: space-between; 
+              align-items: center; 
+              margin-bottom: 8px; 
+              padding: 4px; 
+              background: #f8f9fa; 
+              border-radius: 3px; 
+            }
+            .recibo-num { 
+              font-weight: bold; 
+              color: #005B96; 
+              font-size: 12px; 
+            }
+            .fecha { 
+              font-size: 9px; 
+              color: #666; 
+            }
+            .info-grid { 
+              display: grid; 
+              grid-template-columns: 1fr 1fr; 
+              gap: 4px; 
+              margin-bottom: 8px; 
+            }
+            .info-item { 
+              display: flex; 
+              flex-direction: column; 
+              padding: 3px; 
+              border: 1px solid #e0e0e0; 
+              border-radius: 2px; 
+              background: #fafafa; 
+            }
+            .info-label { 
+              font-weight: bold; 
+              color: #005B96; 
+              font-size: 9px; 
+              margin-bottom: 1px; 
+            }
+            .info-value { 
+              color: #333; 
+              font-size: 10px; 
+              word-break: break-word; 
+            }
+            .full-width { 
+              grid-column: 1 / -1; 
+            }
+            .observaciones { 
+              margin: 6px 0; 
+              padding: 6px; 
+              border: 1px solid #ccc; 
+              border-radius: 3px; 
+              background: #f9f9f9; 
+            }
+            .obs-label { 
+              font-weight: bold; 
+              color: #005B96; 
+              font-size: 10px; 
+              margin-bottom: 3px; 
+            }
+            .obs-content { 
+              font-size: 10px; 
+              color: #333; 
+              min-height: 15px; 
+            }
+            .signatures { 
+              display: grid; 
+              grid-template-columns: 1fr 1fr; 
+              gap: 15px; 
+              margin: 12px 0 8px; 
+              padding: 8px 0; 
+            }
+            .signature-box { 
+              text-align: center; 
+              padding: 4px; 
+            }
+            .signature-line { 
+              border-top: 1px solid #333; 
+              margin: 20px 0 4px; 
+              height: 1px; 
+            }
+            .signature-label { 
+              font-size: 9px; 
+              color: #333; 
+              font-weight: bold; 
+            }
+            .signature-sublabel { 
+              font-size: 8px; 
+              color: #666; 
+              margin-top: 2px; 
+            }
+            .footer { 
+              text-align: center; 
+              margin-top: 8px; 
+              padding-top: 6px; 
+              border-top: 1px solid #ccc; 
+              font-size: 9px; 
+              color: #666; 
+            }
+            @media print {
+              body { font-size: 10px; }
+              .header h1 { font-size: 14px; }
+              .recibo-num { font-size: 11px; }
+              .signature-line { margin: 25px 0 4px; }
+            }
           </style>
         </head>
         <body>
-          <header>
+          <div class="header">
             <h1>JHS AutoServicios</h1>
             <div class="subtitle">Recibo de Servicio de Vehículo</div>
-          </header>
-          <table>
-            <tr><td class="label">Cliente</td><td>${cli?.nombre ?? '—'}</td></tr>
-            <tr><td class="label">Chasis</td><td>${veh?.chasis ?? '—'}</td></tr>
-            <tr><td class="label">Empleado</td><td>${empleado}</td></tr>
-            <tr><td class="label">Fecha Impresión</td><td>${now}</td></tr>
-            <tr><td class="label">Problema</td><td>${rec.problema_reportado ?? '—'}</td></tr>
-            <tr><td class="label">Comentario</td><td>${rec.comentario ?? '—'}</td></tr>
-            <tr><td class="label">Observaciones</td><td>${r.observaciones ?? '—'}</td></tr>
-          </table>
-          <footer>Gracias por preferir JHS AutoServicios</footer>
+          </div>
+          
+          <div class="recibo-info">
+            <span class="recibo-num">Recibo #${r._id.slice(-6).toUpperCase()}</span>
+            <span class="fecha">${now}</span>
+          </div>
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Cliente</div>
+              <div class="info-value">${cli?.nombre ?? '—'}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Empleado</div>
+              <div class="info-value">${empleado}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Chasis</div>
+              <div class="info-value">${veh?.chasis ?? '—'}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Año</div>
+              <div class="info-value">${veh?.anio ?? '—'}</div>
+            </div>
+            <div class="info-item full-width">
+              <div class="info-label">Problema Reportado</div>
+              <div class="info-value">${rec.problema_reportado ?? '—'}</div>
+            </div>
+            ${rec.comentario ? `
+            <div class="info-item full-width">
+              <div class="info-label">Comentario</div>
+              <div class="info-value">${rec.comentario}</div>
+            </div>
+            ` : ''}
+          </div>
+          
+          <div class="observaciones">
+            <div class="obs-label">Observaciones</div>
+            <div class="obs-content">${r.observaciones ?? 'Sin observaciones adicionales'}</div>
+          </div>
+          
+          <div class="signatures">
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <div class="signature-label">Firma del Cliente</div>
+              <div class="signature-sublabel">${cli?.nombre ?? '—'}</div>
+            </div>
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <div class="signature-label">Firma del Empleado</div>
+              <div class="signature-sublabel">${empleado}</div>
+            </div>
+          </div>
+          
+          <div class="footer">
+            Gracias por confiar en JHS AutoServicios
+          </div>
         </body>
       </html>
     `;
 
-    const w = window.open('', 'recibo_print', 'width=800,height=900,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
+    const w = window.open('', 'recibo_print', 'width=600,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
     if (!w) {
       alert('Por favor permite las ventanas emergentes para imprimir el recibo');
       return;
@@ -264,7 +424,6 @@ export default function RecibosVehiculosPage() {
     w.print();
   };
 
-  // Definir las columnas
   const columns: TableColumn[] = [
     {
       id: 'recibo',
@@ -501,7 +660,6 @@ export default function RecibosVehiculosPage() {
         filterComponent={
           <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              {/* Filtro de fecha de creación */}
               <DatePicker
                 label="📅 Fecha de Creación"
                 value={fechaCreacion}
@@ -572,7 +730,6 @@ export default function RecibosVehiculosPage() {
                 }}
               />
 
-              {/* Botón para limpiar filtro de fecha */}
               {fechaCreacion && (
                 <IconButton
                   size="small"

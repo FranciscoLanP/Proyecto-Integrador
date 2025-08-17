@@ -80,10 +80,9 @@ export default function ModelosDatosPage(): JSX.Element {
 
   const handleChangeRowsPerPage = (newRowsPerPage: number) => {
     setRowsPerPage(newRowsPerPage);
-    setPage(0); // Reset to first page when changing rows per page
+    setPage(0); 
   };
 
-  // Filtrar datos basado en el término de búsqueda
   const filteredModelos = modelos.filter(modelo => {
     const marca = marcas.find(mk => mk._id === modelo.id_marca);
     return (

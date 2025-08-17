@@ -83,17 +83,14 @@ export const updateProfile = async (
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Verificar contraseña actual
     const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isCurrentPasswordValid) {
       return res.status(400).json({ message: 'Contraseña actual incorrecta' });
     }
 
-    // Preparar campos a actualizar
     const updateFields: any = {};
 
     if (username && username !== user.username) {
-      // Verificar que el nuevo username no exista
       const existingUser = await Usuario.findOne({ username, _id: { $ne: userId } });
       if (existingUser) {
         return res.status(400).json({ message: 'El nombre de usuario ya está en uso' });
@@ -105,11 +102,9 @@ export const updateProfile = async (
       if (password.length < 6) {
         return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' });
       }
-      // El middleware pre('save') se encargará del hash
       updateFields.password = password;
     }
 
-    // Actualizar usuario (usando save() para activar middlewares)
     Object.assign(user, updateFields);
     const updatedUser = await user.save();
 
@@ -179,13 +174,11 @@ export const resetPassword = async (
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Verificar respuesta secreta
     const isSecretAnswerValid = await user.compareSecretAnswer(secretAnswer);
     if (!isSecretAnswerValid) {
       return res.status(400).json({ message: 'Respuesta secreta incorrecta' });
     }
 
-    // Actualizar contraseña (el middleware pre('save') se encargará del hash)
     user.password = newPassword;
     await user.save();
 
@@ -239,9 +232,8 @@ export const setupSecretQuestion = async (
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    // Actualizar pregunta y respuesta secreta
     user.secretQuestion = secretQuestion;
-    user.secretAnswer = secretAnswer; // Se hasheará automáticamente en el pre-save
+    user.secretAnswer = secretAnswer; 
     await user.save();
 
     return res.status(200).json({

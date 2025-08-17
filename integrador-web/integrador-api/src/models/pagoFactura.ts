@@ -41,10 +41,9 @@ const PagoFacturaSchema = new Schema({
     maxlength: [500, 'Las observaciones no pueden exceder 500 caracteres']
   }
 }, {
-  timestamps: true // Agrega createdAt y updatedAt automáticamente
+  timestamps: true 
 });
 
-// Middleware para validar que el monto no exceda el saldo de la factura
 PagoFacturaSchema.pre('save', async function(next) {
   if (this.isNew) {
     const Factura = model('Factura');
@@ -54,7 +53,6 @@ PagoFacturaSchema.pre('save', async function(next) {
       throw new Error('Factura no encontrada');
     }
 
-    // Calcular total ya pagado
     const pagosExistentes = await PagoFactura.find({ factura: this.factura });
     const totalPagado = pagosExistentes.reduce((total, pago) => total + pago.monto, 0);
     

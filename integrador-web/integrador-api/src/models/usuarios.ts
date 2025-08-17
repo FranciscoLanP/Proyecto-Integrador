@@ -23,7 +23,7 @@ const UsuarioSchema = new Schema<IUsuario>({
   activo: { type: Boolean, required: true, default: true },
   secretQuestion: {
     type: String,
-    required: false, // Cambiado a false para usuarios existentes
+    required: false, 
     enum: [
       '¿Cuál es el nombre de tu primera mascota?',
       '¿En qué ciudad naciste?',
@@ -32,7 +32,7 @@ const UsuarioSchema = new Schema<IUsuario>({
       '¿Cuál es el nombre de tu mejor amigo de la infancia?'
     ]
   },
-  secretAnswer: { type: String, required: false } // Cambiado a false para usuarios existentes
+  secretAnswer: { type: String, required: false }
 }, { timestamps: true });
 
 UsuarioSchema.pre('save', async function (next) {

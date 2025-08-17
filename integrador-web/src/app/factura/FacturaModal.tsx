@@ -108,7 +108,7 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
 
       const processedData = {
         ...defaultData,
-        metodos_pago: metodosPago, // Mantener los métodos de pago originales sin modificar
+        metodos_pago: metodosPago, 
         tipo_factura: defaultData.tipo_factura || 'Contado',
         id_reparacion: reparacionId,
         detalles: defaultData.detalles || '',
@@ -195,8 +195,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
       ...f,
       id_reparacion: reparacionId,
       total: nuevoTotal
-      // Removemos la actualización automática de métodos_pago
-      // Los usuarios deben ajustar manualmente los métodos de pago si es necesario
     }));
   };
 
@@ -242,7 +240,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
     onSubmit(dataToSubmit);
   };
 
-  // Estilo base para los TextFields
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
       borderRadius: '12px',
@@ -281,7 +278,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
       title={isEdit ? 'Editar Factura' : 'Nueva Factura'}
     >
       <Box display="flex" flexDirection="column" gap={3}>
-        {/* Sección de Información Básica */}
         <Box>
           <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
             Información de la Factura
@@ -372,7 +368,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
           </Box>
         </Box>
 
-        {/* Sección de Métodos de Pago */}
         <Box>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
             <Typography variant="h6" sx={{ color: 'primary.dark' }}>
@@ -485,7 +480,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
           )}
         </Box>
 
-        {/* Sección de Detalles Adicionales */}
         <Box>
           <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
             Detalles Adicionales
@@ -504,7 +498,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
           />
         </Box>
 
-        {/* Botones de Acción */}
         <Box
           display="flex"
           justifyContent="flex-end"

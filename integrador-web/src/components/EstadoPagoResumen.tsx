@@ -98,7 +98,6 @@ export const EstadoPagoResumen: React.FC<EstadoPagoResumenProps> = ({
                 </Box>
 
                 <Grid container spacing={3}>
-                    {/* Información de montos */}
                     <Grid size={{ xs: 12, md: 6 }}>
                         <Box sx={{ mb: 2 }}>
                             <Typography variant="body2" color="textSecondary" gutterBottom>
@@ -134,7 +133,6 @@ export const EstadoPagoResumen: React.FC<EstadoPagoResumenProps> = ({
                         </Box>
                     </Grid>
 
-                    {/* Progreso y estadísticas */}
                     <Grid size={{ xs: 12, md: 6 }}>
                         <Box sx={{ mb: 3 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>

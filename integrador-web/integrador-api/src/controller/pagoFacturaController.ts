@@ -101,7 +101,6 @@ export const createPagoFactura = async (req: Request, res: Response, next: NextF
             return
         }
 
-        // Preparar datos del pago
         const pagoData: any = {
             factura: facturaId,
             monto,
@@ -110,7 +109,6 @@ export const createPagoFactura = async (req: Request, res: Response, next: NextF
             observaciones
         }
 
-        // Si se proporciona fecha_pago, usarla; de lo contrario usar la fecha actual
         if (fecha_pago) {
             pagoData.fechaPago = new Date(fecha_pago)
         }

@@ -1,4 +1,3 @@
-// src/controllers/tiposPagosController.ts
 import { Request, Response, NextFunction } from 'express';
 import { TiposPagos } from '../models/tiposPagos';
 

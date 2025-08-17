@@ -39,15 +39,12 @@ export default function EmpleadoInformacionModal({
   const [mapLabel, setMapLabel] = useState('')
   const [direccion, setDireccion] = useState('')
 
-  // Estados para validaciones
   const [correoError, setCorreoError] = useState<string>('')
   const [telefonoError, setTelefonoError] = useState<string>('')
 
-  // Expresiones regulares para validación
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   const phoneRegex = /^\(\d{3}\)-\d{3}-\d{4}$/
 
-  // Funciones de formateo
   const formatPhoneInput = (v: string): string => {
     const d = v.replace(/\D/g, '').slice(0, 10)
     if (d.length <= 3) return `(${d}`
@@ -55,7 +52,6 @@ export default function EmpleadoInformacionModal({
     return `(${d.slice(0, 3)})-${d.slice(3, 6)}-${d.slice(6)}`
   }
 
-  // Manejadores de cambio con validación
   const handleCorreoChange = (v: string): void => {
     setCorreo(v)
     setCorreoError(v === '' || emailRegex.test(v) ? '' : 'Correo inválido')
@@ -89,7 +85,6 @@ export default function EmpleadoInformacionModal({
   }, [open, defaultData])
 
   const handleSave = (): void => {
-    // Validar que no haya errores antes de enviar
     if (correoError || telefonoError) {
       return
     }

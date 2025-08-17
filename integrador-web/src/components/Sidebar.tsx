@@ -132,44 +132,6 @@ export default function Sidebar(): JSX.Element {
       >
         <Toolbar />
 
-        {/* 
-        <Box sx={{
-          p: 2,
-          mb: 2,
-          background: currentTheme.headerGradient,
-          borderRadius: '16px',
-          mx: 2,
-          color: 'white'
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-            <Avatar sx={{
-              width: 40,
-              height: 40,
-              background: currentTheme.gradient,
-              fontWeight: 'bold',
-              fontSize: '1rem'
-            }}>
-              {auth ? getInitials(auth.username) : 'U'}
-            </Avatar>
-            <Box>
-              <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'white' }}>
-                {auth?.username || 'Usuario'}
-              </Typography>
-              <Chip
-                size="small"
-                label={auth?.role || 'Usuario'}
-                sx={{
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  fontSize: '0.7rem',
-                  height: '18px'
-                }}
-              />
-            </Box>
-          </Box>
-        </Box>
-        */}
-
         <List sx={{ px: 1 }}>
           {navItems.map(item =>
             item.children ? (

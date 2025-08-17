@@ -135,7 +135,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
     );
   };
 
-  // Estilo base para los TextFields
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
       borderRadius: '12px',
@@ -174,7 +173,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
       title={isEdit ? 'Editar Inspección' : 'Nueva Inspección'}
     >
       <Box display="flex" flexDirection="column" gap={3}>
-        {/* Sección de Información Básica */}
         <Box>
           <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
             Información de la Inspección
@@ -242,7 +240,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
           </Box>
         </Box>
 
-        {/* Sección de Detalles de la Inspección */}
         <Box>
           <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
             Detalles de la Inspección
@@ -295,7 +292,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
           </Box>
         </Box>
 
-        {/* Sección de Piezas Sugeridas */}
         <Box>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
             <Box>
@@ -432,7 +428,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
           )}
         </Box>
 
-        {/* Botones de Acción */}
         <Box
           display="flex"
           justifyContent="flex-end"

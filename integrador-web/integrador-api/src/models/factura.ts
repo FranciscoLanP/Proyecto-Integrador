@@ -3,7 +3,7 @@ import { Schema, model, Document } from 'mongoose';
 interface IMetodoPago {
   tipo: 'Efectivo' | 'Tarjeta' | 'Transferencia' | 'Cheque';
   monto: number;
-  referencia?: string; // Para transferencias, cheques, etc.
+  referencia?: string; 
 }
 
 export interface IFactura extends Document {

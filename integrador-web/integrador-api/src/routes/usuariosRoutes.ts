@@ -6,7 +6,6 @@ import { checkJwt } from '../middleware/checkJwt';
 
 const router = Router();
 
-// Todas las rutas de usuarios requieren autenticación JWT y permisos de administrador
 router.get('/usuarios', checkJwt, authorizeAdmin, getAllUsuarios);
 router.get('/usuarios/paginado', checkJwt, authorizeAdmin, getPaginatedUsuarios);
 router.get('/usuarios/:id', checkJwt, authorizeAdmin, getUsuarioById);

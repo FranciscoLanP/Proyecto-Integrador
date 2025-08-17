@@ -16,12 +16,10 @@
         padding: 0 !important;
     }
 
-    /* Ocultar todo excepto el área de impresión */
     body>*:not(#print-area) {
         display: none !important;
     }
 
-    /* Hacer visible solo el área de impresión */
     #print-area {
         display: block !important;
         visibility: visible !important;
@@ -41,7 +39,6 @@
         color: black !important;
     }
 
-    /* Estilos específicos para el contenido de facturas */
     #print-area .container {
         max-width: 100% !important;
         margin: 0 !important;

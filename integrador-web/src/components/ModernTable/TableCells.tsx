@@ -9,7 +9,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import styles from './ModernTable.module.css';
 
-// Colores para avatares basados en índice
 const avatarColors = [
     'linear-gradient(135deg, #FF6B6B, #4ECDC4)',
     'linear-gradient(135deg, #4ECDC4, #45B7D1)',

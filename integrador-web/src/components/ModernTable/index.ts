@@ -1,8 +1,6 @@
-// Componente principal
 export { default as ModernTable } from './ModernTable';
 export type { ModernTableProps, TableColumn, ColorTheme } from './ModernTable';
 
-// Componentes de celdas
 export {
     ClientCell,
     ContactCell,
@@ -21,7 +19,6 @@ export type {
     DateDisplayProps
 } from './TableCells';
 
-// Hooks personalizados
 export {
     useModernTable,
     useTableSelection,

@@ -12,7 +12,6 @@ import { checkJwt } from '../middleware/checkJwt'
 
 const router = Router()
 
-// Todas las rutas de empleados requieren autenticación JWT y permisos de administrador
 router.get('/empleadoinformaciones/paginado', checkJwt, authorizeAdmin, getPaginatedEmpleadoInformacion)
 router.get('/empleadoinformaciones/:id', checkJwt, authorizeAdmin, getEmpleadoInformacionById)
 router.get('/empleadoinformaciones', checkJwt, authorizeAdmin, getAllEmpleadoInformacion)

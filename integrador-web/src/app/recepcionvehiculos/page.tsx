@@ -3,10 +3,8 @@
 
 import React, { useState } from 'react';
 import { Typography, Box, Chip } from '@mui/material';
-import BuildIcon from '@mui/icons-material/Build';
 import PersonIcon from '@mui/icons-material/Person';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 
 import { useCrud } from '../../hooks/useCrud';
 import { useNotification } from '../../components/utils/NotificationProvider';

@@ -2,9 +2,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { Typography, Chip, Box } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CarRepairIcon from '@mui/icons-material/CarRepair';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -48,19 +45,16 @@ export default function VehiculoDatosPage() {
   const [openForm, setOpenForm] = useState<boolean>(false);
   const [editData, setEditData] = useState<IVehiculoDatos | null>(null);
 
-  // Estados para búsqueda personalizada
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Función para obtener el nombre del cliente
   const getClienteName = (clienteId: string | ICliente) => {
     if (typeof clienteId === 'object') return clienteId.nombre;
     const cliente = clientes.find(c => c._id === clienteId);
     return cliente?.nombre || 'Cliente no encontrado';
   };
 
-  // Filtrado personalizado que busca en chasis y nombre del cliente
   const filteredVehiculos = useMemo(() => {
     if (!searchQuery.trim()) {
       return vehiculos;

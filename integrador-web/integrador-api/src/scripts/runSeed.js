@@ -1,9 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * Script ejecutable para poblar la base de datos
- * Uso: npm run seed
- */
 
 require('ts-node/register');
 require('dotenv').config({ path: __dirname + '/../../.env' });
@@ -14,7 +10,6 @@ console.log('🌱 Iniciando script de población de base de datos...');
 console.log('📊 Este script creará datos de prueba para el taller mecánico');
 console.log('⚠️  ADVERTENCIA: Esto borrará todos los datos existentes\n');
 
-// Confirmar antes de proceder
 const readline = require('readline');
 const rl = readline.createInterface({
   input: process.stdin,

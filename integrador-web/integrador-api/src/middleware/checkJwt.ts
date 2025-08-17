@@ -11,7 +11,6 @@ export interface JwtPayload {
 }
 
 export const checkJwt = (req: Request, res: Response, next: NextFunction): void => {
-  // Permitir preflight requests de CORS
   if (req.method === 'OPTIONS') {
     return next();
   }
@@ -47,7 +46,6 @@ export const checkJwt = (req: Request, res: Response, next: NextFunction): void 
   try {
     const payload = jwt.verify(token, JWT_SECRET) as JwtPayload;
 
-    // Verificar que el token no haya expirado (verificación adicional)
     const currentTime = Math.floor(Date.now() / 1000);
     if (payload.exp && payload.exp < currentTime) {
       res.status(401).json({
@@ -57,11 +55,10 @@ export const checkJwt = (req: Request, res: Response, next: NextFunction): void 
       return;
     }
 
-    // Agregar información del usuario a la request
     (req as any).user = {
       id: payload.sub,
       role: payload.role,
-      sub: payload.sub  // Mantener compatibilidad
+      sub: payload.sub 
     };
 
     next();

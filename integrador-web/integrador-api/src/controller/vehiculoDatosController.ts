@@ -1,4 +1,3 @@
-// src/controllers/vehiculoDatosController.ts
 import { Request, Response, NextFunction } from 'express';
 import { VehiculoDatos } from '../models/vehiculoDatos';
 

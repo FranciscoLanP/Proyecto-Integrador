@@ -105,11 +105,9 @@ export function MapPicker({
     return <Marker position={position as any} />
   }
 
-  // Efecto para la búsqueda en tiempo real
   useEffect(() => {
-    console.log('Búsqueda activada para:', inputValue); // Debug log
+    console.log('Búsqueda activada para:', inputValue);
 
-    // Limpiar opciones si no hay suficiente texto
     if (!inputValue || inputValue.length < 3) {
       setOptions([])
       setIsLoading(false)
@@ -118,11 +116,9 @@ export function MapPicker({
 
     setIsLoading(true)
     const timer = setTimeout(async () => {
-      console.log('Ejecutando búsqueda para:', inputValue); // Debug log
       setIsLoading(true)
 
       try {
-        // Usar proxy local para evitar CORS
         const response = await fetch(
           `/geocoding/search?format=json&countrycodes=do&limit=5&q=${encodeURIComponent(inputValue)}`,
           {
@@ -138,7 +134,6 @@ export function MapPicker({
         }
 
         const data: any[] = await response.json()
-        console.log('Respuesta de búsqueda:', data); // Debug log
 
         const seen = new Set<string>()
         const resp: Suggestion[] = []
@@ -150,16 +145,15 @@ export function MapPicker({
           }
         })
 
-        // Reemplazar completamente las opciones
         setOptions(resp)
         setIsLoading(false)
-        console.log('Opciones actualizadas:', resp); // Debug log
+        console.log('Opciones actualizadas:', resp); 
       } catch (error) {
-        console.error('Error en búsqueda:', error); // Debug log
+        console.error('Error en búsqueda:', error); 
         setOptions([])
         setIsLoading(false)
       }
-    }, 300) // Reducir delay para mejor responsividad
+    }, 300) 
 
     return () => {
       clearTimeout(timer)
@@ -177,10 +171,9 @@ export function MapPicker({
         filterOptions={x => x}
         inputValue={inputValue}
         onInputChange={(_, value, reason) => {
-          console.log('Input change:', { value, reason }); // Debug log
+          
           if (reason === 'input') {
             setInputValue(value)
-            // Si el texto se vacía o es muy corto, limpiar opciones inmediatamente
             if (!value || value.length < 3) {
               setOptions([])
               setIsLoading(false)

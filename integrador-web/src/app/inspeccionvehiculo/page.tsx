@@ -11,16 +11,13 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import BuildIcon from '@mui/icons-material/Build';
 import PrintIcon from '@mui/icons-material/Print';
 import ModernTable from '@/components/ModernTable/ModernTable';
 import { useHydration } from '@/hooks/useHydration';
 import { useClientTheme } from '@/hooks/useClientTheme';
 import { useJwtDecode } from '@/hooks/useJwtDecode';
 import InspeccionVehiculoModal from './InspeccionVehiculoModal';
-import ReparacionVehiculoModal from '../reparacionvehiculo/ReparacionVehiculoModal';
 import { inspeccionVehiculoService, InspeccionVehiculo } from '@/services/inspeccionVehiculoService';
-import { reparacionVehiculoService, ReparacionVehiculo } from '@/services/reparacionVehiculoService';
 
 // Configurar dayjs en español
 dayjs.locale('es');
@@ -30,8 +27,6 @@ export default function InspeccionVehiculoPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<InspeccionVehiculo | undefined>(undefined);
-  const [reparacionModalOpen, setReparacionModalOpen] = useState(false);
-  const [reparacionDefault, setReparacionDefault] = useState<ReparacionVehiculo | undefined>(undefined);
   const [printHtml, setPrintHtml] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [fechaCreacion, setFechaCreacion] = useState<dayjs.Dayjs | null>(null);
@@ -103,7 +98,7 @@ export default function InspeccionVehiculoPage() {
 
   const handleChangeRowsPerPage = (newRowsPerPage: number) => {
     setRowsPerPage(newRowsPerPage);
-    setPage(0); // Reset to first page when changing rows per page
+    setPage(0); 
   };
 
   const handleCreate = () => {
@@ -138,27 +133,6 @@ export default function InspeccionVehiculoPage() {
       fetchInspecciones();
     } catch {
       alert('Error al guardar');
-    }
-  };
-
-  const handleCrearReparacion = (inspeccion: InspeccionVehiculo) => {
-    setReparacionDefault({
-      id_inspeccion: inspeccion._id!,
-      id_empleadoInformacion: '',
-      fecha_inicio: new Date().toISOString().slice(0, 10),
-      descripcion: '',
-      piezas_usadas: []
-    });
-    setReparacionModalOpen(true);
-  };
-
-  const handleReparacionModalSubmit = async (data: ReparacionVehiculo) => {
-    try {
-      await reparacionVehiculoService.create(data);
-      setReparacionModalOpen(false);
-      alert('Reparación creada correctamente');
-    } catch {
-      alert('Error al guardar reparación');
     }
   };
 
@@ -305,7 +279,6 @@ export default function InspeccionVehiculoPage() {
     }
   }, [printHtml]);
 
-  // Filtrado de inspecciones similar a factura
   const inspeccionesFiltradas = React.useMemo(() => {
     let filtered = inspecciones.filter(inspeccion => {
       const cliente = getClienteNombre(inspeccion);
@@ -320,7 +293,6 @@ export default function InspeccionVehiculoPage() {
       return matchesSearch;
     });
 
-    // Filtrar por fecha si está seleccionada
     if (fechaCreacion) {
       filtered = filtered.filter(inspeccion => {
         const fechaInspeccion = inspeccion.createdAt?.toString().slice(0, 10) || '';
@@ -472,25 +444,6 @@ export default function InspeccionVehiculoPage() {
           >
             <PrintIcon fontSize="small" />
           </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => handleCrearReparacion(inspeccion)}
-            title="Crear reparación"
-            sx={{
-              background: 'linear-gradient(45deg, #10B981, #34D399)',
-              color: 'white',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #059669, #10B981)',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)'
-              },
-              transition: 'all 0.3s ease',
-              width: 32,
-              height: 32
-            }}
-          >
-            <BuildIcon fontSize="small" />
-          </IconButton>
         </Box>
       ),
       fechaCreacion: fechaCreacion,
@@ -555,7 +508,6 @@ export default function InspeccionVehiculoPage() {
             filterComponent={
               <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                  {/* Filtro de fecha de creación */}
                   <DatePicker
                     label="📅 Fecha de Creación"
                     value={fechaCreacion}
@@ -626,7 +578,6 @@ export default function InspeccionVehiculoPage() {
                     }}
                   />
 
-                  {/* Botón para limpiar filtro de fecha */}
                   {fechaCreacion && (
                     <IconButton
                       size="small"
@@ -660,13 +611,6 @@ export default function InspeccionVehiculoPage() {
           defaultData={editData}
           onClose={() => setModalOpen(false)}
           onSubmit={handleModalSubmit}
-        />
-
-        <ReparacionVehiculoModal
-          open={reparacionModalOpen}
-          defaultData={reparacionDefault}
-          onClose={() => setReparacionModalOpen(false)}
-          onSubmit={handleReparacionModalSubmit}
         />
 
         {printHtml && (

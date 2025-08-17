@@ -19,14 +19,12 @@ export const getAllFactura = async (req: Request, res: Response, next: NextFunct
           {
             path: 'id_empleadoInformacion',
             model: 'EmpleadoInformacion'
-            // Traer todos los campos del empleado
           },
           {
             path: 'piezas_usadas',
             populate: {
               path: 'id_pieza',
               model: 'PiezaInventario'
-              // Traer todos los campos de la pieza
             }
           },
           {
@@ -41,7 +39,6 @@ export const getAllFactura = async (req: Request, res: Response, next: NextFunct
                   {
                     path: 'id_empleadoInformacion',
                     model: 'EmpleadoInformacion'
-                    // Traer todos los campos del empleado de recepción
                   },
                   {
                     path: 'id_vehiculo',
@@ -50,7 +47,6 @@ export const getAllFactura = async (req: Request, res: Response, next: NextFunct
                       {
                         path: 'id_cliente',
                         model: 'Cliente'
-                        // Traer todos los campos del cliente
                       },
                       {
                         path: 'id_modelo',
@@ -58,24 +54,19 @@ export const getAllFactura = async (req: Request, res: Response, next: NextFunct
                         populate: {
                           path: 'id_marca',
                           model: 'MarcaVehiculo'
-                          // Traer todos los campos de la marca
                         }
-                        // Traer todos los campos del modelo
                       },
                       {
                         path: 'id_color',
                         model: 'ColoresDatos'
-                        // Traer todos los campos del color
                       }
                     ]
-                    // Traer todos los campos del vehículo
                   }
                 ]
               }
             }
           }
         ]
-        // Traer todos los campos de la reparación
       })
     res.status(200).json(items)
   } catch (error) {
@@ -226,10 +217,8 @@ export const getFacturaById = async (req: Request, res: Response, next: NextFunc
       return
     }
 
-    // Enriquecer la factura con información adicional si está poblada
     const enrichedItem: any = item.toObject()
 
-    // Extraer información del cliente si está disponible
     try {
       const reparacion = enrichedItem.id_reparacion as any
       if (reparacion && typeof reparacion === 'object') {

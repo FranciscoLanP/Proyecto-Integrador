@@ -130,11 +130,10 @@ export default function ClientModal({
 
   const handleTipoClienteChange = (value: string): void => {
     setTipoCliente(value as ClienteTipo);
-    setTipoClienteError(''); // Limpiar error al seleccionar
+    setTipoClienteError(''); 
   }
 
   const handleTipoClienteBlur = (): void => {
-    // Solo mostrar error si el formulario ha sido enviado o el usuario salió del campo sin seleccionar
     if (formSubmitted && !tipoCliente) {
       setTipoClienteError('Debe seleccionar un tipo de cliente');
     }
@@ -143,7 +142,6 @@ export default function ClientModal({
   const handleSave = (): void => {
     setFormSubmitted(true);
 
-    // Validar tipo de cliente al enviar
     if (!tipoCliente) {
       setTipoClienteError('Debe seleccionar un tipo de cliente');
     }
@@ -181,7 +179,6 @@ export default function ClientModal({
     !!correoError ||
     !!telefonoError
 
-  // Estilo base para los TextFields
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
       borderRadius: '12px',
@@ -257,7 +254,6 @@ export default function ClientModal({
       }
     >
       <Box display="flex" flexDirection="column" gap={3} sx={{ paddingTop: '16px' }}>
-        {/* Fila 1: Cédula y RNC */}
         <Box display="flex" gap={2}>
           <TextField
             label="Cédula"
@@ -286,7 +282,6 @@ export default function ClientModal({
           />
         </Box>
 
-        {/* Fila 2: Nombre completo */}
         <TextField
           label="Nombre completo"
           value={nombre}
@@ -299,7 +294,6 @@ export default function ClientModal({
           id="cliente-nombre-input"
         />
 
-        {/* Fila 3: Teléfono y Correo */}
         <Box display="flex" gap={2}>
           <TextField
             label="Teléfono"
@@ -330,7 +324,6 @@ export default function ClientModal({
           />
         </Box>
 
-        {/* Fila 4: Tipo de cliente */}
         <TextField
           select
           label="Tipo de cliente"
@@ -350,7 +343,6 @@ export default function ClientModal({
           ))}
         </TextField>
 
-        {/* Mapa */}
         <Box>
           <MapPicker
             initialPosition={[markerLat, markerLng]}
@@ -364,7 +356,6 @@ export default function ClientModal({
           />
         </Box>
 
-        {/* Dirección detallada */}
         <TextField
           label="Dirección detallada"
           placeholder="calle/casa #"

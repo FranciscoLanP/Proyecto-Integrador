@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, ChangeEvent, JSX } from 'react';
+import React, { useState, JSX } from 'react';
 import {
   Box, Typography, IconButton, CircularProgress, Chip
 } from '@mui/material';
@@ -78,10 +78,9 @@ export default function ColoresDatosPage(): JSX.Element {
 
   const handleChangeRowsPerPage = (newRowsPerPage: number) => {
     setRowsPerPage(newRowsPerPage);
-    setPage(0); // Reset to first page when changing rows per page
+    setPage(0); 
   };
 
-  // Función para obtener un color representativo basado en el nombre
   const getColorFromName = (colorName: string): string => {
     const colorLower = colorName.toLowerCase();
     if (colorLower.includes('rojo') || colorLower.includes('red')) return '#EF4444';
@@ -94,15 +93,13 @@ export default function ColoresDatosPage(): JSX.Element {
     if (colorLower.includes('naranja') || colorLower.includes('orange')) return '#F97316';
     if (colorLower.includes('morado') || colorLower.includes('purple')) return '#8B5CF6';
     if (colorLower.includes('rosa') || colorLower.includes('pink')) return '#EC4899';
-    return '#6B7280'; // Color por defecto
+    return '#6B7280'; 
   };
 
-  // Filtrar datos basado en el término de búsqueda
   const filteredColores = colores.filter(color =>
     color.nombre_color.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Datos para la tabla moderna
   const tableData = filteredColores.map(color => {
     const colorHex = getColorFromName(color.nombre_color);
 
@@ -251,7 +248,6 @@ export default function ColoresDatosPage(): JSX.Element {
         background: currentTheme.colors.background
       }}
     >
-      {/* Tabla Moderna */}
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
           <CircularProgress size={40} />
@@ -275,7 +271,6 @@ export default function ColoresDatosPage(): JSX.Element {
         />
       )}
 
-      {/* Modal */}
       <ColoresDatosModal
         open={modalOpen}
         defaultData={editData ?? undefined}

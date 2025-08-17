@@ -36,7 +36,6 @@ export function useModernTable<T = any>({
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(initialRowsPerPage);
 
-    // Filtrar datos basado en búsqueda
     const filteredData = useMemo(() => {
         if (!enableSearch || !searchQuery.trim()) {
             return data;
@@ -45,7 +44,6 @@ export function useModernTable<T = any>({
         const query = searchQuery.toLowerCase().trim();
 
         return data.filter((item) => {
-            // Si no hay campos de búsqueda especificados, buscar en todos los campos
             if (searchFields.length === 0) {
                 return Object.values(item as any).some((value) => {
                     if (value == null) return false;
@@ -53,7 +51,6 @@ export function useModernTable<T = any>({
                 });
             }
 
-            // Buscar solo en los campos especificados
             return searchFields.some((field) => {
                 const value = item[field];
                 if (value == null) return false;
@@ -62,7 +59,6 @@ export function useModernTable<T = any>({
         });
     }, [data, searchQuery, searchFields, enableSearch]);
 
-    // Paginar datos filtrados
     const paginatedData = useMemo(() => {
         if (!enablePagination) {
             return filteredData;
@@ -72,7 +68,6 @@ export function useModernTable<T = any>({
         return filteredData.slice(startIndex, startIndex + rowsPerPage);
     }, [filteredData, page, rowsPerPage, enablePagination]);
 
-    // Calcular totales
     const totalPages = useMemo(() => {
         if (!enablePagination) return 1;
         return Math.ceil(filteredData.length / rowsPerPage);
@@ -80,10 +75,9 @@ export function useModernTable<T = any>({
 
     const totalRows = filteredData.length;
 
-    // Handlers
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(event.target.value);
-        setPage(0); // Reset to first page when searching
+        setPage(0);
     };
 
     const handlePageChange = (event: unknown, newPage: number) => {
@@ -92,7 +86,6 @@ export function useModernTable<T = any>({
 
     const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0); // Reset to first page when changing rows per page
     };
 
     const resetFilters = () => {
@@ -118,7 +111,6 @@ export function useModernTable<T = any>({
     };
 }
 
-// Hook adicional para manejo de selección múltiple
 export interface UseTableSelectionOptions<T = any> {
     data: T[];
     getItemId: (item: T) => string | number;
@@ -186,7 +178,6 @@ export function useTableSelection<T = any>({
     };
 }
 
-// Hook para manejo de ordenación
 export interface UseSortingOptions<T = any> {
     data: T[];
     defaultSort?: keyof T;
