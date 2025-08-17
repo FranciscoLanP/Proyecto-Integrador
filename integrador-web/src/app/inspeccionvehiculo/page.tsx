@@ -1,19 +1,29 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, CircularProgress, IconButton, Chip } from '@mui/material';
+import React, { useEffect, useState, useMemo } from 'react';
+import {
+  Box, IconButton, CircularProgress, Chip, Typography
+} from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 import BuildIcon from '@mui/icons-material/Build';
 import PrintIcon from '@mui/icons-material/Print';
 import ModernTable from '@/components/ModernTable/ModernTable';
 import { useHydration } from '@/hooks/useHydration';
-import { useTheme } from '@/app/context/ThemeContext';
+import { useClientTheme } from '@/hooks/useClientTheme';
+import { useJwtDecode } from '@/hooks/useJwtDecode';
 import InspeccionVehiculoModal from './InspeccionVehiculoModal';
 import ReparacionVehiculoModal from '../reparacionvehiculo/ReparacionVehiculoModal';
 import { inspeccionVehiculoService, InspeccionVehiculo } from '@/services/inspeccionVehiculoService';
 import { reparacionVehiculoService, ReparacionVehiculo } from '@/services/reparacionVehiculoService';
+
+// Configurar dayjs en español
+dayjs.locale('es');
 
 export default function InspeccionVehiculoPage() {
   const [inspecciones, setInspecciones] = useState<InspeccionVehiculo[]>([]);
@@ -24,11 +34,13 @@ export default function InspeccionVehiculoPage() {
   const [reparacionDefault, setReparacionDefault] = useState<ReparacionVehiculo | undefined>(undefined);
   const [printHtml, setPrintHtml] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [fechaCreacion, setFechaCreacion] = useState<dayjs.Dayjs | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const { currentTheme, isHydrated } = useTheme();
+  const { currentTheme, isHydrated } = useClientTheme();
   const isHydratedCustom = useHydration();
+  const { role: userRole } = useJwtDecode();
 
   const fetchInspecciones = async () => {
     setLoading(true);
@@ -293,16 +305,37 @@ export default function InspeccionVehiculoPage() {
     }
   }, [printHtml]);
 
-  // Filtrar inspecciones por término de búsqueda (por cliente)
-  const inspeccionesFiltradas = inspecciones.filter(inspeccion => {
-    if (!searchTerm) return true;
-    const clienteNombre = getClienteNombre(inspeccion).toLowerCase();
-    return clienteNombre.includes(searchTerm.toLowerCase());
-  });
+  // Filtrado de inspecciones similar a factura
+  const inspeccionesFiltradas = React.useMemo(() => {
+    let filtered = inspecciones.filter(inspeccion => {
+      const cliente = getClienteNombre(inspeccion);
+      const empleado = getEmpleadoNombre(inspeccion);
+      const comentario = inspeccion.comentario || '';
+      
+      const matchesSearch = searchTerm === '' || 
+        cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        empleado.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        comentario.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      return matchesSearch;
+    });
 
-  // Datos para la tabla moderna
+    // Filtrar por fecha si está seleccionada
+    if (fechaCreacion) {
+      filtered = filtered.filter(inspeccion => {
+        const fechaInspeccion = inspeccion.createdAt?.toString().slice(0, 10) || '';
+        const fechaSeleccionada = fechaCreacion.format('YYYY-MM-DD');
+        return fechaInspeccion === fechaSeleccionada;
+      });
+    }
+
+    return filtered;
+  }, [inspecciones, searchTerm, fechaCreacion]);
   const tableData = inspeccionesFiltradas.map(inspeccion => {
-    const statusInfo = getInspectionStatus(inspeccion.resultado || '');
+    const cliente = getClienteNombre(inspeccion);
+    const empleado = getEmpleadoNombre(inspeccion);
+    const { status, color } = getInspectionStatus(inspeccion.resultado || '');
+    const fechaCreacion = inspeccion.createdAt ? new Date(inspeccion.createdAt).toLocaleDateString('es-ES') : '—';
     const piezas = inspeccion.piezas_sugeridas ?? [];
     const total = piezas.reduce((acc, p) => acc + (p.precio_unitario ?? 0) * p.cantidad, 0);
 
@@ -325,94 +358,37 @@ export default function InspeccionVehiculoPage() {
               boxShadow: `0 4px 12px ${currentTheme.colors.primary}30`
             }}
           >
-            👤
+            �
           </Box>
-          <Typography variant="body2" sx={{ fontWeight: 'medium', color: '#374151' }}>
-            {getClienteNombre(inspeccion)}
-          </Typography>
+          <Box>
+            <div className="font-medium" style={{ color: '#374151' }}>
+              {cliente}
+            </div>
+            <div className="text-sm text-gray-500">{empleado}</div>
+          </Box>
         </Box>
       ),
-      empleado: (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #10B981, #059669)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white'
-            }}
-          >
-            �‍🔧
-          </Box>
-          <Typography variant="body2" sx={{ fontWeight: 'medium', color: '#374151' }}>
-            {getEmpleadoNombre(inspeccion)}
-          </Typography>
-        </Box>
-      ),
-      fecha: (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #06B6D4, #0891B2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white'
-            }}
-          >
-            📅
-          </Box>
-          <Typography variant="body2" sx={{ color: '#374151' }}>
-            {inspeccion.fecha_inspeccion?.toString().slice(0, 10) || '—'}
-          </Typography>
-        </Box>
-      ),
+      fecha: inspeccion.fecha_inspeccion?.toString().slice(0, 10) || '—',
       comentario: (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #F59E0B, #D97706)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white'
-            }}
-          >
-            📝
-          </Box>
-          <Typography
-            variant="body2"
-            sx={{
-              color: '#374151',
-              maxWidth: '200px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}
-            title={inspeccion.comentario || '—'}
-          >
-            {inspeccion.comentario || '—'}
-          </Typography>
-        </Box>
+        <Typography variant="body2" sx={{ 
+          color: '#374151',
+          maxWidth: '200px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        }}>
+          {inspeccion.comentario || 'Sin comentario'}
+        </Typography>
       ),
       resultado: (
         <Chip
-          label={statusInfo.status}
+          label={status}
           sx={{
-            background: statusInfo.color === 'green' ? 'linear-gradient(45deg, #10B981, #34D399)' :
-              statusInfo.color === 'red' ? 'linear-gradient(45deg, #EF4444, #F87171)' :
-                statusInfo.color === 'yellow' ? 'linear-gradient(45deg, #F59E0B, #FBBF24)' :
-                  'linear-gradient(45deg, #3B82F6, #60A5FA)',
+            background: color === 'green' ? 'linear-gradient(45deg, #10B981, #34D399)' :
+              color === 'red' ? 'linear-gradient(45deg, #EF4444, #F87171)' :
+                color === 'yellow' ? 'linear-gradient(45deg, #F59E0B, #FBBF24)' :
+                  color === 'blue' ? 'linear-gradient(45deg, #3B82F6, #60A5FA)' :
+                    'linear-gradient(45deg, #6B7280, #9CA3AF)',
             color: 'white',
             fontWeight: 'medium'
           }}
@@ -420,146 +396,67 @@ export default function InspeccionVehiculoPage() {
         />
       ),
       piezas: piezas.length > 0 ? (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white'
-            }}
-          >
-            🔩
-          </Box>
-          <Box>
-            {piezas.slice(0, 2).map((p, idx) => (
-              <div key={idx} className="text-sm" style={{ color: '#374151' }}>
-                {p.nombre_pieza} (x{p.cantidad})
-              </div>
-            ))}
-            {piezas.length > 2 && (
-              <Chip
-                size="small"
-                label={`+${piezas.length - 2} más piezas`}
-                sx={{
-                  background: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
-                  color: 'white',
-                  fontSize: '0.7rem',
-                  mt: 0.5
-                }}
-              />
-            )}
-          </Box>
-        </Box>
+        <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#8B5CF6' }}>
+          {piezas.length} pieza{piezas.length !== 1 ? 's' : ''}
+        </Typography>
       ) : (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #9CA3AF, #D1D5DB)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white'
-            }}
-          >
-            ❌
-          </Box>
-          <Typography variant="body2" sx={{ color: '#6B7280', fontStyle: 'italic' }}>
-            Sin piezas
-          </Typography>
-        </Box>
+        <Typography variant="body2" sx={{ color: '#6B7280', fontStyle: 'italic' }}>
+          Sin piezas
+        </Typography>
       ),
       total: (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #059669, #10B981)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white'
-            }}
-          >
-            💰
-          </Box>
-          <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#059669' }}>
-            {total > 0 ? `$${total.toLocaleString('es-DO', { minimumFractionDigits: 2 })}` : '$0.00'}
-          </Typography>
-        </Box>
+        <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#059669' }}>
+          ${total.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+        </Typography>
       ),
       acciones: (
         <Box display="flex" gap={0.5}>
-          <IconButton
-            size="small"
-            onClick={() => handleEdit(inspeccion)}
-            title="Editar"
-            sx={{
-              background: 'linear-gradient(45deg, #3B82F6, #60A5FA)',
-              color: 'white',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #2563EB, #3B82F6)',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
-              },
-              transition: 'all 0.3s ease',
-              width: 32,
-              height: 32
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => handleDelete(inspeccion._id!)}
-            title="Eliminar"
-            sx={{
-              background: 'linear-gradient(45deg, #EF4444, #F87171)',
-              color: 'white',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #DC2626, #EF4444)',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
-              },
-              transition: 'all 0.3s ease',
-              width: 32,
-              height: 32
-            }}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => handleCrearReparacion(inspeccion)}
-            title="Crear reparación"
-            sx={{
-              background: 'linear-gradient(45deg, #F59E0B, #FBBF24)',
-              color: 'white',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #D97706, #F59E0B)',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.4)'
-              },
-              transition: 'all 0.3s ease',
-              width: 32,
-              height: 32
-            }}
-          >
-            <BuildIcon fontSize="small" />
-          </IconButton>
+          {userRole === 'administrador' && (
+            <IconButton
+              size="small"
+              onClick={() => handleEdit(inspeccion)}
+              title="Editar"
+              sx={{
+                background: 'linear-gradient(45deg, #3B82F6, #60A5FA)',
+                color: 'white',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #2563EB, #3B82F6)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+                },
+                transition: 'all 0.3s ease',
+                width: 32,
+                height: 32
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+          {userRole === 'administrador' && (
+            <IconButton
+              size="small"
+              onClick={() => handleDelete(inspeccion._id!)}
+              title="Eliminar"
+              sx={{
+                background: 'linear-gradient(45deg, #EF4444, #F87171)',
+                color: 'white',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #DC2626, #EF4444)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
+                },
+                transition: 'all 0.3s ease',
+                width: 32,
+                height: 32
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          )}
           <IconButton
             size="small"
             onClick={() => handlePrint(inspeccion)}
-            title="Imprimir cotización"
+            title="Imprimir inspección"
             sx={{
               background: 'linear-gradient(45deg, #8B5CF6, #A78BFA)',
               color: 'white',
@@ -575,29 +472,39 @@ export default function InspeccionVehiculoPage() {
           >
             <PrintIcon fontSize="small" />
           </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => handleCrearReparacion(inspeccion)}
+            title="Crear reparación"
+            sx={{
+              background: 'linear-gradient(45deg, #10B981, #34D399)',
+              color: 'white',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #059669, #10B981)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)'
+              },
+              transition: 'all 0.3s ease',
+              width: 32,
+              height: 32
+            }}
+          >
+            <BuildIcon fontSize="small" />
+          </IconButton>
         </Box>
       ),
-      fechaCreacion: (
-        <Typography variant="body2" sx={{ color: '#374151', fontSize: '0.85rem' }}>
-          {new Date((inspeccion as any).createdAt || new Date()).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-          })}
-        </Typography>
-      ),
+      fechaCreacion: fechaCreacion,
       originalData: inspeccion
     };
   });
 
   const columns = [
-    { id: 'cliente', label: 'Cliente' },
-    { id: 'empleado', label: 'Empleado' },
-    { id: 'fecha', label: 'Fecha' },
+    { id: 'cliente', label: 'Cliente | Empleado' },
+    { id: 'fecha', label: 'Fecha Inspección' },
     { id: 'comentario', label: 'Comentario' },
     { id: 'resultado', label: 'Estado' },
     { id: 'piezas', label: 'Piezas Sugeridas' },
-    { id: 'total', label: 'Total Est.' },
+    { id: 'total', label: 'Total Estimado' },
     { id: 'fechaCreacion', label: 'Fecha Creación' },
     { id: 'acciones', label: 'Acciones' }
   ];
@@ -624,61 +531,161 @@ export default function InspeccionVehiculoPage() {
         background: currentTheme.colors.background
       }}
     >
+      <div className="max-w-7xl mx-auto">
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <CircularProgress size={40} />
+          </div>
+        ) : (
+          <ModernTable
+            title="Inspecciones de Vehículos"
+            subtitle="Gestiona las inspecciones técnicas y genera cotizaciones de reparación"
+            data={tableData}
+            columns={columns}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            onCreateNew={handleCreate}
+            createButtonText="Nueva Inspección"
+            emptyMessage="No se encontraron inspecciones"
+            searchPlaceholder="Buscar por cliente, empleado o comentario..."
+            filterComponent={
+              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  {/* Filtro de fecha de creación */}
+                  <DatePicker
+                    label="📅 Fecha de Creación"
+                    value={fechaCreacion}
+                    onChange={(newValue) => setFechaCreacion(newValue)}
+                    format="DD/MM/YYYY"
+                    slotProps={{
+                      textField: {
+                        size: 'small',
+                        sx: {
+                          minWidth: 200,
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '12px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            backdropFilter: 'blur(15px)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                              boxShadow: '0 6px 25px rgba(0,0,0,0.12)',
+                              transform: 'translateY(-1px)'
+                            },
+                            '& fieldset': {
+                              borderColor: 'rgba(100, 149, 237, 0.3)',
+                              borderRadius: '12px',
+                              borderWidth: '1.5px'
+                            },
+                            '&:hover fieldset': {
+                              borderColor: 'rgba(100, 149, 237, 0.5)',
+                              borderWidth: '2px'
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: 'primary.main',
+                              borderWidth: '2px',
+                              boxShadow: '0 0 10px rgba(100, 149, 237, 0.3)'
+                            }
+                          },
+                          '& .MuiInputLabel-root': {
+                            color: 'text.secondary',
+                            fontWeight: 500,
+                            '&.Mui-focused': {
+                              color: 'primary.main'
+                            }
+                          }
+                        }
+                      },
+                      openPickerIcon: {
+                        sx: {
+                          color: 'primary.main',
+                          '&:hover': {
+                            color: 'primary.dark'
+                          }
+                        }
+                      }
+                    }}
+                    sx={{
+                      '& .MuiPickersDay-root': {
+                        borderRadius: '8px',
+                        '&:hover': {
+                          backgroundColor: 'rgba(100, 149, 237, 0.1)'
+                        },
+                        '&.Mui-selected': {
+                          backgroundColor: 'primary.main',
+                          '&:hover': {
+                            backgroundColor: 'primary.dark'
+                          }
+                        }
+                      }
+                    }}
+                  />
 
+                  {/* Botón para limpiar filtro de fecha */}
+                  {fechaCreacion && (
+                    <IconButton
+                      size="small"
+                      onClick={() => setFechaCreacion(null)}
+                      sx={{
+                        background: 'linear-gradient(45deg, #ff6b6b, #ff8e53)',
+                        color: 'white',
+                        width: 36,
+                        height: 36,
+                        boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          background: 'linear-gradient(45deg, #ee5a52, #ff7043)',
+                          transform: 'scale(1.1)',
+                          boxShadow: '0 6px 20px rgba(255, 107, 107, 0.4)'
+                        }
+                      }}
+                      title="Limpiar filtro de fecha"
+                    >
+                      ✕
+                    </IconButton>
+                  )}
+                </Box>
+              </LocalizationProvider>
+            }
+          />
+        )}
 
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <CircularProgress size={40} />
-        </div>
-      ) : (
-        <ModernTable
-          title="Inspecciones de Vehículos"
-          subtitle="Gestiona las inspecciones técnicas y genera cotizaciones de reparación"
-          data={tableData}
-          columns={columns}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          page={page}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          onCreateNew={handleCreate}
-          createButtonText="Nueva Inspección"
-          emptyMessage="No se encontraron inspecciones"
-          searchPlaceholder="Buscar por cliente..."
+        <InspeccionVehiculoModal
+          open={modalOpen}
+          defaultData={editData}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleModalSubmit}
         />
-      )}
 
-      <InspeccionVehiculoModal
-        open={modalOpen}
-        defaultData={editData}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleModalSubmit}
-      />
-
-      <ReparacionVehiculoModal
-        open={reparacionModalOpen}
-        defaultData={reparacionDefault}
-        onClose={() => setReparacionModalOpen(false)}
-        onSubmit={handleReparacionModalSubmit}
-      />
-
-      {printHtml && (
-        <div
-          id="print-area"
-          dangerouslySetInnerHTML={{ __html: printHtml }}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'white',
-            zIndex: 9999,
-            overflow: 'auto'
-          }}
+        <ReparacionVehiculoModal
+          open={reparacionModalOpen}
+          defaultData={reparacionDefault}
+          onClose={() => setReparacionModalOpen(false)}
+          onSubmit={handleReparacionModalSubmit}
         />
-      )}
+
+        {printHtml && (
+          <div
+            id="print-area"
+            dangerouslySetInnerHTML={{ __html: printHtml }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'white',
+              zIndex: 9999,
+              overflow: 'auto'
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }

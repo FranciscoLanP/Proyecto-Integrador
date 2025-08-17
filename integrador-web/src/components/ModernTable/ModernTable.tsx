@@ -144,6 +144,8 @@ export interface ModernTableProps {
     height?: number;
     minWidth?: number;
     filterComponent?: React.ReactNode;
+    sx?: React.CSSProperties;
+    disablePageLayout?: boolean;
 }
 
 const ModernTable: React.FC<ModernTableProps> = ({
@@ -165,34 +167,16 @@ const ModernTable: React.FC<ModernTableProps> = ({
     titleIcon = '🎯',
     height = 400,
     minWidth = 900,
-    filterComponent
+    filterComponent,
+    sx,
+    disablePageLayout = false
 }) => {
     const { currentTheme } = useTheme();
 
     const paginated = data.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
-    return (
-        <Box sx={{
-            p: 3,
-            background: currentTheme.colors.background,
-            minHeight: '100vh',
-            position: 'relative'
-        }}
-            className={styles.fadeIn}>
-            <Box sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: `
-          radial-gradient(600px circle at 0% 0%, ${currentTheme.colors.primary}15 0%, transparent 40%),
-          radial-gradient(800px circle at 100% 100%, ${currentTheme.colors.secondary}15 0%, transparent 40%)
-        `,
-                pointerEvents: 'none',
-                zIndex: 0
-            }} />
-
+    const content = (
+        <>
             <Box sx={{
                 mb: 4,
                 textAlign: 'center',
@@ -279,141 +263,353 @@ const ModernTable: React.FC<ModernTableProps> = ({
                     )}
                 </Box>
             </Paper>
+        </>
+    );
 
-            <Paper sx={{
-                borderRadius: '20px',
-                overflow: 'hidden',
-                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(10px)',
-                position: 'relative',
-                zIndex: 1
-            }}
-                className={styles.fadeIn}>
-                <Box sx={{
-                    height: height,
-                    overflow: 'auto'
+    if (disablePageLayout) {
+        return (
+            <Box sx={{ ...sx }}>
+                {content}
+
+                <Paper sx={{
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    position: 'relative',
+                    zIndex: 1
                 }}
-                    className={styles.customScrollbar}>
-                    <Box sx={{ minWidth: minWidth, overflowX: 'auto' }}>
-                        <Table stickyHeader>
-                            <TableHead>
-                                <TableRow>
-                                    {columns.map((column) => (
-                                        <TableCell
-                                            key={column.id}
-                                            align={column.align}
-                                            sx={{
-                                                background: currentTheme.headerGradient,
-                                                color: 'white',
-                                                fontWeight: 'bold',
-                                                fontSize: '0.95rem',
-                                                py: 2,
-                                                minWidth: column.minWidth
-                                            }}
-                                        >
-                                            {column.icon} {column.label}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {paginated.map((row, index) => (
-                                    <TableRow
-                                        key={row._id || row.id || index}
-                                        sx={{
-                                            '&:hover': {
-                                                background: `linear-gradient(90deg, ${currentTheme.colors.primary}10 0%, ${currentTheme.colors.primary}10 100%)`,
-                                                transform: 'scale(1.01)',
-                                                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                                            },
-                                            '&:nth-of-type(even)': {
-                                                backgroundColor: 'rgba(248, 250, 252, 0.8)',
-                                            },
-                                            transition: 'all 0.2s ease-in-out',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
+                    className={styles.fadeIn}>
+                    <Box sx={{
+                        height: height,
+                        overflow: 'auto'
+                    }}
+                        className={styles.customScrollbar}>
+                        <Box sx={{
+                            width: '100%',
+                            overflowX: 'auto'
+                        }}>
+                            <Table stickyHeader sx={{
+                                width: '100%',
+                                tableLayout: 'auto',
+                                '& .MuiTableCell-root': {
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    maxWidth: '200px',
+                                    '@media (max-width: 900px)': {
+                                        maxWidth: '150px',
+                                        fontSize: '0.8rem'
+                                    },
+                                    '@media (max-width: 600px)': {
+                                        maxWidth: '120px',
+                                        fontSize: '0.75rem'
+                                    }
+                                }
+                            }}
+                                className={styles.responsiveTable}>
+                                <TableHead>
+                                    <TableRow>
                                         {columns.map((column) => (
                                             <TableCell
                                                 key={column.id}
                                                 align={column.align}
-                                                sx={{ py: 2 }}
+                                                sx={{
+                                                    background: currentTheme.headerGradient,
+                                                    color: 'white',
+                                                    fontWeight: 'bold',
+                                                    fontSize: '0.95rem',
+                                                    py: 2,
+                                                    '@media (max-width: 900px)': {
+                                                        fontSize: '0.8rem',
+                                                        py: 1.5
+                                                    },
+                                                    '@media (max-width: 600px)': {
+                                                        fontSize: '0.75rem',
+                                                        py: 1
+                                                    }
+                                                }}
                                             >
-                                                {column.render
-                                                    ? column.render(row[column.id], row, index)
-                                                    : row[column.id]
-                                                }
+                                                {column.icon} {column.label}
                                             </TableCell>
                                         ))}
                                     </TableRow>
-                                ))}
-                                {paginated.length === 0 && (
-                                    <TableRow>
-                                        <TableCell colSpan={columns.length} align="center" sx={{ py: 6 }}>
-                                            <Box sx={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                opacity: 0.6
-                                            }}>
-                                                <Typography variant="h6" sx={{ mb: 1, color: '#718096' }}>
-                                                    🔍 {emptyMessage}
-                                                </Typography>
-                                                {emptySubMessage && (
-                                                    <Typography variant="body2" sx={{ color: '#a0aec0' }}>
-                                                        {emptySubMessage}
+                                </TableHead>
+                                <TableBody>
+                                    {paginated.length > 0 ? (
+                                        paginated.map((row, index) => (
+                                            <TableRow
+                                                key={row.id || index}
+                                                hover
+                                                sx={{
+                                                    '&:nth-of-type(odd)': {
+                                                        backgroundColor: 'rgba(0, 0, 0, 0.02)'
+                                                    },
+                                                    '&:hover': {
+                                                        backgroundColor: `${currentTheme.colors.primary}10`,
+                                                        transform: 'scale(1.01)',
+                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                                                        transition: 'all 0.2s ease'
+                                                    },
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                {columns.map((column) => (
+                                                    <TableCell
+                                                        key={column.id}
+                                                        align={column.align}
+                                                        sx={{
+                                                            py: 2,
+                                                            fontSize: '0.9rem',
+                                                            borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+                                                            '@media (max-width: 900px)': {
+                                                                fontSize: '0.8rem',
+                                                                py: 1.5
+                                                            },
+                                                            '@media (max-width: 600px)': {
+                                                                fontSize: '0.75rem',
+                                                                py: 1
+                                                            }
+                                                        }}
+                                                    >
+                                                        {column.render
+                                                            ? column.render(row[column.id], row, index)
+                                                            : row[column.id]
+                                                        }
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={columns.length}>
+                                                <Box sx={{
+                                                    textAlign: 'center',
+                                                    py: 6,
+                                                    opacity: 0.7
+                                                }}>
+                                                    <Typography variant="h6" sx={{ mb: 1, color: '#718096' }}>
+                                                        🔍 {emptyMessage}
                                                     </Typography>
-                                                )}
-                                            </Box>
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                                                    {emptySubMessage && (
+                                                        <Typography variant="body2" sx={{ color: '#a0aec0' }}>
+                                                            {emptySubMessage}
+                                                        </Typography>
+                                                    )}
+                                                </Box>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </Box>
                     </Box>
-                </Box>
 
-                <Box sx={{
-                    borderTop: '1px solid rgba(0, 0, 0, 0.1)',
-                    background: 'rgba(248, 250, 252, 0.8)',
-                    px: 2
-                }}>
-                    <TablePagination
-                        component="div"
-                        count={data.length}
-                        page={page}
-                        onPageChange={(_, newPage) => onPageChange(newPage)}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={(e) => onRowsPerPageChange(parseInt(e.target.value, 10))}
-                        rowsPerPageOptions={[5, 10, 25]}
-                        sx={{
-                            '& .MuiTablePagination-toolbar': {
-                                minHeight: 64,
-                            },
-                            '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                                fontWeight: 'bold',
-                                color: '#4a5568'
-                            },
-                            '& .MuiTablePagination-select': {
-                                borderRadius: '8px',
-                                background: 'rgba(255, 255, 255, 0.8)',
-                            },
-                            '& .MuiIconButton-root': {
-                                background: `${currentTheme.colors.primary}20`,
-                                margin: '0 2px',
-                                '&:hover': {
-                                    background: `${currentTheme.colors.primary}30`,
-                                    transform: 'scale(1.1)',
+                    <Box sx={{
+                        borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+                        background: 'rgba(248, 250, 252, 0.8)',
+                        px: 2
+                    }}>
+                        <TablePagination
+                            component="div"
+                            count={data.length}
+                            page={page}
+                            onPageChange={(_, newPage) => onPageChange(newPage)}
+                            rowsPerPage={rowsPerPage}
+                            onRowsPerPageChange={(e) => onRowsPerPageChange(parseInt(e.target.value, 10))}
+                            rowsPerPageOptions={[5, 10, 25]}
+                            sx={{
+                                '& .MuiTablePagination-toolbar': {
+                                    minHeight: 64,
                                 },
-                                '&.Mui-disabled': {
-                                    background: 'rgba(0, 0, 0, 0.1)',
+                                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                                    fontWeight: 'bold',
+                                    color: '#4a5568'
+                                },
+                                '& .MuiTablePagination-select': {
+                                    borderRadius: '8px',
+                                    background: 'rgba(255, 255, 255, 0.8)',
+                                },
+                                '& .MuiIconButton-root': {
+                                    background: `${currentTheme.colors.primary}20`,
+                                    margin: '0 2px',
+                                    '&:hover': {
+                                        background: `${currentTheme.colors.primary}30`,
+                                        transform: 'scale(1.1)',
+                                    },
+                                    '&.Mui-disabled': {
+                                        background: 'rgba(0, 0, 0, 0.1)',
+                                    }
                                 }
-                            }
-                        }}
-                    />
-                </Box>
-            </Paper>
+                            }}
+                        />
+                    </Box>
+                </Paper>
+            </Box>
+        );
+    }
+
+    return (
+        <Box sx={{ ...sx }}>
+            <Box sx={{
+                p: 3,
+                background: currentTheme.colors.background,
+                minHeight: '100vh',
+                position: 'relative'
+            }}
+                className={styles.fadeIn}>
+                <Box sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: `
+          radial-gradient(600px circle at 0% 0%, ${currentTheme.colors.primary}15 0%, transparent 40%),
+          radial-gradient(800px circle at 100% 100%, ${currentTheme.colors.secondary}15 0%, transparent 40%)
+        `,
+                    pointerEvents: 'none',
+                    zIndex: 0
+                }} />
+
+                {content}
+
+                <Paper sx={{
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    position: 'relative',
+                    zIndex: 1
+                }}
+                    className={styles.fadeIn}>
+                    <Box sx={{
+                        height: height,
+                        overflow: 'auto'
+                    }}
+                        className={styles.customScrollbar}>
+                        <Box sx={{ minWidth: minWidth, overflowX: 'auto' }}>
+                            <Table stickyHeader>
+                                <TableHead>
+                                    <TableRow>
+                                        {columns.map((column) => (
+                                            <TableCell
+                                                key={column.id}
+                                                align={column.align}
+                                                sx={{
+                                                    background: currentTheme.headerGradient,
+                                                    color: 'white',
+                                                    fontWeight: 'bold',
+                                                    fontSize: '0.95rem',
+                                                    py: 2,
+                                                    minWidth: column.minWidth
+                                                }}
+                                            >
+                                                {column.icon} {column.label}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {paginated.map((row, index) => (
+                                        <TableRow
+                                            key={row._id || row.id || index}
+                                            sx={{
+                                                '&:hover': {
+                                                    background: `linear-gradient(90deg, ${currentTheme.colors.primary}10 0%, ${currentTheme.colors.primary}10 100%)`,
+                                                    transform: 'scale(1.01)',
+                                                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                                                },
+                                                '&:nth-of-type(even)': {
+                                                    backgroundColor: 'rgba(248, 250, 252, 0.8)',
+                                                },
+                                                transition: 'all 0.2s ease-in-out',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            {columns.map((column) => (
+                                                <TableCell
+                                                    key={column.id}
+                                                    align={column.align}
+                                                    sx={{ py: 2 }}
+                                                >
+                                                    {column.render
+                                                        ? column.render(row[column.id], row, index)
+                                                        : row[column.id]
+                                                    }
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))}
+                                    {paginated.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={columns.length} align="center" sx={{ py: 6 }}>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    opacity: 0.6
+                                                }}>
+                                                    <Typography variant="h6" sx={{ mb: 1, color: '#718096' }}>
+                                                        🔍 {emptyMessage}
+                                                    </Typography>
+                                                    {emptySubMessage && (
+                                                        <Typography variant="body2" sx={{ color: '#a0aec0' }}>
+                                                            {emptySubMessage}
+                                                        </Typography>
+                                                    )}
+                                                </Box>
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </Box>
+                    </Box>
+
+                    <Box sx={{
+                        borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+                        background: 'rgba(248, 250, 252, 0.8)',
+                        px: 2
+                    }}>
+                        <TablePagination
+                            component="div"
+                            count={data.length}
+                            page={page}
+                            onPageChange={(_, newPage) => onPageChange(newPage)}
+                            rowsPerPage={rowsPerPage}
+                            onRowsPerPageChange={(e) => onRowsPerPageChange(parseInt(e.target.value, 10))}
+                            rowsPerPageOptions={[5, 10, 25]}
+                            sx={{
+                                '& .MuiTablePagination-toolbar': {
+                                    minHeight: 64,
+                                },
+                                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                                    fontWeight: 'bold',
+                                    color: '#4a5568'
+                                },
+                                '& .MuiTablePagination-select': {
+                                    borderRadius: '8px',
+                                    background: 'rgba(255, 255, 255, 0.8)',
+                                },
+                                '& .MuiIconButton-root': {
+                                    background: `${currentTheme.colors.primary}20`,
+                                    margin: '0 2px',
+                                    '&:hover': {
+                                        background: `${currentTheme.colors.primary}30`,
+                                        transform: 'scale(1.1)',
+                                    },
+                                    '&.Mui-disabled': {
+                                        background: 'rgba(0, 0, 0, 0.1)',
+                                    }
+                                }
+                            }}
+                        />
+                    </Box>
+                </Paper>
+            </Box>
         </Box>
     );
 };

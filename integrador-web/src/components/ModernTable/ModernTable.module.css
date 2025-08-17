@@ -49,6 +49,50 @@
 }
 */
 
+/* Responsive table cells */
+.responsiveTable {
+    width: 100%;
+    table-layout: auto;
+}
+
+.responsiveTable td,
+.responsiveTable th {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* Responsive breakpoints for table content */
+@media (max-width: 1200px) {
+    .responsiveTable .MuiTableCell-root {
+        max-width: 180px !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .responsiveTable .MuiTableCell-root {
+        max-width: 150px !important;
+        font-size: 0.8rem !important;
+        padding: 8px 12px !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .responsiveTable .MuiTableCell-root {
+        max-width: 120px !important;
+        font-size: 0.75rem !important;
+        padding: 6px 8px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .responsiveTable .MuiTableCell-root {
+        max-width: 100px !important;
+        font-size: 0.7rem !important;
+        padding: 4px 6px !important;
+    }
+}
+
 /* Efecto de flotación al hover - DESHABILITADO */
 /*
 .hoverFloat {

@@ -2,6 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress, IconButton, Chip } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReceiptIcon from '@mui/icons-material/Receipt';
@@ -13,6 +18,9 @@ import FacturaModal from '../factura/FacturaModal';
 import { reparacionVehiculoService, ReparacionVehiculo } from '@/services/reparacionVehiculoService';
 import { facturaService, Factura } from '@/services/facturaService';
 
+// Configurar dayjs en español
+dayjs.locale('es');
+
 export default function ReparacionVehiculoPage() {
   const [reparaciones, setReparaciones] = useState<ReparacionVehiculo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,6 +29,7 @@ export default function ReparacionVehiculoPage() {
   const [facturaModalOpen, setFacturaModalOpen] = useState(false);
   const [facturaDefault, setFacturaDefault] = useState<Factura | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
+  const [fechaCreacion, setFechaCreacion] = useState<dayjs.Dayjs | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -179,13 +188,27 @@ export default function ReparacionVehiculoPage() {
     });
   };
 
-  // Filtrar reparaciones por cliente
-  const reparacionesFiltradas = reparaciones.filter(reparacion => {
-    if (!searchTerm.trim()) return true;
+  // Filtrar reparaciones por cliente y fecha
+  const reparacionesFiltradas = React.useMemo(() => {
+    let filtered = reparaciones.filter(reparacion => {
+      if (!searchTerm.trim()) return true;
 
-    const clienteInfo = getClienteVehiculoInfo(reparacion);
-    return clienteInfo.cliente.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+      const clienteInfo = getClienteVehiculoInfo(reparacion);
+      return clienteInfo.cliente.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+
+    // Filtrar por fecha si está seleccionada
+    if (fechaCreacion) {
+      filtered = filtered.filter(reparacion => {
+        const fechaReparacion = reparacion.createdAt?.toString().slice(0, 10) || 
+                               reparacion.fecha_inicio?.slice(0, 10) || '';
+        const fechaSeleccionada = fechaCreacion.format('YYYY-MM-DD');
+        return fechaReparacion === fechaSeleccionada;
+      });
+    }
+
+    return filtered;
+  }, [reparaciones, searchTerm, fechaCreacion]);
 
   const tableData = reparacionesFiltradas.map(reparacion => {
     const clienteVehiculo = getClienteVehiculoInfo(reparacion);
@@ -468,6 +491,106 @@ export default function ReparacionVehiculoPage() {
             createButtonText="Nueva Reparación"
             emptyMessage="No se encontraron reparaciones"
             searchPlaceholder="Buscar por cliente..."
+            filterComponent={
+              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  {/* Filtro de fecha de creación */}
+                  <DatePicker
+                    label="📅 Fecha de Creación"
+                    value={fechaCreacion}
+                    onChange={(newValue) => setFechaCreacion(newValue)}
+                    format="DD/MM/YYYY"
+                    slotProps={{
+                      textField: {
+                        size: 'small',
+                        sx: {
+                          minWidth: 200,
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '12px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            backdropFilter: 'blur(15px)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                              boxShadow: '0 6px 25px rgba(0,0,0,0.12)',
+                              transform: 'translateY(-1px)'
+                            },
+                            '& fieldset': {
+                              borderColor: 'rgba(100, 149, 237, 0.3)',
+                              borderRadius: '12px',
+                              borderWidth: '1.5px'
+                            },
+                            '&:hover fieldset': {
+                              borderColor: 'rgba(100, 149, 237, 0.5)',
+                              borderWidth: '2px'
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: 'primary.main',
+                              borderWidth: '2px',
+                              boxShadow: '0 0 10px rgba(100, 149, 237, 0.3)'
+                            }
+                          },
+                          '& .MuiInputLabel-root': {
+                            color: 'text.secondary',
+                            fontWeight: 500,
+                            '&.Mui-focused': {
+                              color: 'primary.main'
+                            }
+                          }
+                        }
+                      },
+                      openPickerIcon: {
+                        sx: {
+                          color: 'primary.main',
+                          '&:hover': {
+                            color: 'primary.dark'
+                          }
+                        }
+                      }
+                    }}
+                    sx={{
+                      '& .MuiPickersDay-root': {
+                        borderRadius: '8px',
+                        '&:hover': {
+                          backgroundColor: 'rgba(100, 149, 237, 0.1)'
+                        },
+                        '&.Mui-selected': {
+                          backgroundColor: 'primary.main',
+                          '&:hover': {
+                            backgroundColor: 'primary.dark'
+                          }
+                        }
+                      }
+                    }}
+                  />
+
+                  {/* Botón para limpiar filtro de fecha */}
+                  {fechaCreacion && (
+                    <IconButton
+                      size="small"
+                      onClick={() => setFechaCreacion(null)}
+                      sx={{
+                        background: 'linear-gradient(45deg, #ff6b6b, #ff8e53)',
+                        color: 'white',
+                        width: 36,
+                        height: 36,
+                        boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          background: 'linear-gradient(45deg, #ee5a52, #ff7043)',
+                          transform: 'scale(1.1)',
+                          boxShadow: '0 6px 20px rgba(255, 107, 107, 0.4)'
+                        }
+                      }}
+                      title="Limpiar filtro de fecha"
+                    >
+                      ✕
+                    </IconButton>
+                  )}
+                </Box>
+              </LocalizationProvider>
+            }
           />
         )}
 

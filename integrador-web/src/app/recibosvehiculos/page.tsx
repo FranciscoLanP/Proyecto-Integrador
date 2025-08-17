@@ -1,8 +1,12 @@
-
 'use client';
 
 import React, { useState } from 'react';
-import { Typography, Box, Chip } from '@mui/material';
+import { Typography, Box, Chip, IconButton } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
@@ -10,6 +14,9 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import PersonIcon from '@mui/icons-material/Person';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+
+// Configurar dayjs en español
+dayjs.locale('es');
 
 import { useCrud } from '../../hooks/useCrud';
 import { useNotification } from '../../components/utils/NotificationProvider';
@@ -47,6 +54,7 @@ export default function RecibosVehiculosPage() {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<IReciboVehiculo | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [fechaCreacion, setFechaCreacion] = useState<dayjs.Dayjs | null>(null);
 
   // Funciones auxiliares para obtener datos relacionados
   const getRecepcionData = (recepcionId: string | IRecepcionVehiculo) => {
@@ -81,16 +89,30 @@ export default function RecibosVehiculosPage() {
     };
   };
 
-  // Filtrar recibos por término de búsqueda (cliente o vehículo)
-  const recibosFiltrados = recibos.filter(recibo => {
-    if (!searchTerm) return true;
-    const { clienteNombre, vehiculoChasis } = getSearchInfo(recibo);
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      clienteNombre.toLowerCase().includes(searchLower) ||
-      vehiculoChasis.toLowerCase().includes(searchLower)
-    );
-  });
+  // Filtrar recibos por término de búsqueda y fecha
+  const recibosFiltrados = React.useMemo(() => {
+    let filtered = recibos.filter(recibo => {
+      if (!searchTerm) return true;
+      const { clienteNombre, vehiculoChasis } = getSearchInfo(recibo);
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        clienteNombre.toLowerCase().includes(searchLower) ||
+        vehiculoChasis.toLowerCase().includes(searchLower)
+      );
+    });
+
+    // Filtrar por fecha si está seleccionada
+    if (fechaCreacion) {
+      filtered = filtered.filter(recibo => {
+        const recepcion = recibo.id_recepcion as IRecepcionVehiculo;
+        const fechaRecibo = recepcion?.createdAt?.toString().slice(0, 10) || recepcion?.fecha?.slice(0, 10) || '';
+        const fechaSeleccionada = fechaCreacion.format('YYYY-MM-DD');
+        return fechaRecibo === fechaSeleccionada;
+      });
+    }
+
+    return filtered;
+  }, [recibos, searchTerm, fechaCreacion]);
 
   // Hook simplificado para manejar solo paginación
   const {
@@ -475,6 +497,107 @@ export default function RecibosVehiculosPage() {
         emptyMessage="No hay recibos registrados"
         emptySubMessage="Comienza generando el primer recibo"
         searchPlaceholder="Buscar por cliente o vehículo (chasis)..."
+        sx={{ maxWidth: '100%', margin: '0 auto' }}
+        filterComponent={
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              {/* Filtro de fecha de creación */}
+              <DatePicker
+                label="📅 Fecha de Creación"
+                value={fechaCreacion}
+                onChange={(newValue) => setFechaCreacion(newValue)}
+                format="DD/MM/YYYY"
+                slotProps={{
+                  textField: {
+                    size: 'small',
+                    sx: {
+                      minWidth: 200,
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        backdropFilter: 'blur(15px)',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          boxShadow: '0 6px 25px rgba(0,0,0,0.12)',
+                          transform: 'translateY(-1px)'
+                        },
+                        '& fieldset': {
+                          borderColor: 'rgba(100, 149, 237, 0.3)',
+                          borderRadius: '12px',
+                          borderWidth: '1.5px'
+                        },
+                        '&:hover fieldset': {
+                          borderColor: 'rgba(100, 149, 237, 0.5)',
+                          borderWidth: '2px'
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: 'primary.main',
+                          borderWidth: '2px',
+                          boxShadow: '0 0 10px rgba(100, 149, 237, 0.3)'
+                        }
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        '&.Mui-focused': {
+                          color: 'primary.main'
+                        }
+                      }
+                    }
+                  },
+                  openPickerIcon: {
+                    sx: {
+                      color: 'primary.main',
+                      '&:hover': {
+                        color: 'primary.dark'
+                      }
+                    }
+                  }
+                }}
+                sx={{
+                  '& .MuiPickersDay-root': {
+                    borderRadius: '8px',
+                    '&:hover': {
+                      backgroundColor: 'rgba(100, 149, 237, 0.1)'
+                    },
+                    '&.Mui-selected': {
+                      backgroundColor: 'primary.main',
+                      '&:hover': {
+                        backgroundColor: 'primary.dark'
+                      }
+                    }
+                  }
+                }}
+              />
+
+              {/* Botón para limpiar filtro de fecha */}
+              {fechaCreacion && (
+                <IconButton
+                  size="small"
+                  onClick={() => setFechaCreacion(null)}
+                  sx={{
+                    background: 'linear-gradient(45deg, #ff6b6b, #ff8e53)',
+                    color: 'white',
+                    width: 36,
+                    height: 36,
+                    boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'linear-gradient(45deg, #ee5a52, #ff7043)',
+                      transform: 'scale(1.1)',
+                      boxShadow: '0 6px 20px rgba(255, 107, 107, 0.4)'
+                    }
+                  }}
+                  title="Limpiar filtro de fecha"
+                >
+                  ✕
+                </IconButton>
+              )}
+            </Box>
+          </LocalizationProvider>
+        }
       />
 
       <ReciboVehiculoModal
