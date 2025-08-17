@@ -4,10 +4,6 @@ import React, { useState, ChangeEvent, JSX } from 'react';
 import {
   Box,
   Typography,
-  Dialog,
-  DialogTitle,
-  DialogActions,
-  Button,
   Chip
 } from '@mui/material';
 import {
@@ -15,8 +11,7 @@ import {
   Delete as DeleteIcon,
   Inventory as InventoryIcon,
   Build as BuildIcon,
-  ShoppingCart as ShoppingCartIcon,
-  WarningAmber as WarningAmberIcon
+  ShoppingCart as ShoppingCartIcon
 } from '@mui/icons-material';
 import { useCrud } from '@/hooks/useCrud';
 import { useNotification } from '@/components/utils/NotificationProvider';
@@ -42,7 +37,7 @@ export default function PiezasPage(): JSX.Element {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<IPiezaInventario | undefined>(undefined);
-  const [confirmDel, setConfirmDel] = useState(false);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [toDelete, setToDelete] = useState<IPiezaInventario | null>(null);
 
   const {
@@ -112,7 +107,7 @@ export default function PiezasPage(): JSX.Element {
 
   const askDelete = (p: IPiezaInventario) => {
     setToDelete(p);
-    setConfirmDel(true);
+    setShowDeleteWarning(true);
   };
 
   const confirmDelete = () => {
@@ -125,7 +120,7 @@ export default function PiezasPage(): JSX.Element {
         onError: () => notify('Error al eliminar pieza', 'error')
       });
     }
-    setConfirmDel(false);
+    setShowDeleteWarning(false);
     setToDelete(null);
   };
 
@@ -299,63 +294,92 @@ export default function PiezasPage(): JSX.Element {
         onSaved={handleSaved}
       />
 
-      <Dialog
-        open={confirmDel}
-        onClose={() => setConfirmDel(false)}
+      <Box
         sx={{
-          '& .MuiDialog-paper': {
-            borderRadius: '16px',
-            background: safeTheme.colors.surface,
-            backdropFilter: 'blur(10px)',
-            boxShadow: `0 20px 40px ${safeTheme.colors.primary}20`
-          }
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: showDeleteWarning ? 'flex' : 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
         }}
       >
-        <DialogTitle
+        <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            fontSize: '1.1rem',
-            color: safeTheme.colors.text,
-            background: `linear-gradient(135deg, ${safeTheme.colors.primary}10, ${safeTheme.colors.secondary}10)`,
-            borderRadius: '16px 16px 0 0'
+            backgroundColor: 'white',
+            borderRadius: 3,
+            padding: 4,
+            maxWidth: 500,
+            width: '90%',
+            textAlign: 'center',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
           }}
         >
-          <WarningAmberIcon sx={{ color: safeTheme.colors.warning }} />
-          ¿Confirmas eliminar esta pieza?
-        </DialogTitle>
-        <DialogActions sx={{ p: 2, gap: 1 }}>
-          <Button
-            onClick={() => setConfirmDel(false)}
-            sx={{
-              borderRadius: '8px',
-              color: safeTheme.colors.text,
-              '&:hover': {
-                background: `${safeTheme.colors.primary}10`
-              }
-            }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            variant="contained"
-            onClick={confirmDelete}
-            sx={{
-              borderRadius: '8px',
-              background: 'linear-gradient(45deg, #EF4444, #F87171)',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #DC2626, #EF4444)',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
-              },
-              transition: 'all 0.3s ease'
-            }}
-          >
-            Eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🗑️</div>
+          <h2 style={{
+            color: '#d32f2f',
+            marginBottom: '16px',
+            fontSize: '1.5rem'
+          }}>
+            Confirmar Eliminación de Pieza
+          </h2>
+          <p style={{
+            color: '#666',
+            marginBottom: '24px',
+            fontSize: '1.1rem',
+            lineHeight: 1.5
+          }}>
+            <strong>¿Está seguro que desea eliminar esta pieza del inventario?</strong>
+            <br /><br />
+            Esta acción no se puede deshacer. Se eliminará permanentemente la pieza y sus datos asociados.
+          </p>
+
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                setShowDeleteWarning(false);
+                setToDelete(null);
+              }}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#666',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#555'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#666'}
+            >
+              ❌ Cancelar
+            </button>
+
+            <button
+              onClick={confirmDelete}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#d32f2f',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c62828'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d32f2f'}
+            >
+              🗑️ Eliminar Pieza
+            </button>
+          </Box>
+        </Box>
+      </Box>
     </>
   );
 }

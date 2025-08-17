@@ -26,6 +26,8 @@ export default function MarcasVehiculoPage(): JSX.Element {
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<IMarcaVehiculo | null>(null);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [toDelete, setToDelete] = useState<IMarcaVehiculo | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -42,13 +44,20 @@ export default function MarcasVehiculoPage(): JSX.Element {
     setModalOpen(true);
   };
 
-  const handleDelete = async (id: string): Promise<void> => {
-    if (confirm('¿Seguro que deseas eliminar esta marca?')) {
-      deleteM.mutate(id, {
+  const askDelete = (marca: IMarcaVehiculo): void => {
+    setToDelete(marca);
+    setShowDeleteWarning(true);
+  };
+
+  const confirmDelete = (): void => {
+    if (toDelete) {
+      deleteM.mutate(toDelete._id, {
         onSuccess: () => notify('Marca eliminada correctamente', 'success'),
         onError: () => notify('Error al eliminar marca', 'error')
       });
     }
+    setShowDeleteWarning(false);
+    setToDelete(null);
   };
 
   const handleModalSubmit = (payload: { nombre_marca: string }): void => {
@@ -78,7 +87,7 @@ export default function MarcasVehiculoPage(): JSX.Element {
 
   const handleChangeRowsPerPage = (newRowsPerPage: number) => {
     setRowsPerPage(newRowsPerPage);
-    setPage(0); 
+    setPage(0);
   };
 
   const filteredMarcas = marcas.filter(marca =>
@@ -145,7 +154,7 @@ export default function MarcasVehiculoPage(): JSX.Element {
         </IconButton>
         <IconButton
           size="small"
-          onClick={() => handleDelete(marca._id)}
+          onClick={() => askDelete(marca)}
           title="Eliminar"
           sx={{
             background: 'linear-gradient(45deg, #EF4444, #F87171)',
@@ -234,6 +243,93 @@ export default function MarcasVehiculoPage(): JSX.Element {
         onClose={() => setModalOpen(false)}
         onSubmit={handleModalSubmit}
       />
+
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: showDeleteWarning ? 'flex' : 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: 'white',
+            borderRadius: 3,
+            padding: 4,
+            maxWidth: 500,
+            width: '90%',
+            textAlign: 'center',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🗑️</div>
+          <h2 style={{
+            color: '#d32f2f',
+            marginBottom: '16px',
+            fontSize: '1.5rem'
+          }}>
+            Confirmar Eliminación de Marca
+          </h2>
+          <p style={{
+            color: '#666',
+            marginBottom: '24px',
+            fontSize: '1.1rem',
+            lineHeight: 1.5
+          }}>
+            <strong>¿Está seguro que desea eliminar esta marca de vehículo?</strong>
+            <br /><br />
+            Esta acción no se puede deshacer. Se eliminará permanentemente la marca del sistema.
+          </p>
+
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                setShowDeleteWarning(false);
+                setToDelete(null);
+              }}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#666',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#555'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#666'}
+            >
+              ❌ Cancelar
+            </button>
+
+            <button
+              onClick={confirmDelete}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#d32f2f',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c62828'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d32f2f'}
+            >
+              🗑️ Eliminar Marca
+            </button>
+          </Box>
+        </Box>
+      </Box>
     </div>
   );
 }

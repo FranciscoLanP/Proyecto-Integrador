@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, CircularProgress, IconButton, Chip } from '@mui/material';
+import {
+  Box, Typography, CircularProgress, IconButton, Chip
+} from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -12,13 +14,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ModernTable from '@/components/ModernTable/ModernTable';
 import { useHydration } from '@/hooks/useHydration';
 import { useTheme } from '@/app/context/ThemeContext';
+import { useNotification } from '@/components/utils/NotificationProvider';
 import ReparacionVehiculoModal from './ReparacionVehiculoModal';
 import { reparacionVehiculoService, ReparacionVehiculo } from '@/services/reparacionVehiculoService';
 
-// Configurar dayjs en español
 dayjs.locale('es');
 
 export default function ReparacionVehiculoPage() {
+  const { notify } = useNotification();
   const [reparaciones, setReparaciones] = useState<ReparacionVehiculo[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -27,6 +30,10 @@ export default function ReparacionVehiculoPage() {
   const [fechaCreacion, setFechaCreacion] = useState<dayjs.Dayjs | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Estados para el modal de advertencia de eliminación
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [reparacionToDelete, setReparacionToDelete] = useState<string | null>(null);
 
   const { currentTheme, isHydrated } = useTheme();
   const isHydratedCustom = useHydration();
@@ -61,13 +68,31 @@ export default function ReparacionVehiculoPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('¿Seguro que deseas eliminar esta reparación?')) {
-      try {
-        await reparacionVehiculoService.remove(id);
-        fetchReparaciones();
-      } catch {
-        alert('Error al eliminar');
+    setReparacionToDelete(id);
+    setShowDeleteWarning(true);
+  };
+
+  const proceedWithDelete = async () => {
+    if (!reparacionToDelete) return;
+
+    setShowDeleteWarning(false);
+    try {
+      await reparacionVehiculoService.remove(reparacionToDelete);
+      notify('Reparación eliminada correctamente', 'success');
+      fetchReparaciones();
+    } catch (error: any) {
+      console.log('Error completo:', error);
+      console.log('Error response:', error.response);
+      console.log('Error response data:', error.response?.data);
+      console.log('Error response status:', error.response?.status);
+
+      if (error.response?.status === 400 && error.response.data?.message) {
+        notify(error.response.data.message, 'error');
+      } else {
+        notify('Error al eliminar la reparación', 'error');
       }
+    } finally {
+      setReparacionToDelete(null);
     }
   };
 
@@ -92,7 +117,7 @@ export default function ReparacionVehiculoPage() {
 
   const handleChangeRowsPerPage = (newRowsPerPage: number) => {
     setRowsPerPage(newRowsPerPage);
-    setPage(0); // Reset to first page when changing rows per page
+    setPage(0);
   };
 
   const getClienteVehiculoInfo = (reparacion: ReparacionVehiculo): { cliente: string; vehiculo: string } => {
@@ -139,7 +164,6 @@ export default function ReparacionVehiculoPage() {
     return reparacion.piezas_usadas.map((piezaUsada: any) => {
       console.log('🔍 PiezaUsada completa:', piezaUsada);
 
-      // El objeto piezaUsada debe tener cantidad directamente y id_pieza poblado
       const pieza = piezaUsada.id_pieza;
       console.log('🧩 Pieza poblada:', pieza);
 
@@ -159,7 +183,6 @@ export default function ReparacionVehiculoPage() {
     });
   };
 
-  // Filtrar reparaciones por cliente y fecha
   const reparacionesFiltradas = React.useMemo(() => {
     let filtered = reparaciones.filter(reparacion => {
       if (!searchTerm.trim()) return true;
@@ -168,7 +191,6 @@ export default function ReparacionVehiculoPage() {
       return clienteInfo.cliente.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
-    // Filtrar por fecha si está seleccionada
     if (fechaCreacion) {
       filtered = filtered.filter(reparacion => {
         const fechaReparacion = reparacion.createdAt?.toString().slice(0, 10) ||
@@ -555,6 +577,93 @@ export default function ReparacionVehiculoPage() {
           }}
           onSubmit={handleModalSubmit}
         />
+
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: showDeleteWarning ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999
+          }}
+        >
+          <Box
+            sx={{
+              backgroundColor: 'white',
+              borderRadius: 3,
+              padding: 4,
+              maxWidth: 500,
+              width: '90%',
+              textAlign: 'center',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🗑️</div>
+            <h2 style={{
+              color: '#d32f2f',
+              marginBottom: '16px',
+              fontSize: '1.5rem'
+            }}>
+              Confirmar Eliminación de Reparación
+            </h2>
+            <p style={{
+              color: '#666',
+              marginBottom: '24px',
+              fontSize: '1.1rem',
+              lineHeight: 1.5
+            }}>
+              <strong>¿Está seguro que desea eliminar esta reparación?</strong>
+              <br /><br />
+              Esta acción no se puede deshacer. Si la reparación está asignada a una factura, no podrá eliminarse.
+            </p>
+
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <button
+                onClick={() => {
+                  setShowDeleteWarning(false);
+                  setReparacionToDelete(null);
+                }}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#666',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#555'}
+                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#666'}
+              >
+                ❌ Cancelar
+              </button>
+
+              <button
+                onClick={proceedWithDelete}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#d32f2f',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c62828'}
+                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d32f2f'}
+              >
+                🗑️ Eliminar Reparación
+              </button>
+            </Box>
+          </Box>
+        </Box>
       </div>
     </div>
   );

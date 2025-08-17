@@ -27,6 +27,8 @@ export default function ModelosDatosPage(): JSX.Element {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<IModelosDatos | null>(null);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [toDelete, setToDelete] = useState<IModelosDatos | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -44,13 +46,20 @@ export default function ModelosDatosPage(): JSX.Element {
     setModalOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('¿Seguro que deseas eliminar este modelo?')) {
-      modelosCrud.deleteM.mutate(id, {
+  const askDelete = (modelo: IModelosDatos) => {
+    setToDelete(modelo);
+    setShowDeleteWarning(true);
+  };
+
+  const confirmDelete = () => {
+    if (toDelete) {
+      modelosCrud.deleteM.mutate(toDelete._id, {
         onSuccess: () => notify('Modelo eliminado correctamente', 'success'),
         onError: () => notify('Error al eliminar modelo', 'error')
       });
     }
+    setShowDeleteWarning(false);
+    setToDelete(null);
   };
 
   const handleModalSubmit = (payload: Partial<IModelosDatos>) => {
@@ -80,7 +89,7 @@ export default function ModelosDatosPage(): JSX.Element {
 
   const handleChangeRowsPerPage = (newRowsPerPage: number) => {
     setRowsPerPage(newRowsPerPage);
-    setPage(0); 
+    setPage(0);
   };
 
   const filteredModelos = modelos.filter(modelo => {
@@ -175,7 +184,7 @@ export default function ModelosDatosPage(): JSX.Element {
           </IconButton>
           <IconButton
             size="small"
-            onClick={() => handleDelete(modelo._id)}
+            onClick={() => askDelete(modelo)}
             title="Eliminar"
             sx={{
               background: 'linear-gradient(45deg, #EF4444, #F87171)',
@@ -267,6 +276,93 @@ export default function ModelosDatosPage(): JSX.Element {
         onClose={() => setModalOpen(false)}
         onSubmit={handleModalSubmit}
       />
+
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: showDeleteWarning ? 'flex' : 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: 'white',
+            borderRadius: 3,
+            padding: 4,
+            maxWidth: 500,
+            width: '90%',
+            textAlign: 'center',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🗑️</div>
+          <h2 style={{
+            color: '#d32f2f',
+            marginBottom: '16px',
+            fontSize: '1.5rem'
+          }}>
+            Confirmar Eliminación de Modelo
+          </h2>
+          <p style={{
+            color: '#666',
+            marginBottom: '24px',
+            fontSize: '1.1rem',
+            lineHeight: 1.5
+          }}>
+            <strong>¿Está seguro que desea eliminar este modelo de vehículo?</strong>
+            <br /><br />
+            Esta acción no se puede deshacer. Se eliminará permanentemente el modelo del sistema.
+          </p>
+
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                setShowDeleteWarning(false);
+                setToDelete(null);
+              }}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#666',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#555'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#666'}
+            >
+              ❌ Cancelar
+            </button>
+
+            <button
+              onClick={confirmDelete}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#d32f2f',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c62828'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d32f2f'}
+            >
+              🗑️ Eliminar Modelo
+            </button>
+          </Box>
+        </Box>
+      </Box>
     </div>
   );
 }

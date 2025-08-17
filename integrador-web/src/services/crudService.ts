@@ -34,8 +34,19 @@ async function request<T>(
   })
 
   if (!res.ok) {
-    const txt = await res.text()
-    throw new Error(txt || res.statusText)
+    let errorData
+    try {
+      errorData = await res.json()
+    } catch {
+      errorData = { message: await res.text() || res.statusText }
+    }
+
+    const error = new Error(errorData.message || res.statusText) as any
+    error.response = {
+      status: res.status,
+      data: errorData
+    }
+    throw error
   }
 
   if (res.status === 204) {

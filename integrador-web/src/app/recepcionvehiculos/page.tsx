@@ -39,6 +39,8 @@ export default function RecepcionVehiculosPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<IRecepcionVehiculo | null>(null);
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [toDelete, setToDelete] = useState<IRecepcionVehiculo | null>(null);
 
   const {
     filteredData,
@@ -104,13 +106,22 @@ export default function RecepcionVehiculosPage() {
     }
   };
 
-  const handleDelete = async (row: IRecepcionVehiculo) => {
-    try {
-      await recepCrud.deleteM.mutateAsync(row._id);
-      notify('Recepción eliminada correctamente', 'success');
-    } catch {
-      notify('Error al eliminar recepción', 'error');
+  const askDelete = (row: IRecepcionVehiculo) => {
+    setToDelete(row);
+    setShowDeleteWarning(true);
+  };
+
+  const confirmDelete = async () => {
+    if (toDelete) {
+      try {
+        await recepCrud.deleteM.mutateAsync(toDelete._id);
+        notify('Recepción eliminada correctamente', 'success');
+      } catch {
+        notify('Error al eliminar recepción', 'error');
+      }
     }
+    setShowDeleteWarning(false);
+    setToDelete(null);
   };
 
   const getEmpleadoName = (empId: string | IEmpleadoInformacion) => {
@@ -319,7 +330,7 @@ export default function RecepcionVehiculosPage() {
       render: (value, row) => (
         <ActionButtons
           onEdit={() => openEdit(row)}
-          onDelete={() => handleDelete(row)}
+          onDelete={() => askDelete(row)}
         />
       )
     }
@@ -355,6 +366,93 @@ export default function RecepcionVehiculosPage() {
         onClose={closeModal}
         onSubmit={handleSubmit}
       />
+
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: showDeleteWarning ? 'flex' : 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: 'white',
+            borderRadius: 3,
+            padding: 4,
+            maxWidth: 500,
+            width: '90%',
+            textAlign: 'center',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🗑️</div>
+          <h2 style={{
+            color: '#d32f2f',
+            marginBottom: '16px',
+            fontSize: '1.5rem'
+          }}>
+            Confirmar Eliminación de Recepción
+          </h2>
+          <p style={{
+            color: '#666',
+            marginBottom: '24px',
+            fontSize: '1.1rem',
+            lineHeight: 1.5
+          }}>
+            <strong>¿Está seguro que desea eliminar esta recepción de vehículo?</strong>
+            <br /><br />
+            Esta acción no se puede deshacer. Se eliminará permanentemente el registro de recepción y sus datos asociados.
+          </p>
+
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                setShowDeleteWarning(false);
+                setToDelete(null);
+              }}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#666',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#555'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#666'}
+            >
+              ❌ Cancelar
+            </button>
+
+            <button
+              onClick={confirmDelete}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#d32f2f',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c62828'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d32f2f'}
+            >
+              🗑️ Eliminar Recepción
+            </button>
+          </Box>
+        </Box>
+      </Box>
     </>
   );
 }

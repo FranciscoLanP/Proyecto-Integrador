@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { InspeccionVehiculo } from '../models/inspeccionVehiculo';
+import { ReparacionVehiculo } from '../models/reparacionVehiculo';
 
 export const getAllInspeccionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -215,11 +216,22 @@ export const updateInspeccionVehiculo = async (req: Request, res: Response, next
 
 export const deleteInspeccionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const deleted = await InspeccionVehiculo.findByIdAndDelete(req.params.id);
-    if (!deleted) {
+    const inspeccion = await InspeccionVehiculo.findById(req.params.id);
+    if (!inspeccion) {
       res.status(404).json({ message: 'Inspección no encontrada' });
       return;
     }
+
+    const reparacionAsociada = await ReparacionVehiculo.findOne({ id_inspeccion: req.params.id });
+    if (reparacionAsociada) {
+      res.status(400).json({
+        message: 'No se puede eliminar esta inspección porque ya tiene una relación con una reparación',
+        details: 'Para eliminar esta inspección, primero debe eliminar la reparación asociada'
+      });
+      return;
+    }
+
+    const deleted = await InspeccionVehiculo.findByIdAndDelete(req.params.id);
     res.sendStatus(204);
   } catch (error) {
     next(error);

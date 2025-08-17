@@ -2,9 +2,8 @@
 
 import React, { useState, JSX } from 'react';
 import {
-  Box, IconButton, CircularProgress, Chip, Dialog, DialogTitle, DialogActions, Button
+  Box, IconButton, CircularProgress, Chip
 } from '@mui/material';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import EditIcon from '@mui/icons-material/Edit';
@@ -33,14 +32,15 @@ function UsuariosPageContent(): JSX.Element {
   const { notify } = useNotification();
   const { currentTheme, isHydrated } = useClientTheme();
   const isHydratedCustom = useHydration();
-  const { userId } = useJwtDecode(); 
+  const { userId } = useJwtDecode();
 
   const { allQuery, createM, updateM, deleteM } = useCrud<IUsuario>('usuarios');
   const usuarios = allQuery.data || [];
 
   const [openForm, setOpenForm] = useState<boolean>(false);
   const [editData, setEditData] = useState<IUsuario | null>(null);
-  const [confirmDel, setConfirmDel] = useState<boolean>(false);
+
+  const [showDeleteWarning, setShowDeleteWarning] = useState<boolean>(false);
   const [toDelete, setToDelete] = useState<IUsuario | null>(null);
 
   const {
@@ -54,7 +54,7 @@ function UsuariosPageContent(): JSX.Element {
     handleRowsPerPageChange
   } = useModernTable({
     data: usuarios,
-    searchFields: ['username', 'role'], 
+    searchFields: ['username', 'role'],
     initialRowsPerPage: 10
   });
 
@@ -125,7 +125,7 @@ function UsuariosPageContent(): JSX.Element {
 
   const askDelete = (u: IUsuario) => {
     setToDelete(u);
-    setConfirmDel(true);
+    setShowDeleteWarning(true);
   };
 
   const confirmDelete = () => {
@@ -138,7 +138,7 @@ function UsuariosPageContent(): JSX.Element {
         }
       );
     }
-    setConfirmDel(false);
+    setShowDeleteWarning(false);
     setToDelete(null);
   };
 
@@ -170,7 +170,7 @@ function UsuariosPageContent(): JSX.Element {
   };
 
   const tableData = paginatedData.map(usuario => {
-    const isCurrentUser = usuario._id === userId; 
+    const isCurrentUser = usuario._id === userId;
 
     return {
       id: usuario._id,
@@ -182,7 +182,7 @@ function UsuariosPageContent(): JSX.Element {
               height: 45,
               borderRadius: '12px',
               background: isCurrentUser
-                ? 'linear-gradient(45deg, #8B5CF6, #A78BFA)' 
+                ? 'linear-gradient(45deg, #8B5CF6, #A78BFA)'
                 : currentTheme.buttonGradient,
               display: 'flex',
               alignItems: 'center',
@@ -424,63 +424,92 @@ function UsuariosPageContent(): JSX.Element {
           currentUserId={userId}
         />
 
-        <Dialog
-          open={confirmDel}
-          onClose={() => setConfirmDel(false)}
+        <Box
           sx={{
-            '& .MuiDialog-paper': {
-              borderRadius: '16px',
-              background: currentTheme.colors.surface,
-              backdropFilter: 'blur(10px)',
-              boxShadow: `0 20px 40px ${currentTheme.colors.primary}20`
-            }
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: showDeleteWarning ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999
           }}
         >
-          <DialogTitle
+          <Box
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              fontSize: '1.1rem',
-              color: currentTheme.colors.text,
-              background: `linear-gradient(135deg, ${currentTheme.colors.primary}10, ${currentTheme.colors.secondary}10)`,
-              borderRadius: '16px 16px 0 0'
+              backgroundColor: 'white',
+              borderRadius: 3,
+              padding: 4,
+              maxWidth: 500,
+              width: '90%',
+              textAlign: 'center',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
             }}
           >
-            <WarningAmberIcon sx={{ color: currentTheme.colors.warning }} />
-            ¿Confirma eliminar este usuario?
-          </DialogTitle>
-          <DialogActions sx={{ p: 2, gap: 1 }}>
-            <Button
-              onClick={() => setConfirmDel(false)}
-              sx={{
-                borderRadius: '8px',
-                color: currentTheme.colors.text,
-                '&:hover': {
-                  background: `${currentTheme.colors.primary}10`
-                }
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="contained"
-              onClick={confirmDelete}
-              sx={{
-                borderRadius: '8px',
-                background: 'linear-gradient(45deg, #EF4444, #F87171)',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #DC2626, #EF4444)',
-                  transform: 'translateY(-1px)',
-                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
-                },
-                transition: 'all 0.3s ease'
-              }}
-            >
-              Eliminar
-            </Button>
-          </DialogActions>
-        </Dialog>
+            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🗑️</div>
+            <h2 style={{
+              color: '#d32f2f',
+              marginBottom: '16px',
+              fontSize: '1.5rem'
+            }}>
+              Confirmar Eliminación de Usuario
+            </h2>
+            <p style={{
+              color: '#666',
+              marginBottom: '24px',
+              fontSize: '1.1rem',
+              lineHeight: 1.5
+            }}>
+              <strong>¿Está seguro que desea eliminar este usuario?</strong>
+              <br /><br />
+              Esta acción no se puede deshacer. Se eliminará permanentemente el usuario del sistema.
+            </p>
+
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <button
+                onClick={() => {
+                  setShowDeleteWarning(false);
+                  setToDelete(null);
+                }}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#666',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#555'}
+                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#666'}
+              >
+                ❌ Cancelar
+              </button>
+
+              <button
+                onClick={confirmDelete}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#d32f2f',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c62828'}
+                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d32f2f'}
+              >
+                🗑️ Eliminar Usuario
+              </button>
+            </Box>
+          </Box>
+        </Box>
       </div>
     </div>
   );

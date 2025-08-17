@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ReparacionVehiculo } from '../models/reparacionVehiculo';
 import { PiezaUsada } from '../models/piezaUsada';
 import { PiezaInventario } from '../models/piezaInventario';
+import { Factura } from '../models/factura';
 
 export const getAllReparacionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -200,7 +201,7 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
   try {
     const {
       id_inspeccion,
-      empleados_trabajos, 
+      empleados_trabajos,
       fecha_inicio,
       fecha_fin,
       descripcion,
@@ -270,13 +271,13 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
   try {
     const {
       id_inspeccion,
-      empleados_trabajos, 
+      empleados_trabajos,
       fecha_inicio,
       fecha_fin,
       descripcion,
       costo_total,
-      piezas_usadas, 
-      
+      piezas_usadas,
+
       id_empleadoInformacion
     } = req.body;
 
@@ -406,6 +407,7 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
 
 export const deleteReparacionVehiculo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
+    // Verificar si la reparación existe
     const reparacion = await ReparacionVehiculo.findById(req.params.id)
       .populate('piezas_usadas')
       .populate({
@@ -445,8 +447,18 @@ export const deleteReparacionVehiculo = async (req: Request, res: Response, next
         }
       })
       .populate('id_empleadoInformacion', 'nombre telefono tipo_empleado');
+
     if (!reparacion) {
       res.status(404).json({ message: 'Reparación no encontrada' });
+      return;
+    }
+
+    const facturaAsociada = await Factura.findOne({ id_reparacion: req.params.id });
+    if (facturaAsociada) {
+      res.status(400).json({
+        message: 'No se puede eliminar esta reparación porque ya tiene una relación con una factura',
+        details: 'Para eliminar esta reparación, primero debe eliminar la factura asociada'
+      });
       return;
     }
 

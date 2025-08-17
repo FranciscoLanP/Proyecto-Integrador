@@ -49,6 +49,9 @@ export default function VehiculoDatosPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [vehiculoToDelete, setVehiculoToDelete] = useState<IVehiculoDatos | null>(null);
+
   const getClienteName = (clienteId: string | ICliente) => {
     if (typeof clienteId === 'object') return clienteId.nombre;
     const cliente = clientes.find(c => c._id === clienteId);
@@ -156,11 +159,21 @@ export default function VehiculoDatosPage() {
   };
 
   const handleDelete = async (v: IVehiculoDatos) => {
+    setVehiculoToDelete(v);
+    setShowDeleteWarning(true);
+  };
+
+  const proceedWithDelete = async () => {
+    if (!vehiculoToDelete) return;
+
+    setShowDeleteWarning(false);
     try {
-      await vehCrud.deleteM.mutateAsync(v._id);
+      await vehCrud.deleteM.mutateAsync(vehiculoToDelete._id);
       notify('Vehículo eliminado correctamente', 'success');
     } catch (error) {
       notify('Error al eliminar vehículo', 'error');
+    } finally {
+      setVehiculoToDelete(null);
     }
   };
 
@@ -374,6 +387,93 @@ export default function VehiculoDatosPage() {
         onClose={closeForm}
         onSubmit={onSubmit}
       />
+
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: showDeleteWarning ? 'flex' : 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: 'white',
+            borderRadius: 3,
+            padding: 4,
+            maxWidth: 500,
+            width: '90%',
+            textAlign: 'center',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🗑️</div>
+          <h2 style={{
+            color: '#d32f2f',
+            marginBottom: '16px',
+            fontSize: '1.5rem'
+          }}>
+            Confirmar Eliminación de Vehículo
+          </h2>
+          <p style={{
+            color: '#666',
+            marginBottom: '24px',
+            fontSize: '1.1rem',
+            lineHeight: 1.5
+          }}>
+            <strong>¿Está seguro que desea eliminar este vehículo?</strong>
+            <br /><br />
+            Esta acción no se puede deshacer. Se eliminará permanentemente el vehículo del sistema.
+          </p>
+
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                setShowDeleteWarning(false);
+                setVehiculoToDelete(null);
+              }}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#666',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#555'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#666'}
+            >
+              ❌ Cancelar
+            </button>
+
+            <button
+              onClick={proceedWithDelete}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#d32f2f',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c62828'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d32f2f'}
+            >
+              🗑️ Eliminar Vehículo
+            </button>
+          </Box>
+        </Box>
+      </Box>
     </>
   );
 }

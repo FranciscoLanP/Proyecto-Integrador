@@ -81,6 +81,9 @@ export default function FacturaPage() {
   const [showPrintWarning, setShowPrintWarning] = useState(false);
   const [facturaToprint, setFacturaToPrint] = useState<Factura | null>(null);
 
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [facturaToDelete, setFacturaToDelete] = useState<string | null>(null);
+
   const { currentTheme, isHydrated } = useClientTheme();
   const isHydratedCustom = useHydration();
   const { role: userRole } = useJwtDecode();
@@ -158,13 +161,21 @@ export default function FacturaPage() {
       alert('No se puede eliminar una factura emitida.');
       return;
     }
-    if (confirm('¿Seguro que deseas eliminar esta factura?')) {
-      try {
-        await facturaService.remove(id);
-        fetchFacturas();
-      } catch {
-        alert('Error al eliminar');
-      }
+    setFacturaToDelete(id);
+    setShowDeleteWarning(true);
+  };
+
+  const proceedWithDelete = async () => {
+    if (!facturaToDelete) return;
+
+    setShowDeleteWarning(false);
+    try {
+      await facturaService.remove(facturaToDelete);
+      fetchFacturas();
+    } catch {
+      alert('Error al eliminar factura');
+    } finally {
+      setFacturaToDelete(null);
     }
   };
 
@@ -253,10 +264,10 @@ export default function FacturaPage() {
       const montoDescuento = totalConItbisIncluido * (descuentoPorcentaje / 100);
       const totalConDescuento = totalConItbisIncluido - montoDescuento;
 
-     
+
       const subtotalSinImpuestos = totalConDescuento / 1.18;
       const itbis = totalConDescuento - subtotalSinImpuestos;
-      const totalConItbis = totalConDescuento; 
+      const totalConItbis = totalConDescuento;
 
       const vehiculoInfo = vehiculo
         ? `${vehiculo.id_modelo?.id_marca?.nombre_marca || ''} ${vehiculo.id_modelo?.nombre_modelo || ''} ${vehiculo.anio || ''} (${vehiculo.id_color?.nombre_color || ''})`.trim()
@@ -1308,6 +1319,94 @@ export default function FacturaPage() {
                 onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#1976d2'}
               >
                 🖨️ Continuar con Impresión
+              </button>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Modal de advertencia de eliminación */}
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: showDeleteWarning ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999
+          }}
+        >
+          <Box
+            sx={{
+              backgroundColor: 'white',
+              borderRadius: 3,
+              padding: 4,
+              maxWidth: 500,
+              width: '90%',
+              textAlign: 'center',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🗑️</div>
+            <h2 style={{
+              color: '#d32f2f',
+              marginBottom: '16px',
+              fontSize: '1.5rem'
+            }}>
+              Confirmar Eliminación de Factura
+            </h2>
+            <p style={{
+              color: '#666',
+              marginBottom: '24px',
+              fontSize: '1.1rem',
+              lineHeight: 1.5
+            }}>
+              <strong>¿Está seguro que desea eliminar esta factura?</strong>
+              <br /><br />
+              Esta acción no se puede deshacer. Solo se pueden eliminar facturas que no han sido emitidas.
+            </p>
+
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <button
+                onClick={() => {
+                  setShowDeleteWarning(false);
+                  setFacturaToDelete(null);
+                }}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#666',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#555'}
+                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#666'}
+              >
+                ❌ Cancelar
+              </button>
+
+              <button
+                onClick={proceedWithDelete}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#d32f2f',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c62828'}
+                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d32f2f'}
+              >
+                🗑️ Eliminar Factura
               </button>
             </Box>
           </Box>
