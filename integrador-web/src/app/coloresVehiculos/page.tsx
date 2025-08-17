@@ -97,8 +97,13 @@ export default function ColoresDatosPage(): JSX.Element {
     return '#6B7280'; // Color por defecto
   };
 
+  // Filtrar datos basado en el término de búsqueda
+  const filteredColores = colores.filter(color =>
+    color.nombre_color.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   // Datos para la tabla moderna
-  const tableData = colores.map(color => {
+  const tableData = filteredColores.map(color => {
     const colorHex = getColorFromName(color.nombre_color);
 
     return {
@@ -266,6 +271,7 @@ export default function ColoresDatosPage(): JSX.Element {
           onCreateNew={handleCreate}
           createButtonText="Nuevo Color"
           emptyMessage="No se encontraron colores de vehículo"
+          searchPlaceholder="Buscar colores por nombre..."
         />
       )}
 

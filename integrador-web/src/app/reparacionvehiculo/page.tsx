@@ -200,8 +200,8 @@ export default function ReparacionVehiculoPage() {
     // Filtrar por fecha si está seleccionada
     if (fechaCreacion) {
       filtered = filtered.filter(reparacion => {
-        const fechaReparacion = reparacion.createdAt?.toString().slice(0, 10) || 
-                               reparacion.fecha_inicio?.slice(0, 10) || '';
+        const fechaReparacion = reparacion.createdAt?.toString().slice(0, 10) ||
+          reparacion.fecha_inicio?.slice(0, 10) || '';
         const fechaSeleccionada = fechaCreacion.format('YYYY-MM-DD');
         return fechaReparacion === fechaSeleccionada;
       });

@@ -334,7 +334,7 @@ export default function RecepcionVehiculosPage() {
         subtitle="Gestiona las recepciones de vehículos para servicio y reparación"
         titleIcon="🔧"
         columns={columns}
-        data={recepciones}
+        data={filteredData}
         searchTerm={searchQuery}
         onSearchChange={onSearchChange}
         page={page}

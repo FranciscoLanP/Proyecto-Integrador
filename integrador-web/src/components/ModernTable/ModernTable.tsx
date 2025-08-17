@@ -181,7 +181,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
                 mb: 4,
                 textAlign: 'center',
                 background: currentTheme.headerGradient,
-                borderRadius: '20px',
+                borderRadius: '8px',
                 p: 3,
                 color: 'white',
                 boxShadow: `0 8px 32px ${currentTheme.colors.primary}37`,
@@ -206,7 +206,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
             <Paper sx={{
                 p: 2,
                 mb: 3,
-                borderRadius: '16px',
+                borderRadius: '6px',
                 background: 'rgba(255, 255, 255, 0.9)',
                 backdropFilter: 'blur(10px)',
                 boxShadow: '0 8px 32px rgba(31, 38, 135, 0.37)',
@@ -223,7 +223,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
                         sx={{
                             flex: 1,
                             '& .MuiOutlinedInput-root': {
-                                borderRadius: '12px',
+                                borderRadius: '4px',
                                 backgroundColor: 'rgba(255, 255, 255, 0.8)',
                                 '&:hover': {
                                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -245,7 +245,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
                             onClick={onCreateNew}
                             startIcon={<AddIcon />}
                             sx={{
-                                borderRadius: '12px',
+                                borderRadius: '4px',
                                 px: 3,
                                 py: 1.5,
                                 background: currentTheme.buttonGradient,
@@ -272,7 +272,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
                 {content}
 
                 <Paper sx={{
-                    borderRadius: '20px',
+                    borderRadius: '8px',
                     overflow: 'hidden',
                     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
                     background: 'rgba(255, 255, 255, 0.95)',
@@ -341,18 +341,10 @@ const ModernTable: React.FC<ModernTableProps> = ({
                                         paginated.map((row, index) => (
                                             <TableRow
                                                 key={row.id || index}
-                                                hover
                                                 sx={{
                                                     '&:nth-of-type(odd)': {
                                                         backgroundColor: 'rgba(0, 0, 0, 0.02)'
                                                     },
-                                                    '&:hover': {
-                                                        backgroundColor: `${currentTheme.colors.primary}10`,
-                                                        transform: 'scale(1.01)',
-                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                                                        transition: 'all 0.2s ease'
-                                                    },
-                                                    cursor: 'pointer'
                                                 }}
                                             >
                                                 {columns.map((column) => (
@@ -428,7 +420,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
                                     color: '#4a5568'
                                 },
                                 '& .MuiTablePagination-select': {
-                                    borderRadius: '8px',
+                                    borderRadius: '4px',
                                     background: 'rgba(255, 255, 255, 0.8)',
                                 },
                                 '& .MuiIconButton-root': {
@@ -476,7 +468,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
                 {content}
 
                 <Paper sx={{
-                    borderRadius: '20px',
+                    borderRadius: '8px',
                     overflow: 'hidden',
                     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
                     background: 'rgba(255, 255, 255, 0.95)',
@@ -517,16 +509,9 @@ const ModernTable: React.FC<ModernTableProps> = ({
                                         <TableRow
                                             key={row._id || row.id || index}
                                             sx={{
-                                                '&:hover': {
-                                                    background: `linear-gradient(90deg, ${currentTheme.colors.primary}10 0%, ${currentTheme.colors.primary}10 100%)`,
-                                                    transform: 'scale(1.01)',
-                                                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                                                },
                                                 '&:nth-of-type(even)': {
                                                     backgroundColor: 'rgba(248, 250, 252, 0.8)',
                                                 },
-                                                transition: 'all 0.2s ease-in-out',
-                                                cursor: 'pointer'
                                             }}
                                         >
                                             {columns.map((column) => (
@@ -591,7 +576,7 @@ const ModernTable: React.FC<ModernTableProps> = ({
                                     color: '#4a5568'
                                 },
                                 '& .MuiTablePagination-select': {
-                                    borderRadius: '8px',
+                                    borderRadius: '4px',
                                     background: 'rgba(255, 255, 255, 0.8)',
                                 },
                                 '& .MuiIconButton-root': {

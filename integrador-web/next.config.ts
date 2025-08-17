@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
         source: '/api/:path*',
         destination: 'http://localhost:3001/api/:path*',
       },
+      {
+        source: '/geocoding/:path*',
+        destination: 'https://nominatim.openstreetmap.org/:path*',
+      },
     ];
   },
   webpack: (config, { isServer }) => {

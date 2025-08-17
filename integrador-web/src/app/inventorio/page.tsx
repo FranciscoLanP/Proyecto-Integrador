@@ -278,7 +278,7 @@ export default function PiezasPage(): JSX.Element {
         subtitle="Administra el stock y control de piezas del taller"
         titleIcon="🔧"
         columns={columns}
-        data={piezas}
+        data={filteredData}
         searchTerm={searchQuery}
         onSearchChange={onSearchChange}
         page={page}

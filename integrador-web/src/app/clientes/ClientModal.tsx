@@ -43,6 +43,8 @@ export default function ClientModal({
   const [rncError, setRncError] = useState<string>('')
   const [correoError, setCorreoError] = useState<string>('')
   const [telefonoError, setTelefonoError] = useState<string>('')
+  const [tipoClienteError, setTipoClienteError] = useState<string>('')
+  const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
 
   const [markerLat, setMarkerLat] = useState<number>(18.4861)
   const [markerLng, setMarkerLng] = useState<number>(-69.9312)
@@ -56,6 +58,7 @@ export default function ClientModal({
       setMarkerLat(18.4861); setMarkerLng(-69.9312)
       setMapLabel(''); setDireccionDetallada('')
       setCedulaError(''); setRncError(''); setCorreoError(''); setTelefonoError('')
+      setTipoClienteError(''); setFormSubmitted(false)
       return
     }
     if (defaultData) {
@@ -79,6 +82,7 @@ export default function ClientModal({
           .catch(() => setMapLabel(''))
       }
       setCedulaError(''); setRncError(''); setCorreoError(''); setTelefonoError('')
+      setTipoClienteError(''); setFormSubmitted(false)
     }
   }, [open, defaultData])
   const cedulaRegex = /^\d{3}-\d{7}-\d{1}$/
@@ -124,7 +128,26 @@ export default function ClientModal({
     setTelefonoError(phoneRegex.test(f) ? '' : 'Debe ser (XXX)-XXX-XXXX')
   }
 
+  const handleTipoClienteChange = (value: string): void => {
+    setTipoCliente(value as ClienteTipo);
+    setTipoClienteError(''); // Limpiar error al seleccionar
+  }
+
+  const handleTipoClienteBlur = (): void => {
+    // Solo mostrar error si el formulario ha sido enviado o el usuario salió del campo sin seleccionar
+    if (formSubmitted && !tipoCliente) {
+      setTipoClienteError('Debe seleccionar un tipo de cliente');
+    }
+  }
+
   const handleSave = (): void => {
+    setFormSubmitted(true);
+
+    // Validar tipo de cliente al enviar
+    if (!tipoCliente) {
+      setTipoClienteError('Debe seleccionar un tipo de cliente');
+    }
+
     if (
       !cedulaError &&
       !rncError &&
@@ -245,6 +268,9 @@ export default function ClientModal({
             required
             fullWidth
             sx={textFieldStyle}
+            autoComplete="off"
+            name="cliente-cedula"
+            id="cliente-cedula-input"
           />
           <TextField
             label="RNC (opcional)"
@@ -254,6 +280,9 @@ export default function ClientModal({
             helperText={rncError}
             fullWidth
             sx={textFieldStyle}
+            autoComplete="off"
+            name="cliente-rnc"
+            id="cliente-rnc-input"
           />
         </Box>
 
@@ -265,6 +294,9 @@ export default function ClientModal({
           required
           fullWidth
           sx={textFieldStyle}
+          autoComplete="off"
+          name="cliente-nombre"
+          id="cliente-nombre-input"
         />
 
         {/* Fila 3: Teléfono y Correo */}
@@ -278,6 +310,9 @@ export default function ClientModal({
             required
             fullWidth
             sx={textFieldStyle}
+            autoComplete="off"
+            name="cliente-telefono"
+            id="cliente-telefono-input"
           />
           <TextField
             label="Correo electrónico"
@@ -289,6 +324,9 @@ export default function ClientModal({
             required
             fullWidth
             sx={textFieldStyle}
+            autoComplete="off"
+            name="cliente-correo"
+            id="cliente-correo-input"
           />
         </Box>
 
@@ -297,9 +335,10 @@ export default function ClientModal({
           select
           label="Tipo de cliente"
           value={tipoCliente}
-          onChange={e => setTipoCliente(e.target.value as ClienteTipo)}
-          error={!tipoCliente}
-          helperText={!tipoCliente ? 'Seleccione un tipo' : ''}
+          onChange={e => handleTipoClienteChange(e.target.value)}
+          onBlur={handleTipoClienteBlur}
+          error={!!tipoClienteError}
+          helperText={tipoClienteError}
           required
           fullWidth
           sx={textFieldStyle}

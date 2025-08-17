@@ -83,7 +83,16 @@ export default function ModelosDatosPage(): JSX.Element {
     setPage(0); // Reset to first page when changing rows per page
   };
 
-  const tableData = modelos.map(modelo => {
+  // Filtrar datos basado en el término de búsqueda
+  const filteredModelos = modelos.filter(modelo => {
+    const marca = marcas.find(mk => mk._id === modelo.id_marca);
+    return (
+      modelo.nombre_modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (marca?.nombre_marca.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
+    );
+  });
+
+  const tableData = filteredModelos.map(modelo => {
     const marca = marcas.find(mk => mk._id === modelo.id_marca);
 
     return {
@@ -248,6 +257,7 @@ export default function ModelosDatosPage(): JSX.Element {
           onCreateNew={handleCreate}
           createButtonText="Nuevo Modelo"
           emptyMessage="No se encontraron modelos de vehículo"
+          searchPlaceholder="Buscar modelos por nombre o marca..."
         />
       )}
 

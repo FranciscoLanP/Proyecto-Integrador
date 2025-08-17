@@ -132,6 +132,7 @@ export default function Sidebar(): JSX.Element {
       >
         <Toolbar />
 
+        {/* 
         <Box sx={{
           p: 2,
           mb: 2,
@@ -167,6 +168,7 @@ export default function Sidebar(): JSX.Element {
             </Box>
           </Box>
         </Box>
+        */}
 
         <List sx={{ px: 1 }}>
           {navItems.map(item =>

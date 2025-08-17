@@ -55,6 +55,48 @@ export default function SuplidorModal({
   const [mapLabel, setMapLabel] = useState('')
   const [direccion, setDireccion] = useState('')
 
+  // Estados para validaciones
+  const [rncError, setRncError] = useState<string>('')
+  const [correoError, setCorreoError] = useState<string>('')
+  const [telefonoError, setTelefonoError] = useState<string>('')
+
+  // Expresiones regulares para validación
+  const rncRegex = /^\d{3}-\d{6,7}$/
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const phoneRegex = /^\(\d{3}\)-\d{3}-\d{4}$/
+
+  // Funciones de formateo
+  const formatRncInput = (v: string): string => {
+    const d = v.replace(/\D/g, '').slice(0, 9)
+    if (d.length <= 3) return d
+    return `${d.slice(0, 3)}-${d.slice(3)}`
+  }
+
+  const formatPhoneInput = (v: string): string => {
+    const d = v.replace(/\D/g, '').slice(0, 10)
+    if (d.length <= 3) return `(${d}`
+    if (d.length <= 6) return `(${d.slice(0, 3)})-${d.slice(3)}`
+    return `(${d.slice(0, 3)})-${d.slice(3, 6)}-${d.slice(6)}`
+  }
+
+  // Manejadores de cambio con validación
+  const handleRncChange = (v: string): void => {
+    const f = formatRncInput(v)
+    setRnc(f)
+    setRncError(f === '' || rncRegex.test(f) ? '' : 'Debe ser XXX-XXXXXXX')
+  }
+
+  const handleCorreoChange = (v: string): void => {
+    setCorreo(v)
+    setCorreoError(v === '' || emailRegex.test(v) ? '' : 'Correo inválido')
+  }
+
+  const handleTelefonoChange = (v: string): void => {
+    const f = formatPhoneInput(v)
+    setTelefono(f)
+    setTelefonoError(f === '' || phoneRegex.test(f) ? '' : 'Debe ser (XXX)-XXX-XXXX')
+  }
+
   useEffect(() => {
     if (!open) {
       setNombre('')
@@ -65,6 +107,9 @@ export default function SuplidorModal({
       setMarkerLng(-69.9312)
       setMapLabel('')
       setDireccion('')
+      setRncError('')
+      setCorreoError('')
+      setTelefonoError('')
       return
     }
 
@@ -77,10 +122,18 @@ export default function SuplidorModal({
       setMarkerLng(defaultData.longitude)
       setMapLabel(defaultData.ubicacionLabel ?? '')
       setDireccion(defaultData.direccion ?? '')
+      setRncError('')
+      setCorreoError('')
+      setTelefonoError('')
     }
   }, [open, defaultData])
 
   const handleSave = (): void => {
+    // Validar que no haya errores antes de enviar
+    if (rncError || correoError || telefonoError) {
+      return
+    }
+
     const payload: any = {
       nombre: nombre.trim(),
       rnc: rnc.trim() || undefined,
@@ -127,16 +180,23 @@ export default function SuplidorModal({
               sx={textFieldStyle}
               placeholder="Nombre del suplidor"
               helperText="Nombre completo o razón social del suplidor"
+              autoComplete="off"
+              name="suplidor-nombre"
+              id="suplidor-nombre-input"
             />
 
             <TextField
               label="RNC"
               value={rnc}
-              onChange={(e) => setRnc(e.target.value)}
+              onChange={(e) => handleRncChange(e.target.value)}
               fullWidth
               sx={textFieldStyle}
-              placeholder="Registro Nacional del Contribuyente"
-              helperText="RNC del suplidor (opcional)"
+              placeholder="XXX-XXXXXXX"
+              helperText={rncError || "RNC del suplidor (opcional)"}
+              error={!!rncError}
+              autoComplete="off"
+              name="suplidor-rnc"
+              id="suplidor-rnc-input"
             />
           </Box>
         </Box>
@@ -151,21 +211,29 @@ export default function SuplidorModal({
             <TextField
               label="Teléfono"
               value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
+              onChange={(e) => handleTelefonoChange(e.target.value)}
               fullWidth
               sx={textFieldStyle}
-              placeholder="(809) 000-0000"
-              helperText="Número de teléfono principal"
+              placeholder="(XXX)-XXX-XXXX"
+              helperText={telefonoError || "Número de teléfono principal"}
+              error={!!telefonoError}
+              autoComplete="off"
+              name="suplidor-telefono"
+              id="suplidor-telefono-input"
             />
 
             <TextField
               label="Correo electrónico"
               value={correo}
-              onChange={(e) => setCorreo(e.target.value)}
+              onChange={(e) => handleCorreoChange(e.target.value)}
               fullWidth
               sx={textFieldStyle}
               placeholder="contacto@suplidor.com"
-              helperText="Dirección de correo electrónico"
+              helperText={correoError || "Dirección de correo electrónico"}
+              error={!!correoError}
+              autoComplete="off"
+              name="suplidor-correo"
+              id="suplidor-correo-input"
             />
           </Box>
         </Box>

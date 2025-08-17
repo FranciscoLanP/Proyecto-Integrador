@@ -81,7 +81,12 @@ export default function MarcasVehiculoPage(): JSX.Element {
     setPage(0); // Reset to first page when changing rows per page
   };
 
-  const tableData = marcas.map(marca => ({
+  // Filtrar datos basado en el término de búsqueda
+  const filteredMarcas = marcas.filter(marca =>
+    marca.nombre_marca.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const tableData = filteredMarcas.map(marca => ({
     id: marca._id || '',
     marca: (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -220,6 +225,7 @@ export default function MarcasVehiculoPage(): JSX.Element {
           onCreateNew={handleCreate}
           createButtonText="Nueva Marca"
           emptyMessage="No se encontraron marcas de vehículo"
+          searchPlaceholder="Buscar marcas por nombre..."
         />
       )}
 

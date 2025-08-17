@@ -278,7 +278,7 @@ export default function SuplidorPage(): JSX.Element {
         subtitle="Administra la información de proveedores y suplidores de piezas"
         titleIcon="🏢"
         columns={columns}
-        data={suplidores}
+        data={filteredData}
         searchTerm={searchQuery}
         onSearchChange={onSearchChange}
         page={page}

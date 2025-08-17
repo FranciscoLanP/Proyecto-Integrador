@@ -39,11 +39,40 @@ export default function EmpleadoInformacionModal({
   const [mapLabel, setMapLabel] = useState('')
   const [direccion, setDireccion] = useState('')
 
+  // Estados para validaciones
+  const [correoError, setCorreoError] = useState<string>('')
+  const [telefonoError, setTelefonoError] = useState<string>('')
+
+  // Expresiones regulares para validación
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const phoneRegex = /^\(\d{3}\)-\d{3}-\d{4}$/
+
+  // Funciones de formateo
+  const formatPhoneInput = (v: string): string => {
+    const d = v.replace(/\D/g, '').slice(0, 10)
+    if (d.length <= 3) return `(${d}`
+    if (d.length <= 6) return `(${d.slice(0, 3)})-${d.slice(3)}`
+    return `(${d.slice(0, 3)})-${d.slice(3, 6)}-${d.slice(6)}`
+  }
+
+  // Manejadores de cambio con validación
+  const handleCorreoChange = (v: string): void => {
+    setCorreo(v)
+    setCorreoError(v === '' || emailRegex.test(v) ? '' : 'Correo inválido')
+  }
+
+  const handleTelefonoChange = (v: string): void => {
+    const f = formatPhoneInput(v)
+    setTelefono(f)
+    setTelefonoError(f === '' || phoneRegex.test(f) ? '' : 'Debe ser (XXX)-XXX-XXXX')
+  }
+
   useEffect(() => {
     if (!open) {
       setTipo(''); setNombre(''); setTelefono(''); setCorreo('')
       setMarkerLat(18.4861); setMarkerLng(-69.9312)
       setMapLabel(''); setDireccion('')
+      setCorreoError(''); setTelefonoError('')
       return
     }
     if (defaultData) {
@@ -55,10 +84,16 @@ export default function EmpleadoInformacionModal({
       setMarkerLng(defaultData.longitude)
       setMapLabel(defaultData.ubicacionLabel ?? '')
       setDireccion(defaultData.direccion ?? '')
+      setCorreoError(''); setTelefonoError('')
     }
   }, [open, defaultData])
 
   const handleSave = (): void => {
+    // Validar que no haya errores antes de enviar
+    if (correoError || telefonoError) {
+      return
+    }
+
     onSubmit({
       tipo_empleado: tipo as typeof tipoOptions[number],
       nombre: nombre.trim(),
@@ -165,6 +200,9 @@ export default function EmpleadoInformacionModal({
             onChange={e => setNombre(e.target.value)}
             required
             fullWidth
+            autoComplete="off"
+            name="empleado-nombre"
+            id="empleado-nombre-input"
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: '12px',
@@ -200,8 +238,14 @@ export default function EmpleadoInformacionModal({
           <TextField
             label="Teléfono"
             value={telefono}
-            onChange={e => setTelefono(e.target.value)}
+            onChange={e => handleTelefonoChange(e.target.value)}
             fullWidth
+            placeholder="(XXX)-XXX-XXXX"
+            helperText={telefonoError || "Número de teléfono"}
+            error={!!telefonoError}
+            autoComplete="off"
+            name="empleado-telefono"
+            id="empleado-telefono-input"
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: '12px',
@@ -235,8 +279,14 @@ export default function EmpleadoInformacionModal({
           <TextField
             label="Correo electrónico"
             value={correo}
-            onChange={e => setCorreo(e.target.value)}
+            onChange={e => handleCorreoChange(e.target.value)}
             fullWidth
+            placeholder="nombre@correo.com"
+            helperText={correoError || "Dirección de correo electrónico"}
+            error={!!correoError}
+            autoComplete="off"
+            name="empleado-correo"
+            id="empleado-correo-input"
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: '12px',

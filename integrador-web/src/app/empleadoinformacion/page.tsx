@@ -202,7 +202,7 @@ function EmpleadoInformacionPageContent() {
         subtitle="Gestiona la información del personal de la empresa"
         titleIcon="👥"
         columns={columns}
-        data={empleados}
+        data={filteredData}
         searchTerm={searchQuery}
         onSearchChange={onSearchChange}
         page={page}

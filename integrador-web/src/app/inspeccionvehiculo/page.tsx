@@ -311,12 +311,12 @@ export default function InspeccionVehiculoPage() {
       const cliente = getClienteNombre(inspeccion);
       const empleado = getEmpleadoNombre(inspeccion);
       const comentario = inspeccion.comentario || '';
-      
-      const matchesSearch = searchTerm === '' || 
+
+      const matchesSearch = searchTerm === '' ||
         cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
         empleado.toLowerCase().includes(searchTerm.toLowerCase()) ||
         comentario.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
       return matchesSearch;
     });
 
@@ -370,7 +370,7 @@ export default function InspeccionVehiculoPage() {
       ),
       fecha: inspeccion.fecha_inspeccion?.toString().slice(0, 10) || '—',
       comentario: (
-        <Typography variant="body2" sx={{ 
+        <Typography variant="body2" sx={{
           color: '#374151',
           maxWidth: '200px',
           overflow: 'hidden',

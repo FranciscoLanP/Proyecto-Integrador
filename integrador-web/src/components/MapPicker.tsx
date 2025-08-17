@@ -53,17 +53,8 @@ export function MapPicker({
 }: MapPickerProps): JSX.Element {
   const [position, setPosition] = useState<LatLngExpression>(initialPosition)
   const [inputValue, setInputValue] = useState<string>(initialSearch)
-  const [options, setOptions] = useState<Suggestion[]>(() =>
-    initialSearch
-      ? [
-          {
-            label: initialSearch,
-            lat: (initialPosition as [number, number])[0],
-            lng: (initialPosition as [number, number])[1]
-          }
-        ]
-      : []
-  )
+  const [options, setOptions] = useState<Suggestion[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   useEffect(() => {
     if (skipInitial) return
@@ -114,34 +105,66 @@ export function MapPicker({
     return <Marker position={position as any} />
   }
 
+  // Efecto para la búsqueda en tiempo real
   useEffect(() => {
-    if (!inputValue || inputValue.length < 3) return
+    console.log('Búsqueda activada para:', inputValue); // Debug log
 
-    const timer = setTimeout(() => {
-      fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&countrycodes=do&limit=5&q=${encodeURIComponent(
-          inputValue
-        )}`
-      )
-        .then(res => res.json())
-        .then((data: any[]) => {
-          const seen = new Set<string>()
-          const resp: Suggestion[] = []
-          data.forEach(item => {
-            const label = item.display_name as string
-            if (!seen.has(label)) {
-              seen.add(label)
-              resp.push({ label, lat: parseFloat(item.lat), lng: parseFloat(item.lon) })
+    // Limpiar opciones si no hay suficiente texto
+    if (!inputValue || inputValue.length < 3) {
+      setOptions([])
+      setIsLoading(false)
+      return
+    }
+
+    setIsLoading(true)
+    const timer = setTimeout(async () => {
+      console.log('Ejecutando búsqueda para:', inputValue); // Debug log
+      setIsLoading(true)
+
+      try {
+        // Usar proxy local para evitar CORS
+        const response = await fetch(
+          `/geocoding/search?format=json&countrycodes=do&limit=5&q=${encodeURIComponent(inputValue)}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
             }
-          })
-          setOptions(prev => {
-            const existing = new Set(prev.map(o => o.label))
-            return [...prev, ...resp.filter(s => !existing.has(s.label))]
-          })
+          }
+        )
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data: any[] = await response.json()
+        console.log('Respuesta de búsqueda:', data); // Debug log
+
+        const seen = new Set<string>()
+        const resp: Suggestion[] = []
+        data.forEach(item => {
+          const label = item.display_name as string
+          if (!seen.has(label)) {
+            seen.add(label)
+            resp.push({ label, lat: parseFloat(item.lat), lng: parseFloat(item.lon) })
+          }
         })
-        .catch(() => {})
-    }, 500)
-    return () => clearTimeout(timer)
+
+        // Reemplazar completamente las opciones
+        setOptions(resp)
+        setIsLoading(false)
+        console.log('Opciones actualizadas:', resp); // Debug log
+      } catch (error) {
+        console.error('Error en búsqueda:', error); // Debug log
+        setOptions([])
+        setIsLoading(false)
+      }
+    }, 300) // Reducir delay para mejor responsividad
+
+    return () => {
+      clearTimeout(timer)
+      setIsLoading(false)
+    }
   }, [inputValue])
 
   return (
@@ -154,11 +177,18 @@ export function MapPicker({
         filterOptions={x => x}
         inputValue={inputValue}
         onInputChange={(_, value, reason) => {
+          console.log('Input change:', { value, reason }); // Debug log
           if (reason === 'input') {
             setInputValue(value)
+            // Si el texto se vacía o es muy corto, limpiar opciones inmediatamente
+            if (!value || value.length < 3) {
+              setOptions([])
+              setIsLoading(false)
+            }
           } else if (reason === 'clear') {
             setInputValue('')
             setOptions([])
+            setIsLoading(false)
             const [lat, lng] = initialPosition as [number, number]
             onChange(lat, lng)
           }
@@ -182,6 +212,15 @@ export function MapPicker({
             size="small"
             fullWidth
             margin="dense"
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <>
+                  {isLoading ? <div style={{ padding: '8px' }}>🔍</div> : null}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
+            }}
           />
         )}
       />

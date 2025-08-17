@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Typography, Chip, Box } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -48,33 +48,46 @@ export default function VehiculoDatosPage() {
   const [openForm, setOpenForm] = useState<boolean>(false);
   const [editData, setEditData] = useState<IVehiculoDatos | null>(null);
 
-  const {
-    filteredData,
-    paginatedData,
-    searchQuery,
-    page,
-    rowsPerPage,
-    handleSearchChange,
-    handlePageChange,
-    handleRowsPerPageChange
-  } = useModernTable({
-    data: vehiculos,
-    searchFields: ['chasis'],
-    initialRowsPerPage: 10
-  });
+  // Estados para búsqueda personalizada
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Función para obtener el nombre del cliente
+  const getClienteName = (clienteId: string | ICliente) => {
+    if (typeof clienteId === 'object') return clienteId.nombre;
+    const cliente = clientes.find(c => c._id === clienteId);
+    return cliente?.nombre || 'Cliente no encontrado';
+  };
+
+  // Filtrado personalizado que busca en chasis y nombre del cliente
+  const filteredVehiculos = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return vehiculos;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+
+    return vehiculos.filter(vehiculo => {
+      const chasisMatch = vehiculo.chasis?.toLowerCase().includes(query);
+      const clienteNombre = getClienteName(vehiculo.id_cliente);
+      const clienteMatch = clienteNombre.toLowerCase().includes(query);
+
+      return chasisMatch || clienteMatch;
+    });
+  }, [vehiculos, searchQuery, clientes]);
 
   const onSearchChange = (value: string) => {
-    const mockEvent = { target: { value } } as React.ChangeEvent<HTMLInputElement>;
-    handleSearchChange(mockEvent);
+    setSearchQuery(value);
   };
 
-  const onPageChange = (page: number) => {
-    handlePageChange(null, page);
+  const onPageChange = (newPage: number) => {
+    setPage(newPage);
   };
 
-  const onRowsPerPageChange = (rowsPerPage: number) => {
-    const mockEvent = { target: { value: rowsPerPage.toString() } } as React.ChangeEvent<HTMLInputElement>;
-    handleRowsPerPageChange(mockEvent);
+  const onRowsPerPageChange = (newRowsPerPage: number) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0);
   };
 
   const loadError =
@@ -169,12 +182,6 @@ export default function VehiculoDatosPage() {
         onError: () => notify('Error al cambiar estado del vehículo', 'error'),
       }
     );
-  };
-
-  const getClienteName = (clienteId: string | ICliente) => {
-    if (typeof clienteId === 'object') return clienteId.nombre;
-    const cliente = clientes.find(c => c._id === clienteId);
-    return cliente?.nombre || 'Cliente no encontrado';
   };
 
   const getModeloInfo = (modeloId: string | IModelosDatos) => {
@@ -349,7 +356,7 @@ export default function VehiculoDatosPage() {
         subtitle="Administra la información de todos los vehículos registrados"
         titleIcon="🚗"
         columns={columns}
-        data={vehiculos}
+        data={filteredVehiculos}
         searchTerm={searchQuery}
         onSearchChange={onSearchChange}
         page={page}
@@ -360,7 +367,7 @@ export default function VehiculoDatosPage() {
         createButtonText="Registrar Vehículo"
         emptyMessage="No hay vehículos registrados"
         emptySubMessage="Comienza registrando el primer vehículo"
-        searchPlaceholder="Buscar por chasis..."
+        searchPlaceholder="Buscar por chasis o cliente..."
       />
 
       <VehiculoModal
