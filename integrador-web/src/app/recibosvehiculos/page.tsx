@@ -52,6 +52,9 @@ export default function RecibosVehiculosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [fechaCreacion, setFechaCreacion] = useState<dayjs.Dayjs | null>(null);
 
+  const [showPrintWarning, setShowPrintWarning] = useState(false);
+  const [reciboToPrint, setReciboToPrint] = useState<IReciboVehiculo | null>(null);
+
   const getRecepcionData = (recepcionId: string | IRecepcionVehiculo) => {
     if (typeof recepcionId === 'object') return recepcionId;
     return recepciones.find(r => r._id === recepcionId);
@@ -178,6 +181,16 @@ export default function RecibosVehiculosPage() {
   };
 
   const handlePrint = (r: IReciboVehiculo) => {
+    setReciboToPrint(r);
+    setShowPrintWarning(true);
+  };
+
+  const proceedWithPrint = () => {
+    if (!reciboToPrint) return;
+
+    setShowPrintWarning(false);
+
+    const r = reciboToPrint;
     const rec = recepciones.find(rep => {
       const rid = typeof r.id_recepcion === 'string'
         ? r.id_recepcion
@@ -222,6 +235,23 @@ export default function RecibosVehiculosPage() {
               color: #333; 
               font-size: 11px;
               line-height: 1.2;
+              min-height: 95vh;
+              display: flex;
+              flex-direction: column;
+            }
+            
+            /* Contenido principal que crece */
+            .contenido-principal {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+            }
+            
+            /* Sección de firmas fija al pie */
+            .seccion-firmas {
+              margin-top: auto;
+              padding-top: 12px;
+              border-top: 1px solid #005B96;
             }
             .header { 
               text-align: center; 
@@ -308,106 +338,132 @@ export default function RecibosVehiculosPage() {
             .signatures { 
               display: grid; 
               grid-template-columns: 1fr 1fr; 
-              gap: 15px; 
-              margin: 12px 0 8px; 
-              padding: 8px 0; 
+              gap: 20px; 
+              margin: 16px 0 8px; 
+              padding: 12px 0; 
             }
             .signature-box { 
               text-align: center; 
-              padding: 4px; 
+              padding: 8px; 
+              border: 1px solid #e0e0e0;
+              border-radius: 4px;
+              background: #fafafa;
             }
             .signature-line { 
-              border-top: 1px solid #333; 
-              margin: 20px 0 4px; 
-              height: 1px; 
+              border-top: 2px solid #005B96; 
+              margin: 25px 0 8px; 
+              height: 2px; 
             }
             .signature-label { 
-              font-size: 9px; 
-              color: #333; 
+              font-size: 10px; 
+              color: #005B96; 
               font-weight: bold; 
+              margin-bottom: 3px;
             }
             .signature-sublabel { 
-              font-size: 8px; 
+              font-size: 9px; 
               color: #666; 
-              margin-top: 2px; 
+              margin-top: 3px; 
             }
             .footer { 
               text-align: center; 
-              margin-top: 8px; 
-              padding-top: 6px; 
-              border-top: 1px solid #ccc; 
-              font-size: 9px; 
-              color: #666; 
+              margin-top: 12px; 
+              padding-top: 8px; 
+              font-size: 10px; 
+              color: #005B96;
+              font-weight: bold;
             }
             @media print {
-              body { font-size: 10px; }
+              body { 
+                font-size: 10px; 
+                min-height: 95vh;
+              }
               .header h1 { font-size: 14px; }
               .recibo-num { font-size: 11px; }
-              .signature-line { margin: 25px 0 4px; }
+              .signature-line { margin: 30px 0 8px; }
+              .seccion-firmas {
+                page-break-inside: avoid;
+              }
+              .signatures {
+                page-break-inside: avoid;
+              }
             }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1>JHS AutoServicios</h1>
-            <div class="subtitle">Recibo de Servicio de Vehículo</div>
-          </div>
-          
-          <div class="recibo-info">
-            <span class="recibo-num">Recibo #${r._id.slice(-6).toUpperCase()}</span>
-            <span class="fecha">${now}</span>
-          </div>
-          
-          <div class="info-grid">
-            <div class="info-item">
-              <div class="info-label">Cliente</div>
-              <div class="info-value">${cli?.nombre ?? '—'}</div>
+          <div class="contenido-principal">
+            <div class="header">
+              <h1>JHS AutoServicios</h1>
+              <div class="subtitle">Recibo de Servicio de Vehículo</div>
             </div>
-            <div class="info-item">
-              <div class="info-label">Empleado</div>
-              <div class="info-value">${empleado}</div>
+            
+            <div class="recibo-info">
+              <span class="recibo-num">Recibo #${r._id.slice(-6).toUpperCase()}</span>
+              <span class="fecha">${now}</span>
             </div>
-            <div class="info-item">
-              <div class="info-label">Chasis</div>
-              <div class="info-value">${veh?.chasis ?? '—'}</div>
+            
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-label">Cliente</div>
+                <div class="info-value">${cli?.nombre ?? '—'}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Empleado</div>
+                <div class="info-value">${empleado}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Chasis</div>
+                <div class="info-value">${veh?.chasis ?? '—'}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Año</div>
+                <div class="info-value">${veh?.anio ?? '—'}</div>
+              </div>
+              <div class="info-item full-width">
+                <div class="info-label">Problema Reportado</div>
+                <div class="info-value">${rec.problema_reportado ?? '—'}</div>
+              </div>
+              ${rec.comentario ? `
+              <div class="info-item full-width">
+                <div class="info-label">Comentario</div>
+                <div class="info-value">${rec.comentario}</div>
+              </div>
+              ` : ''}
             </div>
-            <div class="info-item">
-              <div class="info-label">Año</div>
-              <div class="info-value">${veh?.anio ?? '—'}</div>
-            </div>
-            <div class="info-item full-width">
-              <div class="info-label">Problema Reportado</div>
-              <div class="info-value">${rec.problema_reportado ?? '—'}</div>
-            </div>
-            ${rec.comentario ? `
-            <div class="info-item full-width">
-              <div class="info-label">Comentario</div>
-              <div class="info-value">${rec.comentario}</div>
-            </div>
-            ` : ''}
-          </div>
-          
-          <div class="observaciones">
-            <div class="obs-label">Observaciones</div>
-            <div class="obs-content">${r.observaciones ?? 'Sin observaciones adicionales'}</div>
-          </div>
-          
-          <div class="signatures">
-            <div class="signature-box">
-              <div class="signature-line"></div>
-              <div class="signature-label">Firma del Cliente</div>
-              <div class="signature-sublabel">${cli?.nombre ?? '—'}</div>
-            </div>
-            <div class="signature-box">
-              <div class="signature-line"></div>
-              <div class="signature-label">Firma del Empleado</div>
-              <div class="signature-sublabel">${empleado}</div>
+            
+            <div class="observaciones">
+              <div class="obs-label">Observaciones</div>
+              <div class="obs-content">${r.observaciones ?? 'Sin observaciones adicionales'}</div>
             </div>
           </div>
           
-          <div class="footer">
-            Gracias por confiar en JHS AutoServicios
+          <div class="seccion-firmas">
+            <div class="signatures">
+              <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-label">Firma del Cliente</div>
+                <div class="signature-sublabel">${cli?.nombre ?? '—'}</div>
+              </div>
+              <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-label">Firma del Empleado</div>
+                <div class="signature-sublabel">${empleado}</div>
+              </div>
+            </div>
+            
+            <div class="footer">
+              Gracias por confiar en JHS AutoServicios
+            </div>
           </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() {
+                window.close();
+              }
+            }
+          </script>
         </body>
       </html>
     `;
@@ -420,8 +476,9 @@ export default function RecibosVehiculosPage() {
     w.document.write(html);
     w.document.close();
     w.focus();
-    w.onafterprint = () => w.close();
-    w.print();
+
+    // Limpiar la selección
+    setReciboToPrint(null);
   };
 
   const columns: TableColumn[] = [
@@ -766,6 +823,93 @@ export default function RecibosVehiculosPage() {
         onClose={closeModal}
         onSubmit={handleSubmit}
       />
+
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: showPrintWarning ? 'flex' : 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: 'white',
+            borderRadius: 3,
+            padding: 4,
+            maxWidth: 500,
+            width: '90%',
+            textAlign: 'center',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠️</div>
+          <h2 style={{
+            color: '#1976d2',
+            marginBottom: '16px',
+            fontSize: '1.5rem'
+          }}>
+            Importante - Impresión de Recibo
+          </h2>
+          <p style={{
+            color: '#666',
+            marginBottom: '24px',
+            fontSize: '1.1rem',
+            lineHeight: 1.5
+          }}>
+            <strong>Recuerde cerrar la pestaña de impresión si no la utilizará.</strong>
+            <br /><br />
+            Dejar pestañas de impresión abiertas puede causar problemas de rendimiento en la aplicación.
+          </p>
+
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                setShowPrintWarning(false);
+                setReciboToPrint(null);
+              }}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#666',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#555'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#666'}
+            >
+              ❌ Cancelar
+            </button>
+
+            <button
+              onClick={proceedWithPrint}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#1976d2',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#1565c0'}
+              onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#1976d2'}
+            >
+              🖨️ Continuar con Impresión
+            </button>
+          </Box>
+        </Box>
+      </Box>
     </>
   );
 }
