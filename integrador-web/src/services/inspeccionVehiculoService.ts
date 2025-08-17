@@ -11,7 +11,6 @@ export interface InspeccionVehiculo {
   _id?: string;
   id_recibo: string;
   id_empleadoInformacion: string;
-  fecha_inspeccion: string;
   comentario?: string;
   tiempo_estimado?: number;
   costo_mano_obra?: number;

@@ -225,8 +225,6 @@ export default function InspeccionVehiculoPage() {
           <tr>
             <td class="label">Cliente:</td>
             <td>${cliente?.nombre ?? '—'}</td>
-            <td class="label">Fecha inspección:</td>
-            <td>${inspeccion.fecha_inspeccion?.toString().slice(0, 10) ?? '—'}</td>
             <td class="label">Atendió:</td>
             <td>${empleado?.nombre ?? '—'}</td>
           </tr>
@@ -364,7 +362,6 @@ export default function InspeccionVehiculoPage() {
           </Box>
         </Box>
       ),
-      fecha: inspeccion.fecha_inspeccion?.toString().slice(0, 10) || '—',
       comentario: (
         <Typography variant="body2" sx={{
           color: '#374151',
@@ -477,7 +474,6 @@ export default function InspeccionVehiculoPage() {
 
   const columns = [
     { id: 'cliente', label: 'Cliente | Empleado' },
-    { id: 'fecha', label: 'Fecha Inspección' },
     { id: 'comentario', label: 'Comentario' },
     { id: 'resultado', label: 'Estado' },
     { id: 'piezas', label: 'Piezas Sugeridas' },

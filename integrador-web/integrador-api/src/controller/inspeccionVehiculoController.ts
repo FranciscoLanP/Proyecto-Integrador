@@ -168,7 +168,6 @@ export const createInspeccionVehiculo = async (req: Request, res: Response, next
     const {
       id_recibo,
       id_empleadoInformacion,
-      fecha_inspeccion,
       comentario,
       tiempo_estimado,
       costo_mano_obra,
@@ -185,7 +184,6 @@ export const createInspeccionVehiculo = async (req: Request, res: Response, next
     const newItem = new InspeccionVehiculo({
       id_recibo,
       id_empleadoInformacion,
-      fecha_inspeccion,
       comentario,
       tiempo_estimado,
       costo_mano_obra,

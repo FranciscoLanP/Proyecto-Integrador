@@ -21,7 +21,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
     defaultData ?? {
       id_recibo: '',
       id_empleadoInformacion: '',
-      fecha_inspeccion: new Date().toISOString().slice(0, 10),
       piezas_sugeridas: []
     }
   );
@@ -64,7 +63,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
       setForm({
         id_recibo: '',
         id_empleadoInformacion: '',
-        fecha_inspeccion: new Date().toISOString().slice(0, 10),
         piezas_sugeridas: []
       });
       setPiezasSugeridas([]);
@@ -226,17 +224,6 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
                 </MenuItem>
               ))}
             </TextField>
-
-            <TextField
-              label="Fecha Inspección"
-              name="fecha_inspeccion"
-              type="date"
-              value={form.fecha_inspeccion}
-              onChange={handleChange}
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              sx={textFieldStyle}
-            />
           </Box>
         </Box>
 

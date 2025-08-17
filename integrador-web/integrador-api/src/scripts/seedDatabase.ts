@@ -582,7 +582,6 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
     {
       id_recibo: recibos[0]._id,
       id_empleadoInformacion: empleados[0]._id, 
-      fecha_inspeccion: new Date('2024-08-01'),
       comentario: 'Filtro de aceite obstruido, necesita cambio',
       tiempo_estimado: 2,
       costo_mano_obra: 800.00,
@@ -600,7 +599,6 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
     {
       id_recibo: recibos[1]._id,
       id_empleadoInformacion: empleados[1]._id,
-      fecha_inspeccion: new Date('2024-08-02'),
       comentario: 'Sistema eléctrico revisado, bujías defectuosas',
       tiempo_estimado: 3,
       costo_mano_obra: 1200.00,
@@ -618,7 +616,6 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
     {
       id_recibo: recibos[2]._id,
       id_empleadoInformacion: empleados[2]._id, 
-      fecha_inspeccion: new Date('2024-08-03'),
       comentario: 'Mantenimiento completo requerido',
       tiempo_estimado: 4,
       costo_mano_obra: 1600.00,
@@ -642,7 +639,6 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
     {
       id_recibo: recibos[3]._id,
       id_empleadoInformacion: empleados[3]._id, 
-      fecha_inspeccion: new Date('2024-08-04'),
       comentario: 'Pastillas de freno completamente gastadas',
       tiempo_estimado: 3,
       costo_mano_obra: 1200.00,
@@ -660,7 +656,6 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
     {
       id_recibo: recibos[4]._id,
       id_empleadoInformacion: empleados[4]._id, 
-      fecha_inspeccion: new Date('2024-08-05'),
       comentario: 'Evaluación para trabajo de pintura',
       tiempo_estimado: 6,
       costo_mano_obra: 2400.00,
@@ -671,7 +666,6 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
     {
       id_recibo: recibos[5]._id,
       id_empleadoInformacion: empleados[5]._id, 
-      fecha_inspeccion: new Date('2024-08-06'),
       comentario: 'Transmisión requiere reparación mayor',
       tiempo_estimado: 8,
       costo_mano_obra: 3200.00,

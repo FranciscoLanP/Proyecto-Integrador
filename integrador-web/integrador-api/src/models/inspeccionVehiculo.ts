@@ -4,7 +4,6 @@ export interface IInspeccionVehiculo extends Document {
     _id: Schema.Types.ObjectId;
     id_recibo: Schema.Types.ObjectId;
     id_empleadoInformacion: Schema.Types.ObjectId;
-    fecha_inspeccion: Date;
     comentario?: string;
     tiempo_estimado?: number;
     costo_mano_obra?: number;
@@ -21,7 +20,6 @@ export interface IInspeccionVehiculo extends Document {
 const InspeccionVehiculoSchema = new Schema<IInspeccionVehiculo>({
     id_recibo: { type: Schema.Types.ObjectId, ref: 'ReciboVehiculo', required: true },
     id_empleadoInformacion: { type: Schema.Types.ObjectId, ref: 'EmpleadoInformacion', required: true },
-    fecha_inspeccion: { type: Date, required: true, default: Date.now },
     comentario: { type: String, required: false },
     tiempo_estimado: { type: Number, required: false },
     costo_mano_obra: { type: Number, required: false },
