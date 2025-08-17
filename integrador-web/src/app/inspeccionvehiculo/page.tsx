@@ -19,7 +19,8 @@ import { useJwtDecode } from '@/hooks/useJwtDecode';
 import { useNotification } from '@/components/utils/NotificationProvider';
 import InspeccionVehiculoModal from './InspeccionVehiculoModal';
 import { inspeccionVehiculoService, InspeccionVehiculo } from '@/services/inspeccionVehiculoService';
-urar dayjs en español
+
+
 dayjs.locale('es');
 
 export default function InspeccionVehiculoPage() {
@@ -102,7 +103,7 @@ export default function InspeccionVehiculoPage() {
 
   const handleChangeRowsPerPage = (newRowsPerPage: number) => {
     setRowsPerPage(newRowsPerPage);
-    setPage(0);
+    setPage(0); 
   };
 
   const handleCreate = () => {
@@ -122,7 +123,7 @@ export default function InspeccionVehiculoPage() {
 
   const proceedWithDelete = async () => {
     if (!inspeccionToDelete) return;
-
+    
     setShowDeleteWarning(false);
     try {
       await inspeccionVehiculoService.remove(inspeccionToDelete);
@@ -133,7 +134,7 @@ export default function InspeccionVehiculoPage() {
       console.log('Error response:', error.response);
       console.log('Error response data:', error.response?.data);
       console.log('Error response status:', error.response?.status);
-
+      
       if (error.response?.status === 400 && error.response.data?.message) {
         // Mostrar el mensaje exacto del backend
         notify(error.response.data.message, 'error');
