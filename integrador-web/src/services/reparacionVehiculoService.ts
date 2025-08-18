@@ -12,7 +12,6 @@ export interface ReparacionVehiculo {
   fecha_inicio?: string;
   fecha_fin?: string;
   descripcion: string;
-  costo_total?: number;
   piezas_usadas?: Array<{
     _id: string;
     id_pieza: {

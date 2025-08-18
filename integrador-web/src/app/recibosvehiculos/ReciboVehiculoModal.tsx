@@ -133,7 +133,7 @@ export default function ReciboVehiculoModal({
                     return cid === c._id;
                   })
                   : null;
-                const fecha = new Date(r.fecha).toLocaleString();
+                const fecha = new Date(r.createdAt || new Date()).toLocaleString();
                 const label = cli && veh
                   ? `${cli.nombre} — ${veh.chasis} — ${fecha}`
                   : `${fecha} — ${r._id}`;

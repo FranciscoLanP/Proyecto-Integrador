@@ -207,7 +207,6 @@ export default function ReparacionVehiculoPage() {
     const clienteVehiculo = getClienteVehiculoInfo(reparacion);
     const empleados = getEmpleadosInfo(reparacion);
     const piezas = getPiezasInfo(reparacion);
-    const costoTotal = reparacion.costo_total || 0;
 
     return {
       id: reparacion._id || '',
@@ -334,27 +333,6 @@ export default function ReparacionVehiculoPage() {
           </Typography>
         </Box>
       ),
-      costo: (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #059669, #10B981)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white'
-            }}
-          >
-            💰
-          </Box>
-          <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#059669' }}>
-            {costoTotal > 0 ? `$${costoTotal.toLocaleString('es-DO', { minimumFractionDigits: 2 })}` : '$0.00'}
-          </Typography>
-        </Box>
-      ),
       acciones: (
         <Box display="flex" gap={0.5}>
           <IconButton
@@ -413,7 +391,6 @@ export default function ReparacionVehiculoPage() {
     { id: 'empleados', label: 'Empleados' },
     { id: 'descripcion', label: 'Descripción' },
     { id: 'piezas', label: 'Piezas Usadas' },
-    { id: 'costo', label: 'Costo Total' },
     { id: 'fechaCreacion', label: 'Fecha Creación' },
     { id: 'acciones', label: 'Acciones' }
   ];
@@ -432,7 +409,6 @@ export default function ReparacionVehiculoPage() {
       </div>
     );
   }
-  const totalCostos = reparaciones.reduce((sum, r) => sum + (r.costo_total || 0), 0);
 
   return (
     <div

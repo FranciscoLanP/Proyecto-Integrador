@@ -103,7 +103,7 @@ export default function RecibosVehiculosPage() {
     if (fechaCreacion) {
       filtered = filtered.filter(recibo => {
         const recepcion = recibo.id_recepcion as IRecepcionVehiculo;
-        const fechaRecibo = recepcion?.createdAt?.toString().slice(0, 10) || recepcion?.fecha?.slice(0, 10) || '';
+        const fechaRecibo = recepcion?.createdAt?.toString().slice(0, 10) || '';
         const fechaSeleccionada = fechaCreacion.format('YYYY-MM-DD');
         return fechaRecibo === fechaSeleccionada;
       });

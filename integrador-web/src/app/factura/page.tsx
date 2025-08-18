@@ -81,9 +81,6 @@ export default function FacturaPage() {
   const [showPrintWarning, setShowPrintWarning] = useState(false);
   const [facturaToprint, setFacturaToPrint] = useState<Factura | null>(null);
 
-  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
-  const [facturaToDelete, setFacturaToDelete] = useState<string | null>(null);
-
   const { currentTheme, isHydrated } = useClientTheme();
   const isHydratedCustom = useHydration();
   const { role: userRole } = useJwtDecode();
@@ -150,42 +147,20 @@ export default function FacturaPage() {
     setModalOpen(true);
   };
 
-  const handleEdit = (data: Factura) => {
-    setEditData(data);
-    setModalOpen(true);
-  };
-
   const handleDelete = async (id: string) => {
-    const factura = facturas.find(f => f._id === id);
-    if (factura?.emitida) {
-      alert('No se puede eliminar una factura emitida.');
-      return;
-    }
-    setFacturaToDelete(id);
-    setShowDeleteWarning(true);
+    // Función deshabilitada - Las facturas no pueden eliminarse
+    return;
   };
 
   const proceedWithDelete = async () => {
-    if (!facturaToDelete) return;
-
-    setShowDeleteWarning(false);
-    try {
-      await facturaService.remove(facturaToDelete);
-      fetchFacturas();
-    } catch {
-      alert('Error al eliminar factura');
-    } finally {
-      setFacturaToDelete(null);
-    }
+    // Función deshabilitada - Las facturas no pueden eliminarse
+    return;
   };
 
   const handleModalSubmit = async (data: Factura) => {
     try {
-      if (editData && editData._id) {
-        await facturaService.update(editData._id, data);
-      } else {
-        await facturaService.create(data);
-      }
+      // Solo permitir crear nuevas facturas, no editar
+      await facturaService.create(data);
       setModalOpen(false);
       setEditData(undefined);
       fetchFacturas();
@@ -901,24 +876,13 @@ export default function FacturaPage() {
           {userRole === 'administrador' && (
             <IconButton
               size="small"
-              onClick={() => handleEdit(factura)}
-              disabled={factura.emitida}
-              title="Editar"
+              disabled={true}
+              title="Editar (Deshabilitado - Las facturas no pueden modificarse)"
               sx={{
-                background: factura.emitida
-                  ? 'linear-gradient(45deg, #9CA3AF, #D1D5DB)'
-                  : 'linear-gradient(45deg, #3B82F6, #60A5FA)',
+                background: 'linear-gradient(45deg, #9CA3AF, #D1D5DB)',
                 color: 'white',
-                '&:hover': factura.emitida ? {} : {
-                  background: 'linear-gradient(45deg, #2563EB, #3B82F6)',
-                  transform: 'translateY(-1px)',
-                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
-                },
-                '&:disabled': {
-                  background: 'linear-gradient(45deg, #9CA3AF, #D1D5DB)',
-                  color: 'white',
-                  opacity: 0.6
-                },
+                opacity: 0.6,
+                cursor: 'not-allowed',
                 transition: 'all 0.3s ease',
                 width: 32,
                 height: 32
@@ -930,24 +894,13 @@ export default function FacturaPage() {
           {userRole === 'administrador' && (
             <IconButton
               size="small"
-              onClick={() => handleDelete(factura._id!)}
-              disabled={factura.emitida}
-              title="Eliminar"
+              disabled={true}
+              title="Eliminar (Deshabilitado - Las facturas no pueden eliminarse)"
               sx={{
-                background: factura.emitida
-                  ? 'linear-gradient(45deg, #9CA3AF, #D1D5DB)'
-                  : 'linear-gradient(45deg, #EF4444, #F87171)',
+                background: 'linear-gradient(45deg, #9CA3AF, #D1D5DB)',
                 color: 'white',
-                '&:hover': factura.emitida ? {} : {
-                  background: 'linear-gradient(45deg, #DC2626, #EF4444)',
-                  transform: 'translateY(-1px)',
-                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
-                },
-                '&:disabled': {
-                  background: 'linear-gradient(45deg, #9CA3AF, #D1D5DB)',
-                  color: 'white',
-                  opacity: 0.6
-                },
+                opacity: 0.6,
+                cursor: 'not-allowed',
                 transition: 'all 0.3s ease',
                 width: 32,
                 height: 32
@@ -1067,7 +1020,7 @@ export default function FacturaPage() {
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             onCreateNew={handleCreate}
-            createButtonText="Nueva Factura"
+            createButtonText="📋 Crear Nueva Factura"
             emptyMessage="No se encontraron facturas"
             searchPlaceholder="Buscar por nombre del cliente..."
             filterComponent={
@@ -1319,94 +1272,6 @@ export default function FacturaPage() {
                 onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#1976d2'}
               >
                 🖨️ Continuar con Impresión
-              </button>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Modal de advertencia de eliminación */}
-        <Box
-          sx={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            display: showDeleteWarning ? 'flex' : 'none',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999
-          }}
-        >
-          <Box
-            sx={{
-              backgroundColor: 'white',
-              borderRadius: 3,
-              padding: 4,
-              maxWidth: 500,
-              width: '90%',
-              textAlign: 'center',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
-            }}
-          >
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🗑️</div>
-            <h2 style={{
-              color: '#d32f2f',
-              marginBottom: '16px',
-              fontSize: '1.5rem'
-            }}>
-              Confirmar Eliminación de Factura
-            </h2>
-            <p style={{
-              color: '#666',
-              marginBottom: '24px',
-              fontSize: '1.1rem',
-              lineHeight: 1.5
-            }}>
-              <strong>¿Está seguro que desea eliminar esta factura?</strong>
-              <br /><br />
-              Esta acción no se puede deshacer. Solo se pueden eliminar facturas que no han sido emitidas.
-            </p>
-
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-              <button
-                onClick={() => {
-                  setShowDeleteWarning(false);
-                  setFacturaToDelete(null);
-                }}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: '#666',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#555'}
-                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#666'}
-              >
-                ❌ Cancelar
-              </button>
-
-              <button
-                onClick={proceedWithDelete}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: '#d32f2f',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#c62828'}
-                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#d32f2f'}
-              >
-                🗑️ Eliminar Factura
               </button>
             </Box>
           </Box>

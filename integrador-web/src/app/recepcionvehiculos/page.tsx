@@ -53,7 +53,7 @@ export default function RecepcionVehiculosPage() {
     handleRowsPerPageChange
   } = useModernTable({
     data: recepciones,
-    searchFields: ['problema_reportado', 'comentario', 'fecha'],
+    searchFields: ['problema_reportado', 'comentario'],
     initialRowsPerPage: 10
   });
 
@@ -142,33 +142,6 @@ export default function RecepcionVehiculosPage() {
   };
 
   const columns: TableColumn[] = [
-    {
-      id: 'fecha',
-      label: 'Fecha',
-      minWidth: 130,
-      render: (value, row) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #06B6D4, #0891B2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: '1rem'
-            }}
-          >
-            📅
-          </Box>
-          <Box>
-            <DateDisplay date={row.fecha} format="short" />
-          </Box>
-        </Box>
-      )
-    },
     {
       id: 'empleado',
       label: 'Empleado',
@@ -354,7 +327,7 @@ export default function RecepcionVehiculosPage() {
         createButtonText="Nueva Recepción"
         emptyMessage="No hay recepciones registradas"
         emptySubMessage="Comienza registrando la primera recepción"
-        searchPlaceholder="Buscar por problema, comentario o fecha..."
+        searchPlaceholder="Buscar por problema o comentario..."
       />
 
       <RecepcionVehiculoModal

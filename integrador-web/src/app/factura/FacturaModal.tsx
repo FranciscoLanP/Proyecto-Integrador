@@ -100,7 +100,6 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
 
       console.log('🔧 Recalculando total para edición:', {
         reparacionId,
-        costoReparacionBD: reparacionSeleccionada?.costo_total,
         totalCalculado: totalCorrecto,
         totalAnterior: defaultData.total,
         descuento: defaultData.descuento_porcentaje
@@ -108,7 +107,7 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
 
       const processedData = {
         ...defaultData,
-        metodos_pago: metodosPago, 
+        metodos_pago: metodosPago,
         tipo_factura: defaultData.tipo_factura || 'Contado',
         id_reparacion: reparacionId,
         detalles: defaultData.detalles || '',
@@ -329,10 +328,24 @@ export default function FacturaModal({ open, defaultData, onClose, onSubmit }: P
                 name="total"
                 type="number"
                 value={form.total || 0}
-                onChange={handleChange}
                 fullWidth
-                disabled={form.emitida}
-                sx={textFieldStyle}
+                disabled={true}
+                sx={{
+                  ...textFieldStyle,
+                  '& .MuiInputBase-input': {
+                    color: '#1976d2',
+                    fontWeight: 'bold',
+                    fontSize: '1.1rem'
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: '#1976d2',
+                    fontWeight: 'bold'
+                  }
+                }}
+                helperText="💡 Este total se calcula automáticamente basado en la reparación seleccionada"
+                InputProps={{
+                  startAdornment: <span style={{ marginRight: '8px', fontWeight: 'bold' }}>$</span>,
+                }}
               />
             </Box>
 

@@ -28,18 +28,16 @@ export default function RecepcionVehiculoModal({
   const [clienteId, setClienteId] = useState('');
   const [vehiculoId, setVehiculoId] = useState('');
   const [empleadoId, setEmpleadoId] = useState('');
-  const [fecha, setFecha] = useState('');
   const [problema, setProblema] = useState('');
   const [comentario, setComentario] = useState('');
   const [errors, setErrors] = useState({
     cliente: false,
     vehiculo: false,
-    empleado: false,
-    fecha: false
+    empleado: false
   });
 
   const initial = useRef({
-    clienteId: '', vehiculoId: '', empleadoId: '', fecha: '', problema: '', comentario: ''
+    clienteId: '', vehiculoId: '', empleadoId: '', problema: '', comentario: ''
   });
 
   useEffect(() => {
@@ -72,21 +70,16 @@ export default function RecepcionVehiculoModal({
         : rec.id_empleadoInformacion._id)
       : '';
     setEmpleadoId(empId);
-    const dt = rec?.fecha
-      ? new Date(rec.fecha).toISOString().slice(0, 16)
-      : new Date().toISOString().slice(0, 16);
-    setFecha(dt);
     setProblema(rec?.problema_reportado ?? '');
     setComentario(rec?.comentario ?? '');
     initial.current = {
       clienteId: cliId,
       vehiculoId: vehId,
       empleadoId: empId,
-      fecha: dt,
       problema: rec?.problema_reportado ?? '',
       comentario: rec?.comentario ?? ''
     };
-    setErrors({ cliente: false, vehiculo: false, empleado: false, fecha: false });
+    setErrors({ cliente: false, vehiculo: false, empleado: false });
   }, [open, defaultData, vehiculos]);
 
   const availableVehiculos = vehiculos.filter(v => {
@@ -100,7 +93,6 @@ export default function RecepcionVehiculoModal({
     clienteId !== initial.current.clienteId ||
     vehiculoId !== initial.current.vehiculoId ||
     empleadoId !== initial.current.empleadoId ||
-    fecha !== initial.current.fecha ||
     problema !== initial.current.problema ||
     comentario !== initial.current.comentario;
 
@@ -113,16 +105,14 @@ export default function RecepcionVehiculoModal({
     const e = {
       cliente: !clienteId,
       vehiculo: !vehiculoId,
-      empleado: !empleadoId,
-      fecha: !fecha
+      empleado: !empleadoId
     };
     setErrors(e);
-    if (e.cliente || e.vehiculo || e.empleado || e.fecha) return;
+    if (e.cliente || e.vehiculo || e.empleado) return;
 
     onSubmit({
       id_vehiculo: vehiculoId,
       id_empleadoInformacion: empleadoId,
-      fecha: new Date(fecha).toISOString(),
       problema_reportado: problema || undefined,
       comentario: comentario || undefined
     });
@@ -243,18 +233,6 @@ export default function RecepcionVehiculoModal({
                 </MenuItem>
               ))}
             </TextField>
-
-            <TextField
-              label="Fecha y hora"
-              type="datetime-local"
-              value={fecha}
-              onChange={e => setFecha(e.target.value)}
-              error={errors.fecha}
-              helperText={errors.fecha ? 'La fecha es obligatoria' : ''}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              sx={textFieldStyle}
-            />
           </Box>
         </Box>
 

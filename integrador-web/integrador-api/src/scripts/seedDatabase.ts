@@ -702,7 +702,6 @@ async function seedReparaciones(inspecciones: any[], empleados: any[], piezas: a
         }
       ],
       descripcion: 'Reemplazo de filtro de aceite obstruido',
-      costo_total: 1250.00,
       id_empleadoInformacion: empleados[0]._id
     },
     {
@@ -714,7 +713,6 @@ async function seedReparaciones(inspecciones: any[], empleados: any[], piezas: a
         }
       ],
       descripcion: 'Sustitución de bujías defectuosas',
-      costo_total: 1480.00,
       id_empleadoInformacion: empleados[1]._id
     },
     {

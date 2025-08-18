@@ -151,8 +151,7 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
             : defaultData.id_inspeccion || '',
           empleados_trabajos: empleadosTrabajos,
           piezas_usadas: piezasUsadas,
-          descripcion: defaultData.descripcion || '',
-          costo_total: defaultData.costo_total || 0
+          descripcion: defaultData.descripcion || ''
         };
 
         console.log('🔧 Formulario procesado:', processedForm);
@@ -364,20 +363,6 @@ export default function ReparacionVehiculoModal({ open, defaultData, onClose, on
               sx={textFieldStyle}
               placeholder="Describe el trabajo de reparación realizado..."
               helperText="Descripción detallada del trabajo realizado"
-            />
-
-            <TextField
-              label="Costo total"
-              name="costo_total"
-              type="number"
-              value={form.costo_total ?? ''}
-              onChange={handleChange}
-              fullWidth
-              sx={textFieldStyle}
-              helperText="Costo total de la reparación"
-              InputProps={{
-                startAdornment: <span style={{ marginRight: '8px' }}>$</span>,
-              }}
             />
           </Box>
         </Box>

@@ -7,7 +7,9 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "seed": "node src/scripts/runSeed.js",
-    "seed:direct": "ts-node src/scripts/seedDatabase.ts"
+    "seed:direct": "ts-node src/scripts/seedDatabase.ts",
+    "migrate:remove-fecha": "node src/scripts/remove-fecha-field-node.js",
+    "verify:fecha-removal": "node src/scripts/verify-fecha-removal.js"
   },
   "keywords": [],
   "author": "",

@@ -205,7 +205,6 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
       fecha_inicio,
       fecha_fin,
       descripcion,
-      costo_total,
       piezas_usadas,
       id_empleadoInformacion
     } = req.body;
@@ -234,7 +233,6 @@ export const createReparacionVehiculo = async (req: Request, res: Response, next
       fecha_inicio,
       fecha_fin,
       descripcion,
-      costo_total,
       piezas_usadas: [],
       id_empleadoInformacion: id_empleadoInformacion || empleadosFinales[0]?.id_empleado
     });
@@ -275,7 +273,6 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
       fecha_inicio,
       fecha_fin,
       descripcion,
-      costo_total,
       piezas_usadas,
 
       id_empleadoInformacion
@@ -351,7 +348,6 @@ export const updateReparacionVehiculo = async (req: Request, res: Response, next
         fecha_inicio,
         fecha_fin,
         descripcion,
-        costo_total,
         piezas_usadas: piezasUsadasIds,
         id_empleadoInformacion: id_empleadoInformacion || empleadosFinales[0]?.id_empleado
       },

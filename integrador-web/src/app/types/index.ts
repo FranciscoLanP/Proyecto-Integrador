@@ -67,7 +67,6 @@ export interface IRecepcionVehiculo {
   id_empleadoInformacion: string | IEmpleadoInformacion;
   id_vehiculo: string | IVehiculoDatos;
   comentario?: string;
-  fecha: string;
   problema_reportado?: string;
   createdAt?: string;
   updatedAt?: string;
