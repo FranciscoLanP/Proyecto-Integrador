@@ -212,7 +212,7 @@ export default function VehiculoDatosPage() {
     {
       id: 'vehiculo',
       label: 'Vehículo',
-      minWidth: 280,
+      minWidth: 220,
       render: (value, row) => {
         const modelo = getModeloInfo(row.id_modelo);
         const marca = modelo ? getMarcaName(modelo.id_marca) : 'N/A';
@@ -248,7 +248,7 @@ export default function VehiculoDatosPage() {
     {
       id: 'propietario',
       label: 'Propietario',
-      minWidth: 200,
+      minWidth: 160,
       render: (value, row) => (
         <Box>
           <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#374151' }}>
@@ -270,7 +270,7 @@ export default function VehiculoDatosPage() {
     {
       id: 'identificacion',
       label: 'Identificación',
-      minWidth: 200,
+      minWidth: 140,
       render: (value, row) => (
         <Box>
           <Typography variant="body2" sx={{ color: '#4b5563', mb: 0.5 }}>
@@ -285,7 +285,7 @@ export default function VehiculoDatosPage() {
     {
       id: 'detalles',
       label: 'Detalles',
-      minWidth: 180,
+      minWidth: 120,
       render: (value, row) => (
         <Box>
           <Typography variant="body2" sx={{ color: '#4b5563', mb: 0.5 }}>
@@ -306,7 +306,7 @@ export default function VehiculoDatosPage() {
     {
       id: 'estado',
       label: 'Estado',
-      minWidth: 120,
+      minWidth: 100,
       render: (value, row) => (
         <StatusChip
           status={row.activo ? 'Activo' : 'Inactivo'}
@@ -320,8 +320,8 @@ export default function VehiculoDatosPage() {
     },
     {
       id: 'fechaCreacion',
-      label: 'Fecha Creación',
-      minWidth: 130,
+      label: 'Fecha',
+      minWidth: 100,
       render: (value, row) => (
         <Typography variant="body2" sx={{ color: '#374151', fontSize: '0.85rem' }}>
           {new Date((row as any).createdAt || new Date()).toLocaleDateString('es-ES', {
@@ -336,7 +336,7 @@ export default function VehiculoDatosPage() {
       id: 'acciones',
       label: 'Acciones',
       align: 'center',
-      minWidth: 180,
+      minWidth: 140,
       render: (value, row) => (
         <ActionButtons
           onEdit={() => openEdit(row)}
@@ -375,6 +375,14 @@ export default function VehiculoDatosPage() {
         emptyMessage="No hay vehículos registrados"
         emptySubMessage="Comienza registrando el primer vehículo"
         searchPlaceholder="Buscar por chasis o cliente..."
+        minWidth={600}
+        height={350}
+        disablePageLayout={true}
+        sx={{
+          maxWidth: '100%',
+          overflow: 'hidden',
+          padding: '0 16px'
+        }}
       />
 
       <VehiculoModal

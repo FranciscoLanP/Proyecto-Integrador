@@ -92,10 +92,17 @@ export default function Header() {
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Typography
                 variant="body2"
+                onClick={handleAvatarClick}
                 sx={{
                   color: 'rgba(255,255,255,0.9)',
                   textTransform: 'capitalize',
-                  fontSize: '0.8rem'
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    color: 'white',
+                    textShadow: '0 0 8px rgba(255,255,255,0.6)'
+                  }
                 }}
               >
                 {auth?.role || 'Usuario'}

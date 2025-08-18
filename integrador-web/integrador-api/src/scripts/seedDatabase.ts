@@ -256,12 +256,12 @@ async function seedMarcasVehiculos() {
 async function seedModelos(marcas: any[]) {
   console.log('🚙 Creando modelos de vehículos...');
   const modelos = [
-    { nombre_modelo: 'Corolla', id_marca: marcas[0]._id }, 
+    { nombre_modelo: 'Corolla', id_marca: marcas[0]._id },
     { nombre_modelo: 'Camry', id_marca: marcas[0]._id },
-    { nombre_modelo: 'Civic', id_marca: marcas[1]._id }, 
+    { nombre_modelo: 'Civic', id_marca: marcas[1]._id },
     { nombre_modelo: 'Accord', id_marca: marcas[1]._id },
-    { nombre_modelo: 'Sentra', id_marca: marcas[2]._id }, 
-    { nombre_modelo: 'Elantra', id_marca: marcas[3]._id } 
+    { nombre_modelo: 'Sentra', id_marca: marcas[2]._id },
+    { nombre_modelo: 'Elantra', id_marca: marcas[3]._id }
   ];
 
   const createdModelos = await ModelosDatos.insertMany(modelos);
@@ -291,24 +291,24 @@ async function seedVehiculos(clientes: any[], modelos: any[], colores: any[]) {
     {
       chasis: 'JTD12345678901234',
       id_cliente: clientes[0]._id,
-      id_modelo: modelos[0]._id, 
-      id_color: colores[0]._id,  
+      id_modelo: modelos[0]._id,
+      id_color: colores[0]._id,
       anio: 2020,
       activo: true
     },
     {
       chasis: 'JHM12345678901235',
       id_cliente: clientes[1]._id,
-      id_modelo: modelos[2]._id, 
-      id_color: colores[1]._id,  
+      id_modelo: modelos[2]._id,
+      id_color: colores[1]._id,
       anio: 2019,
       activo: true
     },
     {
       chasis: 'JN112345678901236',
       id_cliente: clientes[2]._id,
-      id_modelo: modelos[4]._id, 
-      id_color: colores[2]._id,  
+      id_modelo: modelos[4]._id,
+      id_color: colores[2]._id,
       anio: 2021,
       activo: true
     },
@@ -324,7 +324,7 @@ async function seedVehiculos(clientes: any[], modelos: any[], colores: any[]) {
       chasis: 'JTD12345678901238',
       id_cliente: clientes[4]._id,
       id_modelo: modelos[1]._id,
-      id_color: colores[4]._id, 
+      id_color: colores[4]._id,
       anio: 2018,
       activo: true
     },
@@ -332,7 +332,7 @@ async function seedVehiculos(clientes: any[], modelos: any[], colores: any[]) {
       chasis: 'JHM12345678901239',
       id_cliente: clientes[5]._id,
       id_modelo: modelos[3]._id,
-      id_color: colores[5]._id, 
+      id_color: colores[5]._id,
       anio: 2023,
       activo: true
     }
@@ -419,47 +419,47 @@ async function seedPiezasInventario() {
   const piezas = [
     {
       nombre_pieza: 'Filtro de Aceite Toyota',
-      cantidad_disponible: 23, 
+      cantidad_disponible: 23,
       costo_promedio: 450.00,
       historial: [
         { cantidad: 50, costo_unitario: 400.00, fecha: new Date('2024-01-15') },
         { cantidad: -25, costo_unitario: 450.00, fecha: new Date('2024-07-20') },
-        { cantidad: -2, costo_unitario: 450.00, fecha: new Date('2024-08-02') } 
+        { cantidad: -2, costo_unitario: 450.00, fecha: new Date('2024-08-02') }
       ]
     },
     {
       nombre_pieza: 'Pastillas de Freno Honda',
-      cantidad_disponible: 14, 
+      cantidad_disponible: 14,
       costo_promedio: 1200.00,
       historial: [
         { cantidad: 30, costo_unitario: 1150.00, fecha: new Date('2024-02-10') },
         { cantidad: -15, costo_unitario: 1200.00, fecha: new Date('2024-08-05') },
-        { cantidad: -1, costo_unitario: 1200.00, fecha: new Date('2024-08-05') } 
+        { cantidad: -1, costo_unitario: 1200.00, fecha: new Date('2024-08-05') }
       ]
     },
     {
       nombre_pieza: 'Bujías NGK',
-      cantidad_disponible: 32, 
+      cantidad_disponible: 32,
       costo_promedio: 280.00,
       historial: [
         { cantidad: 60, costo_unitario: 250.00, fecha: new Date('2024-03-05') },
         { cantidad: -20, costo_unitario: 280.00, fecha: new Date('2024-07-15') },
-        { cantidad: -8, costo_unitario: 280.00, fecha: new Date('2024-08-03') } 
+        { cantidad: -8, costo_unitario: 280.00, fecha: new Date('2024-08-03') }
       ]
     },
     {
       nombre_pieza: 'Correa de Distribución',
-      cantidad_disponible: 7, 
+      cantidad_disponible: 7,
       costo_promedio: 2800.00,
       historial: [
         { cantidad: 20, costo_unitario: 2650.00, fecha: new Date('2024-01-20') },
         { cantidad: -12, costo_unitario: 2800.00, fecha: new Date('2024-06-10') },
-        { cantidad: -1, costo_unitario: 2800.00, fecha: new Date('2024-08-07') } 
+        { cantidad: -1, costo_unitario: 2800.00, fecha: new Date('2024-08-07') }
       ]
     },
     {
       nombre_pieza: 'Amortiguadores Delanteros',
-      cantidad_disponible: 10, 
+      cantidad_disponible: 10,
       costo_promedio: 3500.00,
       historial: [
         { cantidad: 20, costo_unitario: 3200.00, fecha: new Date('2024-02-25') },
@@ -469,12 +469,12 @@ async function seedPiezasInventario() {
     },
     {
       nombre_pieza: 'Aceite Motor 5W-30',
-      cantidad_disponible: 26, 
+      cantidad_disponible: 26,
       costo_promedio: 680.00,
       historial: [
         { cantidad: 50, costo_unitario: 650.00, fecha: new Date('2024-04-01') },
         { cantidad: -20, costo_unitario: 680.00, fecha: new Date('2024-07-30') },
-        { cantidad: -4, costo_unitario: 680.00, fecha: new Date('2024-08-04') } 
+        { cantidad: -4, costo_unitario: 680.00, fecha: new Date('2024-08-04') }
       ]
     }
   ];
@@ -494,43 +494,43 @@ async function seedRecepcionVehiculos(empleados: any[], vehiculos: any[]) {
   console.log('📝 Creando recepciones de vehículos...');
   const recepciones = [
     {
-      id_empleadoInformacion: empleados[0]._id, 
-      id_vehiculo: vehiculos[0]._id, 
+      id_empleadoInformacion: empleados[0]._id,
+      id_vehiculo: vehiculos[0]._id,
       comentario: 'Cliente reporta ruidos extraños en el motor',
       fecha: new Date('2024-08-01'),
       problema_reportado: 'Ruido en motor al acelerar'
     },
     {
-      id_empleadoInformacion: empleados[1]._id, 
-      id_vehiculo: vehiculos[1]._id, 
+      id_empleadoInformacion: empleados[1]._id,
+      id_vehiculo: vehiculos[1]._id,
       comentario: 'Vehículo no enciende, posible problema eléctrico',
       fecha: new Date('2024-08-02'),
       problema_reportado: 'No enciende el motor'
     },
     {
-      id_empleadoInformacion: empleados[2]._id, 
-      id_vehiculo: vehiculos[2]._id, 
+      id_empleadoInformacion: empleados[2]._id,
+      id_vehiculo: vehiculos[2]._id,
       comentario: 'Mantenimiento preventivo programado',
       fecha: new Date('2024-08-03'),
       problema_reportado: 'Mantenimiento general'
     },
     {
-      id_empleadoInformacion: empleados[3]._id, 
-      id_vehiculo: vehiculos[3]._id, 
+      id_empleadoInformacion: empleados[3]._id,
+      id_vehiculo: vehiculos[3]._id,
       comentario: 'Vibración en volante al frenar',
       fecha: new Date('2024-08-04'),
       problema_reportado: 'Problemas con frenos'
     },
     {
-      id_empleadoInformacion: empleados[4]._id, 
-      id_vehiculo: vehiculos[4]._id, 
+      id_empleadoInformacion: empleados[4]._id,
+      id_vehiculo: vehiculos[4]._id,
       comentario: 'Rayones en carrocería para pintura',
       fecha: new Date('2024-08-05'),
       problema_reportado: 'Reparación de pintura'
     },
     {
       id_empleadoInformacion: empleados[5]._id,
-      id_vehiculo: vehiculos[5]._id, 
+      id_vehiculo: vehiculos[5]._id,
       comentario: 'Transmisión automática patina',
       fecha: new Date('2024-08-06'),
       problema_reportado: 'Problemas de transmisión'
@@ -581,7 +581,7 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
   const inspecciones = [
     {
       id_recibo: recibos[0]._id,
-      id_empleadoInformacion: empleados[0]._id, 
+      id_empleadoInformacion: empleados[0]._id,
       comentario: 'Filtro de aceite obstruido, necesita cambio',
       tiempo_estimado: 2,
       costo_mano_obra: 800.00,
@@ -589,7 +589,7 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
       resultado: 'Requiere cambio de filtro de aceite',
       piezas_sugeridas: [
         {
-          id_pieza: piezas[0]._id, 
+          id_pieza: piezas[0]._id,
           nombre_pieza: 'Filtro de Aceite Toyota',
           cantidad: 1,
           precio_unitario: 450.00
@@ -615,7 +615,7 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
     },
     {
       id_recibo: recibos[2]._id,
-      id_empleadoInformacion: empleados[2]._id, 
+      id_empleadoInformacion: empleados[2]._id,
       comentario: 'Mantenimiento completo requerido',
       tiempo_estimado: 4,
       costo_mano_obra: 1600.00,
@@ -629,7 +629,7 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
           precio_unitario: 450.00
         },
         {
-          id_pieza: piezas[5]._id, 
+          id_pieza: piezas[5]._id,
           nombre_pieza: 'Aceite Motor 5W-30',
           cantidad: 4,
           precio_unitario: 680.00
@@ -638,7 +638,7 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
     },
     {
       id_recibo: recibos[3]._id,
-      id_empleadoInformacion: empleados[3]._id, 
+      id_empleadoInformacion: empleados[3]._id,
       comentario: 'Pastillas de freno completamente gastadas',
       tiempo_estimado: 3,
       costo_mano_obra: 1200.00,
@@ -646,7 +646,7 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
       resultado: 'Cambio urgente de pastillas de freno',
       piezas_sugeridas: [
         {
-          id_pieza: piezas[1]._id, 
+          id_pieza: piezas[1]._id,
           nombre_pieza: 'Pastillas de Freno Honda',
           cantidad: 1,
           precio_unitario: 1200.00
@@ -655,7 +655,7 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
     },
     {
       id_recibo: recibos[4]._id,
-      id_empleadoInformacion: empleados[4]._id, 
+      id_empleadoInformacion: empleados[4]._id,
       comentario: 'Evaluación para trabajo de pintura',
       tiempo_estimado: 6,
       costo_mano_obra: 2400.00,
@@ -665,7 +665,7 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
     },
     {
       id_recibo: recibos[5]._id,
-      id_empleadoInformacion: empleados[5]._id, 
+      id_empleadoInformacion: empleados[5]._id,
       comentario: 'Transmisión requiere reparación mayor',
       tiempo_estimado: 8,
       costo_mano_obra: 3200.00,
@@ -673,7 +673,7 @@ async function seedInspecciones(recibos: any[], empleados: any[], piezas: any[])
       resultado: 'Cambio de correa de distribución y ajustes',
       piezas_sugeridas: [
         {
-          id_pieza: piezas[3]._id, 
+          id_pieza: piezas[3]._id,
           nombre_pieza: 'Correa de Distribución',
           cantidad: 1,
           precio_unitario: 2800.00
@@ -726,7 +726,7 @@ async function seedReparaciones(inspecciones: any[], empleados: any[], piezas: a
         }
       ],
       descripcion: 'Cambio de aceite, filtro y revisión general',
-      costo_total: 3400.00, 
+      costo_total: 3400.00,
       id_empleadoInformacion: empleados[2]._id
     },
     {
@@ -762,7 +762,7 @@ async function seedReparaciones(inspecciones: any[], empleados: any[], piezas: a
         }
       ],
       descripcion: 'Reparación mayor de sistema de transmisión',
-      costo_total: 9300.00, 
+      costo_total: 9300.00,
       id_empleadoInformacion: empleados[5]._id
     }
   ];
@@ -805,7 +805,7 @@ async function seedFacturas(reparaciones: any[]) {
     },
     {
       id_reparacion: reparaciones[2]._id,
-      total: 3400.00, 
+      total: 3400.00,
       tipo_factura: 'Contado',
       metodos_pago: [
         { tipo: 'Transferencia', monto: 3400.00, referencia: 'TRANS-789012' }
@@ -884,11 +884,11 @@ async function seedMetodosPago(tiposPagos: any[]) {
   console.log('💰 Creando métodos de pago...');
   const metodos = [
     { id_tipo_pago: tiposPagos[0]._id, nombre_metodo: 'Contado' },
-    { id_tipo_pago: tiposPagos[1]._id, nombre_metodo: 'Contado' }, 
+    { id_tipo_pago: tiposPagos[1]._id, nombre_metodo: 'Contado' },
     { id_tipo_pago: tiposPagos[2]._id, nombre_metodo: 'Credito' },
-    { id_tipo_pago: tiposPagos[3]._id, nombre_metodo: 'Credito' }, 
-    { id_tipo_pago: tiposPagos[0]._id, nombre_metodo: 'Credito' }, 
-    { id_tipo_pago: tiposPagos[1]._id, nombre_metodo: 'Credito' }  
+    { id_tipo_pago: tiposPagos[3]._id, nombre_metodo: 'Credito' },
+    { id_tipo_pago: tiposPagos[0]._id, nombre_metodo: 'Credito' },
+    { id_tipo_pago: tiposPagos[1]._id, nombre_metodo: 'Credito' }
   ];
 
   const createdMetodos = await MetodoPago.insertMany(metodos);
@@ -916,7 +916,7 @@ async function seedPagosFactura(facturas: any[]) {
     },
     {
       factura: facturas[2]._id,
-      monto: 3400.00, 
+      monto: 3400.00,
       metodoPago: 'transferencia',
       referenciaMetodo: 'TRANS-789012',
       fechaPago: new Date('2024-08-04'),
@@ -939,7 +939,7 @@ async function seedPagosFactura(facturas: any[]) {
     },
     {
       factura: facturas[5]._id,
-      monto: 9300.00, 
+      monto: 9300.00,
       metodoPago: 'cheque',
       referenciaMetodo: 'CHQ-567890',
       fechaPago: new Date('2024-08-07'),
@@ -959,7 +959,7 @@ async function seedGarantias(reparaciones: any[], empleados: any[]) {
       id_reparacion: reparaciones[0]._id,
       id_empleadoInformacion: empleados[0]._id,
       fecha_inicio: new Date('2024-08-02'),
-      fecha_expiracion: new Date('2024-11-02'), 
+      fecha_expiracion: new Date('2024-11-02'),
       tipo_garantia: 'Mano de Obra',
       descripcion: 'Garantía de 3 meses en cambio de filtro de aceite'
     },
@@ -967,7 +967,7 @@ async function seedGarantias(reparaciones: any[], empleados: any[]) {
       id_reparacion: reparaciones[1]._id,
       id_empleadoInformacion: empleados[1]._id,
       fecha_inicio: new Date('2024-08-03'),
-      fecha_expiracion: new Date('2025-02-03'), 
+      fecha_expiracion: new Date('2025-02-03'),
       tipo_garantia: 'Piezas y Mano de Obra',
       descripcion: 'Garantía de 6 meses en cambio de bujías'
     },
@@ -975,7 +975,7 @@ async function seedGarantias(reparaciones: any[], empleados: any[]) {
       id_reparacion: reparaciones[2]._id,
       id_empleadoInformacion: empleados[2]._id,
       fecha_inicio: new Date('2024-08-04'),
-      fecha_expiracion: new Date('2024-11-04'), 
+      fecha_expiracion: new Date('2024-11-04'),
       tipo_garantia: 'Mano de Obra',
       descripcion: 'Garantía de 3 meses en mantenimiento preventivo'
     },
@@ -983,7 +983,7 @@ async function seedGarantias(reparaciones: any[], empleados: any[]) {
       id_reparacion: reparaciones[3]._id,
       id_empleadoInformacion: empleados[3]._id,
       fecha_inicio: new Date('2024-08-05'),
-      fecha_expiracion: new Date('2025-08-05'), 
+      fecha_expiracion: new Date('2025-08-05'),
       tipo_garantia: 'Piezas y Mano de Obra',
       descripcion: 'Garantía de 1 año en cambio de pastillas de freno'
     },
@@ -991,7 +991,7 @@ async function seedGarantias(reparaciones: any[], empleados: any[]) {
       id_reparacion: reparaciones[4]._id,
       id_empleadoInformacion: empleados[4]._id,
       fecha_inicio: new Date('2024-08-06'),
-      fecha_expiracion: new Date('2025-02-06'), 
+      fecha_expiracion: new Date('2025-02-06'),
       tipo_garantia: 'Pintura',
       descripcion: 'Garantía de 6 meses en trabajo de pintura'
     },
@@ -999,7 +999,7 @@ async function seedGarantias(reparaciones: any[], empleados: any[]) {
       id_reparacion: reparaciones[5]._id,
       id_empleadoInformacion: empleados[5]._id,
       fecha_inicio: new Date('2024-08-07'),
-      fecha_expiracion: new Date('2025-08-07'), 
+      fecha_expiracion: new Date('2025-08-07'),
       tipo_garantia: 'Piezas y Mano de Obra',
       descripcion: 'Garantía de 1 año en reparación de transmisión'
     }
@@ -1014,43 +1014,43 @@ async function seedHistorialCompras(piezas: any[], suplidores: any[]) {
   console.log('📈 Creando historial de compras...');
   const historial = [
     {
-      id_pieza: piezas[0]._id, 
-      id_suplidor: suplidores[0]._id, 
+      id_pieza: piezas[0]._id,
+      id_suplidor: suplidores[0]._id,
       cantidad: 50,
       costo_unitario: 400.00,
       fecha_compra: new Date('2024-01-15')
     },
     {
-      id_pieza: piezas[1]._id, 
-      id_suplidor: suplidores[1]._id, 
+      id_pieza: piezas[1]._id,
+      id_suplidor: suplidores[1]._id,
       cantidad: 30,
       costo_unitario: 1150.00,
       fecha_compra: new Date('2024-02-10')
     },
     {
-      id_pieza: piezas[2]._id, 
-      id_suplidor: suplidores[2]._id, 
+      id_pieza: piezas[2]._id,
+      id_suplidor: suplidores[2]._id,
       cantidad: 60,
       costo_unitario: 250.00,
       fecha_compra: new Date('2024-03-05')
     },
     {
-      id_pieza: piezas[3]._id, 
-      id_suplidor: suplidores[3]._id, 
+      id_pieza: piezas[3]._id,
+      id_suplidor: suplidores[3]._id,
       cantidad: 20,
       costo_unitario: 2650.00,
       fecha_compra: new Date('2024-01-20')
     },
     {
-      id_pieza: piezas[4]._id, 
+      id_pieza: piezas[4]._id,
       id_suplidor: suplidores[4]._id,
       cantidad: 20,
       costo_unitario: 3200.00,
       fecha_compra: new Date('2024-02-25')
     },
     {
-      id_pieza: piezas[5]._id, 
-      id_suplidor: suplidores[5]._id, 
+      id_pieza: piezas[5]._id,
+      id_suplidor: suplidores[5]._id,
       cantidad: 50,
       costo_unitario: 650.00,
       fecha_compra: new Date('2024-04-01')
@@ -1065,60 +1065,60 @@ async function seedHistorialCompras(piezas: any[], suplidores: any[]) {
 async function seedPiezasUsadas(piezas: any[], inspecciones: any[], reparaciones: any[]) {
   console.log('🔧 Creando registro de piezas usadas...');
 
-  
+
   const piezasUsadas = [
-   
+
     {
-      id_pieza: piezas[0]._id, 
+      id_pieza: piezas[0]._id,
       cantidad: 1,
       origen: 'reparacion',
       referencia: reparaciones[0]._id,
       precio_utilizado: 450.00
     },
     {
-      id_pieza: piezas[2]._id, 
+      id_pieza: piezas[2]._id,
       cantidad: 4,
       origen: 'reparacion',
       referencia: reparaciones[1]._id,
       precio_utilizado: 280.00
     },
     {
-      id_pieza: piezas[0]._id, 
+      id_pieza: piezas[0]._id,
       cantidad: 1,
       origen: 'reparacion',
       referencia: reparaciones[2]._id,
       precio_utilizado: 450.00
     },
     {
-      id_pieza: piezas[5]._id, 
+      id_pieza: piezas[5]._id,
       cantidad: 4,
       origen: 'reparacion',
       referencia: reparaciones[2]._id,
       precio_utilizado: 680.00
     },
     {
-      id_pieza: piezas[2]._id, 
+      id_pieza: piezas[2]._id,
       cantidad: 4,
       origen: 'reparacion',
       referencia: reparaciones[2]._id,
       precio_utilizado: 280.00
     },
     {
-      id_pieza: piezas[1]._id, 
+      id_pieza: piezas[1]._id,
       cantidad: 1,
       origen: 'reparacion',
       referencia: reparaciones[3]._id,
       precio_utilizado: 1200.00
     },
     {
-      id_pieza: piezas[3]._id, 
+      id_pieza: piezas[3]._id,
       cantidad: 1,
       origen: 'reparacion',
       referencia: reparaciones[5]._id,
       precio_utilizado: 2800.00
     },
     {
-      id_pieza: piezas[4]._id, 
+      id_pieza: piezas[4]._id,
       cantidad: 2,
       origen: 'reparacion',
       referencia: reparaciones[5]._id,
@@ -1158,17 +1158,17 @@ async function seedSuplidorPiezaRelaciones(suplidores: any[], piezas: any[]) {
   console.log('🔗 Creando relaciones suplidor-pieza...');
   const relaciones = [
     { id_suplidor: suplidores[0]._id, id_pieza: piezas[0]._id },
-    { id_suplidor: suplidores[0]._id, id_pieza: piezas[2]._id }, 
-    { id_suplidor: suplidores[1]._id, id_pieza: piezas[1]._id }, 
+    { id_suplidor: suplidores[0]._id, id_pieza: piezas[2]._id },
+    { id_suplidor: suplidores[1]._id, id_pieza: piezas[1]._id },
     { id_suplidor: suplidores[1]._id, id_pieza: piezas[3]._id },
-    { id_suplidor: suplidores[2]._id, id_pieza: piezas[2]._id }, 
-    { id_suplidor: suplidores[2]._id, id_pieza: piezas[4]._id }, 
-    { id_suplidor: suplidores[3]._id, id_pieza: piezas[3]._id }, 
+    { id_suplidor: suplidores[2]._id, id_pieza: piezas[2]._id },
+    { id_suplidor: suplidores[2]._id, id_pieza: piezas[4]._id },
+    { id_suplidor: suplidores[3]._id, id_pieza: piezas[3]._id },
     { id_suplidor: suplidores[3]._id, id_pieza: piezas[5]._id },
-    { id_suplidor: suplidores[4]._id, id_pieza: piezas[4]._id }, 
-    { id_suplidor: suplidores[4]._id, id_pieza: piezas[5]._id }, 
-    { id_suplidor: suplidores[5]._id, id_pieza: piezas[0]._id }, 
-    { id_suplidor: suplidores[5]._id, id_pieza: piezas[1]._id }  
+    { id_suplidor: suplidores[4]._id, id_pieza: piezas[4]._id },
+    { id_suplidor: suplidores[4]._id, id_pieza: piezas[5]._id },
+    { id_suplidor: suplidores[5]._id, id_pieza: piezas[0]._id },
+    { id_suplidor: suplidores[5]._id, id_pieza: piezas[1]._id }
   ];
 
   const createdRelaciones = await SuplidorPiezaRelacion.insertMany(relaciones);
@@ -1180,32 +1180,32 @@ async function seedUbicaciones(usuarios: any[]) {
   console.log('📍 Creando ubicaciones...');
   const ubicaciones = [
     {
-      userId: usuarios[0]._id, 
+      userId: usuarios[0]._id,
       location: { type: 'Point', coordinates: [-69.9312, 18.4861] },
       direccion: 'Oficina Central - Zona Colonial, Santo Domingo'
     },
     {
-      userId: usuarios[1]._id, 
+      userId: usuarios[1]._id,
       location: { type: 'Point', coordinates: [-69.9100, 18.4800] },
       direccion: 'Taller Principal - Zona Universitaria, Santo Domingo'
     },
     {
-      userId: usuarios[0]._id, 
+      userId: usuarios[0]._id,
       location: { type: 'Point', coordinates: [-69.9000, 18.5000] },
       direccion: 'Sucursal Santiago - Centro de Santiago'
     },
     {
-      userId: usuarios[1]._id, 
+      userId: usuarios[1]._id,
       location: { type: 'Point', coordinates: [-69.8500, 18.4500] },
       direccion: 'Almacén de Repuestos - Piantini, Santo Domingo'
     },
     {
-      userId: usuarios[0]._id, 
+      userId: usuarios[0]._id,
       location: { type: 'Point', coordinates: [-70.6500, 19.4500] },
       direccion: 'Oficina Regional - Puerto Plata'
     },
     {
-      userId: usuarios[1]._id, 
+      userId: usuarios[1]._id,
       location: { type: 'Point', coordinates: [-69.9500, 18.4700] },
       direccion: 'Centro de Servicio - Ensanche Piantini'
     }
@@ -1220,13 +1220,13 @@ async function seedDatabase() {
   try {
     console.log('🚀 Iniciando población de base de datos...');
 
-   
+
     await connectDB();
     console.log('📡 Conectado a MongoDB');
 
     await clearDatabase();
 
-   
+
     const usuarios = await seedUsuarios();
     const clientes = await seedClientes();
     const empleados = await seedEmpleados();
