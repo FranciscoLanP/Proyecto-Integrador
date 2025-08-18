@@ -17,6 +17,7 @@ import { useCrud } from '@/hooks/useCrud';
 import { useNotification } from '@/components/utils/NotificationProvider';
 import { useHydration, defaultTheme } from '@/hooks/useHydration';
 import { useTheme } from '../context/ThemeContext';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import {
   ModernTable,
   useModernTable,
@@ -69,7 +70,14 @@ export default function PiezasPage(): JSX.Element {
     handleRowsPerPageChange(mockEvent);
   };
 
-  if (isLoading) return <Typography>Cargando inventario...</Typography>;
+  if (isLoading) return (
+    <LoadingSpinner
+      variant="default"
+      message="Cargando inventario..."
+      size={45}
+      fullScreen
+    />
+  );
   if (error) return <Typography color="error">Error: {error.message}</Typography>;
 
   if (!isHydrated) {

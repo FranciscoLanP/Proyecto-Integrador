@@ -8,6 +8,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 import { useCrud } from '../../hooks/useCrud';
 import { useNotification } from '../../components/utils/NotificationProvider';

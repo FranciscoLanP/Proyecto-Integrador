@@ -47,7 +47,6 @@
                     output.innerHTML += `<p>Empleados Request Error: ${e.message}</p>`;
                 }
 
-                // Test recibos vehiculos
                 try {
                     const response = await fetch('http://localhost:3001/api/recibosvehiculos', {
                         method: 'GET',
@@ -117,7 +116,6 @@
             output.innerHTML += '<p>Please go to <a href="http://localhost:3002/login">http://localhost:3002/login</a> and login first, then come back to this page.</p>';
         }
 
-        // Botón para test manual
         output.innerHTML += '<br><button onclick="testAPI()">Test API Calls</button>';
     </script>
 </body>

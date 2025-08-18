@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Box, IconButton, CircularProgress, Chip, TextField, FormControl, InputLabel, Select, MenuItem
+  Box, IconButton, Chip, TextField, FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -18,6 +18,7 @@ import FacturaModal from './FacturaModal';
 import { facturaService, Factura } from '@/services/facturaService';
 import { pagoFacturaCustomService } from '@/services/pagoFacturaService';
 import ModernTable from '@/components/ModernTable/ModernTable';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { useHydration } from '@/hooks/useHydration';
 import { useClientTheme } from '@/hooks/useClientTheme';
 import { useJwtDecode } from '@/hooks/useJwtDecode';
@@ -980,9 +981,11 @@ export default function FacturaPage() {
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Facturas</h1>
           </div>
-          <div className="flex justify-center items-center h-64">
-            <CircularProgress size={40} />
-          </div>
+          <LoadingSpinner
+            variant="minimal"
+            message="Inicializando aplicación..."
+            size={40}
+          />
         </div>
       </div>
     );
@@ -1004,9 +1007,11 @@ export default function FacturaPage() {
 
 
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <CircularProgress size={40} />
-          </div>
+          <LoadingSpinner
+            variant="default"
+            message="Cargando facturas del taller..."
+            size={50}
+          />
         ) : (
           <ModernTable
             title="Facturas del Taller"

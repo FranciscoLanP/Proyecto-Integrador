@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import {
   Box, Grid, Card, CardContent, Typography, Paper, Chip,
-  CircularProgress, LinearProgress
+  LinearProgress
 } from '@mui/material'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -11,6 +11,7 @@ import {
 } from 'recharts'
 import { useTheme } from './context/ThemeContext'
 import { useHydration } from '@/hooks/useHydration'
+import LoadingSpinner from '@/components/LoadingSpinner'
 import RoleGuard from '@/components/RoleGuard'
 import { facturaService, type Factura } from '@/services/facturaService'
 import { pagoFacturaCustomService } from '@/services/pagoFacturaService'
@@ -221,7 +222,12 @@ function DashboardContent() {
   if (!isHydrated || !isHydratedCustom) {
     return (
       <div className="min-h-screen p-6" style={{ backgroundColor: '#f8fafc' }}>
-        <CircularProgress />
+        <LoadingSpinner
+          variant="minimal"
+          message="Inicializando dashboard..."
+          size={40}
+          fullScreen
+        />
       </div>
     )
   }
@@ -230,7 +236,11 @@ function DashboardContent() {
     return (
       <Box sx={{ p: 4 }}>
         <Typography variant="h4" mb={3}>Dashboard</Typography>
-        <CircularProgress />
+        <LoadingSpinner
+          variant="detailed"
+          message="Cargando datos del dashboard..."
+          size={50}
+        />
       </Box>
     )
   }

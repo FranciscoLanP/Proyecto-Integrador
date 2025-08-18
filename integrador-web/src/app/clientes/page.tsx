@@ -19,6 +19,7 @@ import Avatar from '@mui/material/Avatar';
 import { useTheme } from '../context/ThemeContext';
 import { useHydration, defaultTheme } from '@/hooks/useHydration';
 import ThemeSafePage from '@/components/ThemeSafePage';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import EditIcon from '@mui/icons-material/Edit';
 import PersonIcon from '@mui/icons-material/Person';
@@ -58,7 +59,14 @@ export default function ClientesPage(): JSX.Element {
   const [openVeh, setOpenVeh] = useState(false);
 
   if (clienteCrud.allQuery.isLoading)
-    return <Typography>Loading…</Typography>;
+    return (
+      <LoadingSpinner
+        variant="default"
+        message="Cargando información de clientes..."
+        size={45}
+        fullScreen
+      />
+    );
   if (clienteCrud.allQuery.error)
     return <Typography color="error">{clienteCrud.allQuery.error.message}</Typography>;
 

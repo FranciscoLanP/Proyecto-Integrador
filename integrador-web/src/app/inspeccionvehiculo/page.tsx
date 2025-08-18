@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import {
-  Box, IconButton, CircularProgress, Chip, Typography
+  Box, IconButton, Chip, Typography
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -17,6 +17,7 @@ import { useHydration } from '@/hooks/useHydration';
 import { useClientTheme } from '@/hooks/useClientTheme';
 import { useJwtDecode } from '@/hooks/useJwtDecode';
 import { useNotification } from '@/components/utils/NotificationProvider';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import InspeccionVehiculoModal from './InspeccionVehiculoModal';
 import { inspeccionVehiculoService, InspeccionVehiculo } from '@/services/inspeccionVehiculoService';
 
@@ -489,9 +490,11 @@ export default function InspeccionVehiculoPage() {
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Inspecciones de Vehículos</h1>
           </div>
-          <div className="flex justify-center items-center h-64">
-            <CircularProgress size={40} />
-          </div>
+          <LoadingSpinner
+            variant="minimal"
+            message="Inicializando aplicación..."
+            size={40}
+          />
         </div>
       </div>
     );
@@ -506,9 +509,11 @@ export default function InspeccionVehiculoPage() {
     >
       <div className="max-w-7xl mx-auto">
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <CircularProgress size={40} />
-          </div>
+          <LoadingSpinner
+            variant="detailed"
+            message="Cargando inspecciones..."
+            size={45}
+          />
         ) : (
           <ModernTable
             title="Inspecciones de Vehículos"

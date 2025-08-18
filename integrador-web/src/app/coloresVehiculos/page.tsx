@@ -2,13 +2,14 @@
 
 import React, { useState, JSX } from 'react';
 import {
-  Box, Typography, IconButton, CircularProgress, Chip
+  Box, Typography, IconButton, Chip
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModernTable from '@/components/ModernTable/ModernTable';
 import { useHydration } from '@/hooks/useHydration';
 import { useTheme } from '@/app/context/ThemeContext';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 import { useCrud } from '../../hooks/useCrud';
 import { useNotification } from '../../components/utils/NotificationProvider';
@@ -242,9 +243,11 @@ export default function ColoresDatosPage(): JSX.Element {
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Colores de Vehículo</h1>
           </div>
-          <div className="flex justify-center items-center h-64">
-            <CircularProgress size={40} />
-          </div>
+          <LoadingSpinner
+            variant="minimal"
+            message="Inicializando aplicación..."
+            size={40}
+          />
         </div>
       </div>
     );
@@ -258,9 +261,11 @@ export default function ColoresDatosPage(): JSX.Element {
       }}
     >
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <CircularProgress size={40} />
-        </div>
+        <LoadingSpinner
+          variant="default"
+          message="Cargando colores de vehículos..."
+          size={45}
+        />
       ) : (
         <ModernTable
           title="Colores de Vehículo"

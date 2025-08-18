@@ -9,6 +9,7 @@ import { useTheme } from '../context/ThemeContext'
 import { EmpleadoConUbicacion, IEmpleadoInformacion } from '../types'
 import EmpleadoInformacionModal from './EmpleadoInformacionModal'
 import RoleGuard from '@/components/RoleGuard'
+import LoadingSpinner from '@/components/LoadingSpinner';
 import {
   ModernTable,
   useModernTable,
@@ -71,7 +72,14 @@ function EmpleadoInformacionPageContent() {
     handleRowsPerPageChange(mockEvent);
   };
 
-  if (isLoading) return <Typography>Cargando empleados...</Typography>
+  if (isLoading) return (
+    <LoadingSpinner
+      variant="default"
+      message="Cargando información de empleados..."
+      size={45}
+      fullScreen
+    />
+  )
   if (error) return <Typography color="error">Error: {error.message}</Typography>
 
   if (!isHydrated) {
