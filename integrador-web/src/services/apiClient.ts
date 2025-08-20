@@ -18,7 +18,7 @@ export const apiClient = axios.create({
     'Accept': 'application/json'
   },
   withCredentials: true,
-  timeout: 10000 
+  timeout: 10000
 });
 
 apiClient.interceptors.request.use(
@@ -34,14 +34,14 @@ apiClient.interceptors.request.use(
               console.warn('Token expirado detectado, limpiando localStorage...');
               localStorage.removeItem('auth');
               delete apiClient.defaults.headers.common['Authorization'];
-              
+
               // Redirigir al login si no estamos ya allí
               if (window.location.pathname !== '/login') {
                 window.location.href = '/login';
               }
               return config; // Retornar sin agregar el token expirado
             }
-            
+
             config.headers.Authorization = `Bearer ${token}`;
           }
         } catch (error) {

@@ -12,10 +12,10 @@ export const useVehiculosCliente = (idCliente: string) => {
       const res = await apiClient.get<IVehiculoDatos[]>(`/vehiculodatos/cliente/${idCliente}`);
       return res.data;
     },
-    { 
+    {
       enabled: !!idCliente,
       refetchOnWindowFocus: true,
-      staleTime: 0, 
+      staleTime: 0,
       cacheTime: 1000 * 60 * 5,
     }
   );

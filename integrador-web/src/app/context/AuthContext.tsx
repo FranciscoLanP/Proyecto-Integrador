@@ -34,7 +34,7 @@ const isTokenExpired = (token: string): boolean => {
     const currentTime = Math.floor(Date.now() / 1000);
     return payload.exp < currentTime;
   } catch {
-    return true; 
+    return true;
   }
 };
 
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (stored) {
       try {
         const a: Auth = JSON.parse(stored);
-        
+
         // Verificar si el token está expirado
         if (isTokenExpired(a.token)) {
           console.warn('Token expirado encontrado en localStorage, limpiando...');

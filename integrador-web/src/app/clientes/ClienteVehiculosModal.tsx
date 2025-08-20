@@ -48,9 +48,9 @@ export default function ClienteVehiculosModal({
   if (vehQuery.isLoading) {
     return (
       <ModernModal open={open} onClose={onClose} title={`Vehículos de ${client.nombre}`} maxWidth="md">
-        <LoadingSpinner 
-          variant="default" 
-          message="Cargando vehículos del cliente..." 
+        <LoadingSpinner
+          variant="default"
+          message="Cargando vehículos del cliente..."
           size={40}
         />
       </ModernModal>
@@ -84,14 +84,14 @@ export default function ClienteVehiculosModal({
         {/* Header con botón de refresco */}
         <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
           <Typography variant="body2" color="text.secondary">
-            {listado.length > 0 
+            {listado.length > 0
               ? `Se encontraron ${listado.length} vehículo${listado.length !== 1 ? 's' : ''} activo${listado.length !== 1 ? 's' : ''}`
               : 'No hay vehículos activos'
             }
           </Typography>
           <Tooltip title="Actualizar lista de vehículos">
-            <IconButton 
-              onClick={handleRefresh} 
+            <IconButton
+              onClick={handleRefresh}
               size="small"
               disabled={vehQuery.isLoading}
               sx={{

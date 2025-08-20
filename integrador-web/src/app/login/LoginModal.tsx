@@ -377,9 +377,9 @@ export default function LoginPage(): JSX.Element {
       }
     } catch (err: any) {
       console.error('Error en login:', err);
-      
+
       let errorMessage = 'Error al iniciar sesión';
-      
+
       // Manejar diferentes tipos de errores
       if (err.response?.status === 401) {
         errorMessage = 'Usuario o contraseña incorrectos';
@@ -390,7 +390,7 @@ export default function LoginPage(): JSX.Element {
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
       notify(errorMessage, 'error');
     } finally {
