@@ -1,6 +1,7 @@
 
 import { Request, Response, NextFunction } from 'express'
 import { RecepcionVehiculo } from '../models/recepcionVehiculo'
+import { ReciboVehiculo } from '../models/reciboVehiculo'
 
 export const getAllRecepcionVehiculo = async (
   req: Request,
@@ -11,13 +12,13 @@ export const getAllRecepcionVehiculo = async (
     const { search } = req.query as { search?: string }
     const filter = search
       ? {
-          $or: [
-            { id_empleadoInformacion: search },
-            { id_vehiculo: search },
-            { comentario: { $regex: search, $options: 'i' } },
-            { problema_reportado: { $regex: search, $options: 'i' } }
-          ]
-        }
+        $or: [
+          { id_empleadoInformacion: search },
+          { id_vehiculo: search },
+          { comentario: { $regex: search, $options: 'i' } },
+          { problema_reportado: { $regex: search, $options: 'i' } }
+        ]
+      }
       : {}
     const items = await RecepcionVehiculo.find(filter)
     res.status(200).json(items)
@@ -37,13 +38,13 @@ export const getPaginatedRecepcionVehiculo = async (
     const { search } = req.query as { search?: string }
     const filter = search
       ? {
-          $or: [
-            { id_empleadoInformacion: search },
-            { id_vehiculo: search },
-            { comentario: { $regex: search, $options: 'i' } },
-            { problema_reportado: { $regex: search, $options: 'i' } }
-          ]
-        }
+        $or: [
+          { id_empleadoInformacion: search },
+          { id_vehiculo: search },
+          { comentario: { $regex: search, $options: 'i' } },
+          { problema_reportado: { $regex: search, $options: 'i' } }
+        ]
+      }
       : {}
     const totalCount = await RecepcionVehiculo.countDocuments(filter)
     const data = await RecepcionVehiculo.find(filter)
@@ -126,11 +127,23 @@ export const deleteRecepcionVehiculo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const deleted = await RecepcionVehiculo.findByIdAndDelete(req.params.id)
-    if (!deleted) {
-      res.status(404).json({ message: 'Recepción no encontrada' })
-      return
+    const recepcion = await RecepcionVehiculo.findById(req.params.id);
+    if (!recepcion) {
+      res.status(404).json({ message: 'Recepción no encontrada' });
+      return;
     }
+
+    // Verificar si hay recibos asociados a esta recepción
+    const reciboAsociado = await ReciboVehiculo.findOne({ id_recepcion: req.params.id });
+    if (reciboAsociado) {
+      res.status(400).json({
+        message: 'No se puede eliminar esta recepción porque ya tiene un recibo asociado',
+        details: 'Para eliminar esta recepción, primero debe eliminar el recibo asociado'
+      });
+      return;
+    }
+
+    const deleted = await RecepcionVehiculo.findByIdAndDelete(req.params.id)
     res.sendStatus(204)
   } catch (error) {
     next(error)

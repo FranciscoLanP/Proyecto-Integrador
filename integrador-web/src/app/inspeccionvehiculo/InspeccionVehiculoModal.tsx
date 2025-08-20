@@ -69,6 +69,17 @@ export default function InspeccionVehiculoModal({ open, defaultData, onClose, on
     }
   }, [defaultData]);
 
+  useEffect(() => {
+    if (open && !defaultData) {
+      setForm({
+        id_recibo: '',
+        id_empleadoInformacion: '',
+        piezas_sugeridas: []
+      });
+      setPiezasSugeridas([]);
+    }
+  }, [open, defaultData]);
+
   const fetchDropdownData = async () => {
     setLoading(true);
     try {

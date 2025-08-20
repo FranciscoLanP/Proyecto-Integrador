@@ -116,8 +116,18 @@ export default function RecepcionVehiculosPage() {
       try {
         await recepCrud.deleteM.mutateAsync(toDelete._id);
         notify('Recepción eliminada correctamente', 'success');
-      } catch {
-        notify('Error al eliminar recepción', 'error');
+      } catch (error: any) {
+        console.log('Error completo:', error);
+        console.log('Error response:', error.response);
+        console.log('Error response data:', error.response?.data);
+        console.log('Error response status:', error.response?.status);
+
+        if (error.response?.status === 400 && error.response.data?.message) {
+          // Mostrar el mensaje exacto del backend
+          notify(error.response.data.message, 'error');
+        } else {
+          notify('Error al eliminar recepción', 'error');
+        }
       }
     }
     setShowDeleteWarning(false);

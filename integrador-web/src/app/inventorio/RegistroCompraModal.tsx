@@ -65,10 +65,7 @@ export default function RegistroCompraModal({
   }, [open, piezaToEdit?._id, relaciones.length]);
 
   const validSup = piezaToEdit
-    ? relaciones
-      .filter(r => r.id_pieza === piezaToEdit._id)
-      .map(r => suplidores.find(s => s._id === r.id_suplidor))
-      .filter((s): s is ISuplidor => !!s)
+    ? suplidores // Mostrar todos los suplidores en lugar de filtrar por relaciones
     : suplidores;
 
   const handleSave = (): void => {
