@@ -13,6 +13,7 @@ import type { IMarcaVehiculo } from '../types'
 interface Props {
   open: boolean
   defaultData?: IMarcaVehiculo
+  existingMarcas?: IMarcaVehiculo[]
   onClose: () => void
   onSubmit: (data: { nombre_marca: string }) => void
 }
@@ -20,11 +21,13 @@ interface Props {
 export default function MarcasVehiculoModal({
   open,
   defaultData,
+  existingMarcas = [],
   onClose,
   onSubmit
 }: Props): JSX.Element {
   const [value, setValue] = useState<string>('')
   const [showError, setShowError] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string>('')
   const initialRef = useRef<string>('')
   const [confirmDiscard, setConfirmDiscard] = useState<boolean>(false)
 
@@ -34,6 +37,7 @@ export default function MarcasVehiculoModal({
       setValue(init)
       initialRef.current = init
       setShowError(false)
+      setErrorMessage('')
     }
   }, [open, defaultData])
 
@@ -51,23 +55,38 @@ export default function MarcasVehiculoModal({
   }
 
   const handleSubmit = (): void => {
-    if (!value.trim()) {
+    const trimmedValue = value.trim()
+
+    if (!trimmedValue) {
       setShowError(true)
+      setErrorMessage('Este campo es obligatorio')
       return
     }
-    onSubmit({ nombre_marca: value.trim() })
+
+    const isDuplicate = existingMarcas.some(marca =>
+      marca.nombre_marca.toLowerCase() === trimmedValue.toLowerCase() &&
+      marca._id !== defaultData?._id
+    )
+
+    if (isDuplicate) {
+      setShowError(true)
+      setErrorMessage('Ya existe una marca con este nombre')
+      return
+    }
+
+    onSubmit({ nombre_marca: trimmedValue })
   }
 
   const handleChange = (newVal: string): void => {
     setValue(newVal)
     if (showError && newVal.trim()) {
       setShowError(false)
+      setErrorMessage('')
     }
   }
 
   const isEdit = Boolean(defaultData)
 
-  // Estilo base para los TextFields
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
       borderRadius: '12px',
@@ -105,7 +124,6 @@ export default function MarcasVehiculoModal({
         title={isEdit ? 'Editar Marca' : 'Nueva Marca'}
       >
         <Box display="flex" flexDirection="column" gap={3}>
-          {/* Información de la Marca */}
           <Box>
             <Typography variant="h6" sx={{ mb: 2, color: 'primary.dark' }}>
               Información de la Marca
@@ -116,18 +134,13 @@ export default function MarcasVehiculoModal({
               label="Nombre de la marca"
               value={value}
               onChange={(e) => handleChange(e.target.value)}
-              error={showError && !value.trim()}
-              helperText={
-                showError && !value.trim()
-                  ? 'Este campo es obligatorio'
-                  : ''
-              }
+              error={showError}
+              helperText={showError ? errorMessage : ''}
               sx={textFieldStyle}
               placeholder="Ingresa el nombre de la marca..."
             />
           </Box>
 
-          {/* Botones de Acción */}
           <Box
             display="flex"
             justifyContent="flex-end"
@@ -162,7 +175,6 @@ export default function MarcasVehiculoModal({
         </Box>
       </ModernModal>
 
-      {/* Modal de Confirmación para Descartar Cambios */}
       <ModernModal
         open={confirmDiscard}
         onClose={() => setConfirmDiscard(false)}
@@ -179,7 +191,6 @@ export default function MarcasVehiculoModal({
             </Typography>
           </Box>
 
-          {/* Botones de Acción */}
           <Box
             display="flex"
             justifyContent="flex-end"

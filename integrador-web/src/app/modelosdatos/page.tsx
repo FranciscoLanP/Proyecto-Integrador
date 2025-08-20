@@ -278,6 +278,7 @@ export default function ModelosDatosPage(): JSX.Element {
         open={modalOpen}
         defaultData={editData ?? undefined}
         marcas={marcas}
+        existingModelos={modelos}
         onClose={() => setModalOpen(false)}
         onSubmit={handleModalSubmit}
       />

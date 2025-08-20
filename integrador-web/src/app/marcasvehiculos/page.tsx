@@ -245,6 +245,7 @@ export default function MarcasVehiculoPage(): JSX.Element {
       <MarcasVehiculoModal
         open={modalOpen}
         defaultData={editData ?? undefined}
+        existingMarcas={marcas}
         onClose={() => setModalOpen(false)}
         onSubmit={handleModalSubmit}
       />

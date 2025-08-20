@@ -12,16 +12,18 @@ interface Props {
   open: boolean;
   defaultData?: IModelosDatos;
   marcas: IMarcaVehiculo[];
+  existingModelos?: IModelosDatos[];
   onClose: () => void;
   onSubmit: (data: Partial<IModelosDatos>) => void;
 }
 
 export default function ModelosDatosModal({
-  open, defaultData, marcas, onClose, onSubmit
+  open, defaultData, marcas, existingModelos = [], onClose, onSubmit
 }: Props) {
   const [nombre, setNombre] = useState('');
   const [marcaId, setMarcaId] = useState('');
   const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const initial = useRef({ nombre: '', marcaId: '' });
 
@@ -33,6 +35,7 @@ export default function ModelosDatosModal({
       setMarcaId(md);
       initial.current = { nombre: nm, marcaId: md };
       setShowError(false);
+      setErrorMessage('');
     }
   }, [open, defaultData]);
 
@@ -51,11 +54,27 @@ export default function ModelosDatosModal({
   };
 
   const handleSave = () => {
-    if (!nombre.trim() || !marcaId) {
+    const trimmedNombre = nombre.trim();
+
+    if (!trimmedNombre || !marcaId) {
       setShowError(true);
+      setErrorMessage(!trimmedNombre ? 'El nombre del modelo es obligatorio' : 'Debe seleccionar una marca');
       return;
     }
-    onSubmit({ nombre_modelo: nombre.trim(), id_marca: marcaId });
+
+    const isDuplicate = existingModelos.some(modelo =>
+      modelo.nombre_modelo.toLowerCase() === trimmedNombre.toLowerCase() &&
+      modelo.id_marca === marcaId &&
+      modelo._id !== defaultData?._id
+    );
+
+    if (isDuplicate) {
+      setShowError(true);
+      setErrorMessage('Ya existe un modelo con este nombre para la marca seleccionada');
+      return;
+    }
+
+    onSubmit({ nombre_modelo: trimmedNombre, id_marca: marcaId });
   };
 
   const textFieldStyle = {
@@ -87,6 +106,22 @@ export default function ModelosDatosModal({
     }
   };
 
+  const handleNombreChange = (value: string) => {
+    setNombre(value);
+    if (showError && value.trim()) {
+      setShowError(false);
+      setErrorMessage('');
+    }
+  };
+
+  const handleMarcaChange = (value: string) => {
+    setMarcaId(value);
+    if (showError && value) {
+      setShowError(false);
+      setErrorMessage('');
+    }
+  };
+
   const isEdit = Boolean(defaultData);
 
   return (
@@ -105,9 +140,9 @@ export default function ModelosDatosModal({
               <TextField
                 label="Nombre del modelo"
                 value={nombre}
-                onChange={e => setNombre(e.target.value)}
-                error={showError && !nombre.trim()}
-                helperText={showError && !nombre.trim() ? 'Este campo es obligatorio' : ''}
+                onChange={e => handleNombreChange(e.target.value)}
+                error={showError}
+                helperText={showError ? errorMessage : ''}
                 fullWidth
                 sx={textFieldStyle}
                 placeholder="Ingresa el nombre del modelo..."
@@ -117,9 +152,9 @@ export default function ModelosDatosModal({
                 select
                 label="Marca"
                 value={marcaId}
-                onChange={e => setMarcaId(e.target.value)}
+                onChange={e => handleMarcaChange(e.target.value)}
                 error={showError && !marcaId}
-                helperText={showError && !marcaId ? 'Selecciona una marca' : ''}
+                helperText={showError && !marcaId ? errorMessage : ''}
                 fullWidth
                 sx={textFieldStyle}
               >

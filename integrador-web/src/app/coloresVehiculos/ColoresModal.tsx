@@ -14,6 +14,7 @@ import type { IColoresDatos } from '../types'
 interface Props {
   open: boolean
   defaultData?: IColoresDatos
+  existingColores?: IColoresDatos[]
   onClose: () => void
   onSubmit: (data: { nombre_color: string }) => void
 }
@@ -21,11 +22,13 @@ interface Props {
 export default function ColoresDatosModal({
   open,
   defaultData,
+  existingColores = [],
   onClose,
   onSubmit
 }: Props): JSX.Element {
   const [value, setValue] = useState<string>('')
   const [showError, setShowError] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string>('')
   const initialRef = useRef<string>('')
   const [confirmDiscard, setConfirmDiscard] = useState<boolean>(false)
 
@@ -35,6 +38,7 @@ export default function ColoresDatosModal({
       setValue(init)
       initialRef.current = init
       setShowError(false)
+      setErrorMessage('')
     }
   }, [open, defaultData])
 
@@ -52,17 +56,33 @@ export default function ColoresDatosModal({
   }
 
   const handleSubmit = (): void => {
-    if (!value.trim()) {
+    const trimmedValue = value.trim()
+
+    if (!trimmedValue) {
       setShowError(true)
+      setErrorMessage('Este campo es obligatorio')
       return
     }
-    onSubmit({ nombre_color: value.trim() })
+
+    const isDuplicate = existingColores.some(color =>
+      color.nombre_color.toLowerCase() === trimmedValue.toLowerCase() &&
+      color._id !== defaultData?._id
+    )
+
+    if (isDuplicate) {
+      setShowError(true)
+      setErrorMessage('Ya existe un color con este nombre')
+      return
+    }
+
+    onSubmit({ nombre_color: trimmedValue })
   }
 
   const handleChange = (newVal: string): void => {
     setValue(newVal)
     if (showError && newVal.trim()) {
       setShowError(false)
+      setErrorMessage('')
     }
   }
 
@@ -115,12 +135,8 @@ export default function ColoresDatosModal({
           label="Nombre del color"
           value={value}
           onChange={(e) => handleChange(e.target.value)}
-          error={showError && !value.trim()}
-          helperText={
-            showError && !value.trim()
-              ? 'Este campo es obligatorio'
-              : ''
-          }
+          error={showError}
+          helperText={showError ? errorMessage : ''}
           sx={{
             marginTop: '8px',
             '& .MuiOutlinedInput-root': {

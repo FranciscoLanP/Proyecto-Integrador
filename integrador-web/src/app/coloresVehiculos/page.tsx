@@ -288,6 +288,7 @@ export default function ColoresDatosPage(): JSX.Element {
       <ColoresDatosModal
         open={modalOpen}
         defaultData={editData ?? undefined}
+        existingColores={colores}
         onClose={() => setModalOpen(false)}
         onSubmit={handleModalSubmit}
       />
