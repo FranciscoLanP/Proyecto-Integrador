@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Button,
   Box,
@@ -10,11 +10,15 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Paper
+  Paper,
+  IconButton,
+  Tooltip
 } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import ModernModal from '@/components/ModernModal/ModernModal';
 import { ICliente, IVehiculoDatos } from '../types';
 import { useVehiculosCliente } from './useVehiculosCliente';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface Props {
   open: boolean;
@@ -30,12 +34,25 @@ export default function ClienteVehiculosModal({
   const vehQuery = useVehiculosCliente(client._id);
   const vehiculos = vehQuery.data || [];
 
+  // Auto-refresco cuando se abre el modal
+  useEffect(() => {
+    if (open) {
+      vehQuery.refetch();
+    }
+  }, [open, vehQuery]);
+
+  const handleRefresh = () => {
+    vehQuery.refetch();
+  };
+
   if (vehQuery.isLoading) {
     return (
       <ModernModal open={open} onClose={onClose} title={`Vehículos de ${client.nombre}`} maxWidth="md">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-          <Typography>Cargando vehículos…</Typography>
-        </Box>
+        <LoadingSpinner 
+          variant="default" 
+          message="Cargando vehículos del cliente..." 
+          size={40}
+        />
       </ModernModal>
     );
   }
@@ -64,6 +81,32 @@ export default function ClienteVehiculosModal({
       maxWidth="md"
     >
       <Box display="flex" flexDirection="column" gap={2}>
+        {/* Header con botón de refresco */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+          <Typography variant="body2" color="text.secondary">
+            {listado.length > 0 
+              ? `Se encontraron ${listado.length} vehículo${listado.length !== 1 ? 's' : ''} activo${listado.length !== 1 ? 's' : ''}`
+              : 'No hay vehículos activos'
+            }
+          </Typography>
+          <Tooltip title="Actualizar lista de vehículos">
+            <IconButton 
+              onClick={handleRefresh} 
+              size="small"
+              disabled={vehQuery.isLoading}
+              sx={{
+                color: 'primary.main',
+                '&:hover': {
+                  backgroundColor: 'primary.light',
+                  color: 'white'
+                }
+              }}
+            >
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+
         {listado.length === 0 ? (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
             <Typography variant="h6" color="text.secondary">
@@ -72,10 +115,6 @@ export default function ClienteVehiculosModal({
           </Box>
         ) : (
           <Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Se encontraron {listado.length} vehículo{listado.length !== 1 ? 's' : ''} activo{listado.length !== 1 ? 's' : ''}
-            </Typography>
-
             <Paper elevation={0} sx={{ border: '2px solid rgba(0,0,0,0.1)', borderRadius: 2, overflow: 'hidden' }}>
               <Table>
                 <TableHead sx={{

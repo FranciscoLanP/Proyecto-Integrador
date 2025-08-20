@@ -1,5 +1,16 @@
 import axios from 'axios';
 
+// Función helper para verificar si un token JWT está expirado
+const isTokenExpired = (token: string): boolean => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Math.floor(Date.now() / 1000);
+    return payload.exp < currentTime;
+  } catch {
+    return true; // Si no se puede decodificar, considerar como expirado
+  }
+};
+
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
   headers: {
@@ -18,6 +29,19 @@ apiClient.interceptors.request.use(
         try {
           const { token } = JSON.parse(stored);
           if (token && token !== 'null' && token !== 'undefined') {
+            // Verificar si el token está expirado antes de usarlo
+            if (isTokenExpired(token)) {
+              console.warn('Token expirado detectado, limpiando localStorage...');
+              localStorage.removeItem('auth');
+              delete apiClient.defaults.headers.common['Authorization'];
+              
+              // Redirigir al login si no estamos ya allí
+              if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+              }
+              return config; // Retornar sin agregar el token expirado
+            }
+            
             config.headers.Authorization = `Bearer ${token}`;
           }
         } catch (error) {

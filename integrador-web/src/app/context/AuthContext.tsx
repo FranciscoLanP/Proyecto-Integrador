@@ -28,6 +28,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const isTokenExpired = (token: string): boolean => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Math.floor(Date.now() / 1000);
+    return payload.exp < currentTime;
+  } catch {
+    return true; 
+  }
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [auth, setAuth] = useState<Auth | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,9 +49,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (stored) {
       try {
         const a: Auth = JSON.parse(stored);
-        setAuth(a);
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${a.token}`;
+        
+        // Verificar si el token está expirado
+        if (isTokenExpired(a.token)) {
+          console.warn('Token expirado encontrado en localStorage, limpiando...');
+          localStorage.removeItem('auth');
+          delete apiClient.defaults.headers.common['Authorization'];
+          setAuth(null);
+        } else {
+          setAuth(a);
+          apiClient.defaults.headers.common['Authorization'] = `Bearer ${a.token}`;
+        }
       } catch {
+        console.error('Error al parsear token almacenado, limpiando...');
         localStorage.removeItem('auth');
       }
     }

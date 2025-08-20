@@ -345,6 +345,25 @@ export default function LoginPage(): JSX.Element {
 
     setIsLoading(true);
     try {
+      // Limpiar cualquier token expirado antes del login
+      const stored = localStorage.getItem('auth');
+      if (stored) {
+        try {
+          const { token } = JSON.parse(stored);
+          if (token) {
+            // Verificar si el token está expirado
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (payload.exp < currentTime) {
+              console.log('Limpiando token expirado antes del login...');
+              localStorage.removeItem('auth');
+            }
+          }
+        } catch {
+          localStorage.removeItem('auth');
+        }
+      }
+
       const response = await loginRequest({ username, password });
       const { token, usuario, hasSecretQuestion } = response;
 
@@ -357,9 +376,23 @@ export default function LoginPage(): JSX.Element {
         notify('¡Bienvenido! Sesión iniciada correctamente', 'success');
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Error al iniciar sesión';
+      console.error('Error en login:', err);
+      
+      let errorMessage = 'Error al iniciar sesión';
+      
+      // Manejar diferentes tipos de errores
+      if (err.response?.status === 401) {
+        errorMessage = 'Usuario o contraseña incorrectos';
+      } else if (err.response?.status === 422) {
+        errorMessage = 'Token expirado, intente nuevamente';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
-      notify('Error al iniciar sesión', 'error');
+      notify(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }

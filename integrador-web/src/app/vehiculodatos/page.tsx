@@ -181,11 +181,14 @@ export default function VehiculoDatosPage() {
     vehCrud.updateM.mutate(
       { id: v._id, data: { activo: !v.activo } },
       {
-        onSuccess: () =>
+        onSuccess: () => {
           notify(
             `Vehículo ${v.activo ? 'desactivado' : 'activado'} correctamente`,
             'success'
-          ),
+          );
+          localStorage.setItem('vehiculo_updated', Date.now().toString());
+          window.dispatchEvent(new Event('storage'));
+        },
         onError: () => notify('Error al cambiar estado del vehículo', 'error'),
       }
     );
