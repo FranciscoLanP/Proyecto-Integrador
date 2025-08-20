@@ -766,6 +766,7 @@ export default function PagosFacturaPage() {
                     setReciboModalOpen(false);
                     setSelectedPago(null);
                 }}
+                onPrint={handleViewReceipt}
             />
 
             {/* Modal de advertencia de impresión */}

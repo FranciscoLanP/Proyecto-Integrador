@@ -30,11 +30,13 @@ export default function InspeccionVehiculoPage() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<InspeccionVehiculo | undefined>(undefined);
-  const [printHtml, setPrintHtml] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [fechaCreacion, setFechaCreacion] = useState<dayjs.Dayjs | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const [showPrintWarning, setShowPrintWarning] = useState(false);
+  const [inspeccionToPrint, setInspeccionToPrint] = useState<InspeccionVehiculo | null>(null);
 
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
   const [inspeccionToDelete, setInspeccionToDelete] = useState<string | null>(null);
@@ -162,9 +164,18 @@ export default function InspeccionVehiculoPage() {
   };
 
   const handlePrint = (inspeccion: InspeccionVehiculo) => {
+    setInspeccionToPrint(inspeccion);
+    setShowPrintWarning(true);
+  };
+
+  const proceedWithPrint = () => {
+    if (!inspeccionToPrint) return;
+
+    setShowPrintWarning(false);
+
     try {
-      const recibo = inspeccion.id_recibo as any;
-      const empleado = inspeccion.id_empleadoInformacion as any;
+      const recibo = inspeccionToPrint.id_recibo as any;
+      const empleado = inspeccionToPrint.id_empleadoInformacion as any;
 
       if (!recibo || typeof recibo === 'string') {
         return alert('Datos del recibo no disponibles');
@@ -180,8 +191,8 @@ export default function InspeccionVehiculoPage() {
       }
 
       const now = new Date().toLocaleString();
-      const piezas = inspeccion.piezas_sugeridas ?? [];
-      const total = piezas.reduce((acc, p) => acc + (p.precio_unitario ?? 0) * p.cantidad, 0);
+      const piezas = inspeccionToPrint.piezas_sugeridas ?? [];
+      const total = piezas.reduce((acc: number, p: any) => acc + (p.precio_unitario ?? 0) * p.cantidad, 0);
       const subtotal = total / 1.18;
       const itbis = total - subtotal;
       const descuento = 0;
@@ -213,7 +224,7 @@ export default function InspeccionVehiculoPage() {
           <div>
             <div class="brand">JHS AutoServicios</div>
             <div class="subtitle">Cotización de Inspección</div>
-            <div style="font-size:0.95em;color:#888;">N° ${inspeccion._id}</div>
+            <div style="font-size:0.95em;color:#888;">N° ${inspeccionToPrint._id}</div>
           </div>
           <div class="right">
             <div class="brand-sub">Taller Mecánico</div>
@@ -235,9 +246,9 @@ export default function InspeccionVehiculoPage() {
         <table class="info-table">
           <tr>
             <td class="label">Comentario:</td>
-            <td>${inspeccion.comentario ?? '—'}</td>
+            <td>${inspeccionToPrint.comentario ?? '—'}</td>
             <td class="label">Resultado:</td>
-            <td>${inspeccion.resultado ?? '—'}</td>
+            <td>${inspeccionToPrint.resultado ?? '—'}</td>
             <td class="label">Fecha impresión:</td>
             <td>${now}</td>
           </tr>
@@ -251,7 +262,7 @@ export default function InspeccionVehiculoPage() {
             <th>Precio Unitario</th>
             <th>Subtotal</th>
           </tr>
-          ${piezas.map(p => `
+          ${piezas.map((p: any) => `
             <tr>
               <td>${p.nombre_pieza}</td>
               <td>${p.cantidad}</td>
@@ -284,23 +295,31 @@ export default function InspeccionVehiculoPage() {
           Gracias por preferir JHS AutoServicios
         </div>
       </div>
-    `;
+      `;
 
-      setPrintHtml(html);
+      // Abrir en ventana nueva como en facturas
+      const w = window.open('', 'inspeccion_print', 'width=600,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
+      if (!w) {
+        alert('Por favor permite las ventanas emergentes para imprimir la inspección');
+        return;
+      }
+      w.document.write(html);
+      w.document.close();
+      w.focus();
+      w.onafterprint = () => w.close();
+      w.print();
+
+      setInspeccionToPrint(null);
     } catch (error) {
       console.error('Error al generar la impresión:', error);
       alert('Error al generar la cotización');
+      setInspeccionToPrint(null);
     }
   };
 
   useEffect(() => {
-    if (printHtml) {
-      setTimeout(() => {
-        window.print();
-        setPrintHtml(null);
-      }, 0);
-    }
-  }, [printHtml]);
+    fetchInspecciones();
+  }, []);
 
   const inspeccionesFiltradas = React.useMemo(() => {
     let filtered = inspecciones.filter(inspeccion => {
@@ -638,22 +657,93 @@ export default function InspeccionVehiculoPage() {
           onSubmit={handleModalSubmit}
         />
 
-        {printHtml && (
-          <div
-            id="print-area"
-            dangerouslySetInnerHTML={{ __html: printHtml }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              background: 'white',
-              zIndex: 9999,
-              overflow: 'auto'
+        {/* Modal de advertencia de impresión */}
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: showPrintWarning ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999
+          }}
+        >
+          <Box
+            sx={{
+              backgroundColor: 'white',
+              borderRadius: 3,
+              padding: 4,
+              maxWidth: 500,
+              width: '90%',
+              textAlign: 'center',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
             }}
-          />
-        )}
+          >
+            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠️</div>
+            <h2 style={{
+              color: '#1976d2',
+              marginBottom: '16px',
+              fontSize: '1.5rem'
+            }}>
+              Importante - Impresión de Inspección
+            </h2>
+            <p style={{
+              color: '#666',
+              marginBottom: '24px',
+              fontSize: '1.1rem',
+              lineHeight: 1.5
+            }}>
+              <strong>Recuerde cerrar la pestaña de impresión si no la utilizará.</strong>
+              <br /><br />
+              Dejar pestañas de impresión abiertas puede causar problemas de rendimiento en la aplicación.
+            </p>
+
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <button
+                onClick={() => {
+                  setShowPrintWarning(false);
+                  setInspeccionToPrint(null);
+                }}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#666',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#555'}
+                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#666'}
+              >
+                ❌ Cancelar
+              </button>
+
+              <button
+                onClick={proceedWithPrint}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#1565c0'}
+                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#1976d2'}
+              >
+                🖨️ Continuar con Impresión
+              </button>
+            </Box>
+          </Box>
+        </Box>
 
         <Box
           sx={{
