@@ -1,5 +1,3 @@
-
-
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
@@ -74,17 +72,13 @@ async function seedUsuarios() {
       username: 'admin',
       password: 'admin123',
       role: 'administrador',
-      activo: true,
-      secretQuestion: '¿Cuál es el nombre de tu primera mascota?',
-      secretAnswer: 'firulais'
+      activo: true
     },
     {
       username: 'empleado1',
       password: 'emp123',
       role: 'empleado',
-      activo: true,
-      secretQuestion: '¿En qué ciudad naciste?',
-      secretAnswer: 'santo domingo'
+      activo: true
     }
   ];
 
