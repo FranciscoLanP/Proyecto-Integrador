@@ -280,7 +280,8 @@ export default function FacturaPage() {
                 color: #333; 
                 font-size: 10px;
                 line-height: 1.2;
-                min-height: 95vh;
+                height: 100vh;
+                overflow: hidden;
                 display: flex;
                 flex-direction: column;
               }
@@ -290,15 +291,30 @@ export default function FacturaPage() {
                 flex: 1;
                 display: flex;
                 flex-direction: column;
+                overflow: hidden;
+              }
+              
+              /* Contenedor de tablas con scroll */
+              .tablas-container {
+                flex: 1;
+                overflow-y: auto;
+                margin-bottom: 8px;
+                padding-bottom: 100px; /* Espacio para la sección fija */
               }
               
               /* Sección de totales fija al pie */
               .seccion-pie {
-                margin-top: auto;
+                margin-top: 0;
                 padding-top: 12px;
                 border-top: 2px solid #1976d2;
-                position: relative;
+                position: fixed;
+                bottom: 8px;
+                left: 8px;
+                right: 8px;
+                background: white;
+                z-index: 100;
                 min-height: 80px;
+                box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
               }
               
               /* Header compacto como el recibo */
@@ -502,11 +518,28 @@ export default function FacturaPage() {
                 display: none;
               }
               @media print {
-                body { font-size: 9px; }
+                body { 
+                  font-size: 9px; 
+                  height: auto !important;
+                  overflow: visible !important;
+                }
                 .header h1 { font-size: 14px; }
                 .factura-num { font-size: 10px; }
+                .contenido-principal {
+                  overflow: visible !important;
+                }
+                .tablas-container {
+                  overflow: visible !important;
+                  height: auto !important;
+                }
                 .seccion-pie {
                   page-break-inside: avoid;
+                  position: relative !important;
+                  bottom: auto !important;
+                  left: auto !important;
+                  right: auto !important;
+                  box-shadow: none !important;
+                  margin-top: auto;
                 }
                 .totales-section {
                   page-break-inside: avoid;
@@ -565,7 +598,8 @@ export default function FacturaPage() {
                 ` : ''}
               </div>
               
-              <table class="servicios-table">
+              <div class="tablas-container">
+                <table class="servicios-table">
                 <thead>
                   <tr>
                     <th style="width: 45%;">Descripción</th>
